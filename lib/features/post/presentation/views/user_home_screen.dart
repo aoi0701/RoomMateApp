@@ -3,8 +3,8 @@ import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 
 import '../viewmodels/post_list_viewmodel.dart';
-import 'create_post_screen.dart';
-import 'user_profile_screen.dart';
+import '../../../home/presentation/views/create_post_screen.dart';
+import '../../../profile/presentation/views/user_profile_screen.dart';
 
 class UserHomeScreen extends StatefulWidget {
   const UserHomeScreen({super.key});

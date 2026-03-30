@@ -2,8 +2,8 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 
-import '../../auth/viewmodels/auth_viewmodel.dart';
-import '../../auth/views/login_screen.dart';
+import '../../../auth/presentation/viewmodels/auth_viewmodel.dart';
+import '../../../auth/presentation/views/login_screen.dart';
 import '../viewmodels/user_profile_viewmodel.dart';
 
 class UserProfileScreen extends StatelessWidget {

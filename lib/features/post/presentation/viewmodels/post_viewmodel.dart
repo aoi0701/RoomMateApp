@@ -2,7 +2,7 @@ import 'dart:io';
 
 import 'package:flutter/material.dart';
 
-import '../repositories/post_repository.dart';
+import '../../data/repositories/post_repository.dart';
 
 class PostViewModel extends ChangeNotifier {
   final PostRepository _repository;

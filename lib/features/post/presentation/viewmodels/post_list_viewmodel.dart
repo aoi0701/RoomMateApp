@@ -1,7 +1,7 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
 
-import '../repositories/post_repository.dart';
+import '../../data/repositories/post_repository.dart';
 
 class PostListViewModel extends ChangeNotifier {
   final PostRepository _repository;
