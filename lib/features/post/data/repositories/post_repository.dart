@@ -4,6 +4,7 @@ import 'dart:io';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:http/http.dart' as http;
+import '../models/post_model.dart';
 
 class PostRepository {
   final FirebaseAuth _auth;
@@ -68,10 +69,15 @@ class PostRepository {
     });
   }
 
-  Stream<QuerySnapshot<Map<String, dynamic>>> getPostsStream() {
+  Stream<List<PostModel>> getPostsStream() {
     return _firestore
         .collection('posts')
         .orderBy('createdAt', descending: true)
-        .snapshots();
+        .snapshots()
+        .map((snapshot) {
+          return snapshot.docs
+              .map((doc) => PostModel.fromDocument(doc))
+              .toList();
+        });
   }
 }

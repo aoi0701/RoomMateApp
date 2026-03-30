@@ -1,11 +1,11 @@
-import 'package:cloud_firestore/cloud_firestore.dart';
+// import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 
-import '../viewmodels/post_list_viewmodel.dart';
-import '../../../home/presentation/views/create_post_screen.dart';
+import '../../../post/presentation/viewmodels/post_list_viewmodel.dart';
+import '../../../post/presentation/views/create_post_screen.dart';
 import '../../../profile/presentation/views/user_profile_screen.dart';
-
+import '../../../post/data/models/post_model.dart';
 class UserHomeScreen extends StatefulWidget {
   const UserHomeScreen({super.key});
 
@@ -155,98 +155,43 @@ class _UserHomeScreenState extends State<UserHomeScreen> {
             ),
           ),
           const SizedBox(height: 20),
-          StreamBuilder<QuerySnapshot<Map<String, dynamic>>>(
+          StreamBuilder<List<PostModel>>(
             stream: vm.postsStream,
             builder: (context, snapshot) {
               if (snapshot.connectionState == ConnectionState.waiting) {
-                return const Center(
-                  child: Padding(
-                    padding: EdgeInsets.all(30),
-                    child: CircularProgressIndicator(),
-                  ),
-                );
+                return const Center(child: CircularProgressIndicator());
               }
 
               if (snapshot.hasError) {
-                return Center(
-                  child: Text('Lỗi: ${snapshot.error}'),
-                );
+                return Text('Lỗi: ${snapshot.error}');
               }
 
-              if (!snapshot.hasData || snapshot.data!.docs.isEmpty) {
-                return Container(
-                  width: double.infinity,
-                  padding: const EdgeInsets.all(24),
-                  decoration: BoxDecoration(
-                    color: Colors.white,
-                    borderRadius: BorderRadius.circular(24),
-                    boxShadow: const [
-                      BoxShadow(
-                        color: Color(0x14000000),
-                        blurRadius: 18,
-                        offset: Offset(0, 8),
-                      ),
-                    ],
-                  ),
-                  child: const Column(
-                    children: [
-                      Icon(
-                        Icons.home_work_outlined,
-                        size: 64,
-                        color: textSecondary,
-                      ),
-                      SizedBox(height: 12),
-                      Text(
-                        'Chưa có bài đăng nào',
-                        style: TextStyle(
-                          fontSize: 18,
-                          fontWeight: FontWeight.w700,
-                          color: textPrimary,
-                        ),
-                      ),
-                      SizedBox(height: 6),
-                      Text(
-                        'Khi có người đăng bài, bài viết sẽ hiển thị ở đây',
-                        textAlign: TextAlign.center,
-                        style: TextStyle(
-                          fontSize: 14,
-                          color: textSecondary,
-                        ),
-                      ),
-                    ],
-                  ),
-                );
+              if (!snapshot.hasData || snapshot.data!.isEmpty) {
+                return const Text('Chưa có bài');
               }
 
-              final docs = snapshot.data!.docs;
+              final posts = snapshot.data!;
 
               return ListView.separated(
-                itemCount: docs.length,
+                itemCount: posts.length,
                 shrinkWrap: true,
                 physics: const NeverScrollableScrollPhysics(),
-                separatorBuilder: (context, index) => const SizedBox(height: 18),
+                separatorBuilder: (_, index) => const SizedBox(height: 18),
                 itemBuilder: (context, index) {
-                  final post = docs[index].data();
-
-                  final title = post['title'] ?? '';
-                  final location = post['location'] ?? '';
-                  final price = post['price'] ?? 0;
-                  final area = post['area'] ?? 0;
-                  final capacity = post['capacity'] ?? 0;
-                  final imageUrl = post['imageUrl'] ?? '';
+                  final post = posts[index];
 
                   return _PostCard(
-                    title: title,
-                    location: location,
-                    price: price,
-                    area: area,
-                    capacity: capacity,
-                    imageUrl: imageUrl,
+                    title: post.title,
+                    location: post.location,
+                    price: post.price,
+                    area: post.area,
+                    capacity: post.capacity,
+                    imageUrl: post.imageUrl,
                   );
                 },
               );
             },
-          ),
+          )
         ],
       ),
     );

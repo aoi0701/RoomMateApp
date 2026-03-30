@@ -4,7 +4,7 @@ import 'package:flutter/material.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:provider/provider.dart';
 
-import '../../../post/presentation/viewmodels/post_viewmodel.dart';
+import '../viewmodels/post_viewmodel.dart';
 
 class CreatePostScreen extends StatefulWidget {
   const CreatePostScreen({super.key});

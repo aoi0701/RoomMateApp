@@ -8,7 +8,7 @@ import '../widgets/social_login_button.dart';
 import 'forgot_password_screen.dart';
 import 'register_screen.dart';
 import '../../../admin/presentation/views/admin_home_screen.dart';
-import '../../../post/presentation/views/user_home_screen.dart';
+import '../../../home/presentation/views/user_home_screen.dart';
 
 class LoginScreen extends StatefulWidget {
   const LoginScreen({super.key});
