@@ -1,11 +1,10 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
+import 'package:provider/provider.dart';
+
+import '../viewmodels/post_list_viewmodel.dart';
 import 'create_post_screen.dart';
 import 'user_profile_screen.dart';
-
-
-
-
 
 class UserHomeScreen extends StatefulWidget {
   const UserHomeScreen({super.key});
@@ -126,12 +125,12 @@ class _UserHomeScreenState extends State<UserHomeScreen> {
             icon: Icons.add,
             label: 'Đăng bài',
             onTap: () {
-            Navigator.push(
-              context,
-              MaterialPageRoute(
-                builder: (_) => const CreatePostScreen(),
-              ),
-            );
+              Navigator.push(
+                context,
+                MaterialPageRoute(
+                  builder: (_) => const CreatePostScreen(),
+                ),
+              );
             },
           ),
         ],
@@ -140,6 +139,8 @@ class _UserHomeScreenState extends State<UserHomeScreen> {
   }
 
   Widget _buildFeaturedSection() {
+    final vm = context.read<PostListViewModel>();
+
     return Padding(
       padding: const EdgeInsets.symmetric(horizontal: 20),
       child: Column(
@@ -154,11 +155,8 @@ class _UserHomeScreenState extends State<UserHomeScreen> {
             ),
           ),
           const SizedBox(height: 20),
-          StreamBuilder<QuerySnapshot>(
-            stream: FirebaseFirestore.instance
-                .collection('posts')
-                .orderBy('createdAt', descending: true)
-                .snapshots(),
+          StreamBuilder<QuerySnapshot<Map<String, dynamic>>>(
+            stream: vm.postsStream,
             builder: (context, snapshot) {
               if (snapshot.connectionState == ConnectionState.waiting) {
                 return const Center(
@@ -228,7 +226,7 @@ class _UserHomeScreenState extends State<UserHomeScreen> {
                 physics: const NeverScrollableScrollPhysics(),
                 separatorBuilder: (context, index) => const SizedBox(height: 18),
                 itemBuilder: (context, index) {
-                  final post = docs[index].data() as Map<String, dynamic>;
+                  final post = docs[index].data();
 
                   final title = post['title'] ?? '';
                   final location = post['location'] ?? '';
@@ -410,7 +408,7 @@ class _PostCard extends StatelessWidget {
                       height: 220,
                       width: double.infinity,
                       fit: BoxFit.cover,
-                      errorBuilder: (context, error, stackTrace)  {
+                      errorBuilder: (context, error, stackTrace) {
                         return Container(
                           height: 220,
                           width: double.infinity,

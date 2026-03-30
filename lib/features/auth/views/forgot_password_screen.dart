@@ -1,4 +1,6 @@
 import 'package:flutter/material.dart';
+import 'package:provider/provider.dart';
+
 import '../../../core/theme/app_colors.dart';
 import '../viewmodels/auth_viewmodel.dart';
 import '../widgets/auth_text_field.dart';
@@ -22,7 +24,8 @@ class _ForgotPasswordScreenState extends State<ForgotPasswordScreen> {
 
   Widget _buildPrimaryButton({
     required String text,
-    required VoidCallback onTap,
+    required VoidCallback? onTap,
+    bool isLoading = false,
   }) {
     return Container(
       width: double.infinity,
@@ -43,18 +46,27 @@ class _ForgotPasswordScreenState extends State<ForgotPasswordScreen> {
         color: Colors.transparent,
         child: InkWell(
           borderRadius: BorderRadius.circular(32),
-          onTap: onTap,
+          onTap: isLoading ? null : onTap,
           child: Padding(
             padding: const EdgeInsets.symmetric(vertical: 18),
             child: Center(
-              child: Text(
-                text,
-                style: const TextStyle(
-                  color: AppColors.white,
-                  fontSize: 18,
-                  fontWeight: FontWeight.w700,
-                ),
-              ),
+              child: isLoading
+                  ? const SizedBox(
+                      width: 22,
+                      height: 22,
+                      child: CircularProgressIndicator(
+                        strokeWidth: 2,
+                        color: AppColors.white,
+                      ),
+                    )
+                  : Text(
+                      text,
+                      style: const TextStyle(
+                        color: AppColors.white,
+                        fontSize: 18,
+                        fontWeight: FontWeight.w700,
+                      ),
+                    ),
             ),
           ),
         ),
@@ -62,8 +74,45 @@ class _ForgotPasswordScreenState extends State<ForgotPasswordScreen> {
     );
   }
 
+  Future<void> _handleResetPassword() async {
+    FocusScope.of(context).unfocus();
+
+    final email = _emailController.text.trim();
+
+    if (email.isEmpty) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('Vui lòng nhập email')),
+      );
+      return;
+    }
+
+    final vm = context.read<AuthViewModel>();
+    final success = await vm.resetPassword(email);
+
+    if (!mounted) return;
+
+    if (success) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('Đã gửi email đặt lại mật khẩu')),
+      );
+
+      Navigator.push(
+        context,
+        MaterialPageRoute(
+          builder: (_) => CheckEmailScreen(email: email),
+        ),
+      );
+    } else {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text(vm.errorMessage ?? 'Gửi email thất bại')),
+      );
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
+    final vm = context.watch<AuthViewModel>();
+
     return Scaffold(
       backgroundColor: AppColors.background,
       body: SafeArea(
@@ -108,47 +157,16 @@ class _ForgotPasswordScreenState extends State<ForgotPasswordScreen> {
               const SizedBox(height: 8),
               _buildPrimaryButton(
                 text: 'Gửi email đặt lại mật khẩu',
-                      onTap: () async {
-                        final email = _emailController.text.trim();
-
-                        if (email.isEmpty) {
-                          ScaffoldMessenger.of(context).showSnackBar(
-                            const SnackBar(content: Text('Vui lòng nhập email')),
-                          );
-                          return;
-                        }
-
-                        final vm = AuthViewModel();
-
-                        try {
-                          await vm.resetPassword(email);
-
-                          if (!context.mounted) return;
-
-                          ScaffoldMessenger.of(context).showSnackBar(
-                            const SnackBar(content: Text('Đã gửi email đặt lại mật khẩu')),
-                          );
-
-                          Navigator.push(
-                            context,
-                            MaterialPageRoute(
-                              builder: (_) => CheckEmailScreen(email: email),
-                            ),
-                          );
-                        } catch (e) {
-                          if (!context.mounted) return;
-
-                          ScaffoldMessenger.of(context).showSnackBar(
-                            SnackBar(content: Text('Gửi email thất bại: $e')),
-                          );
-                        }
-                      },
+                isLoading: vm.isLoading,
+                onTap: _handleResetPassword,
               ),
               const SizedBox(height: 24),
               GestureDetector(
-                onTap: () {
-                  Navigator.pop(context);
-                },
+                onTap: vm.isLoading
+                    ? null
+                    : () {
+                        Navigator.pop(context);
+                      },
                 child: const Text(
                   'Quay lại đăng nhập',
                   style: TextStyle(

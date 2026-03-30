@@ -125,11 +125,55 @@
 //   }
 // }
 
-import 'package:flutter/material.dart';
+// import 'package:flutter/material.dart';
+// import 'package:firebase_core/firebase_core.dart';
+// import 'package:roommateapp/firebase_options.dart';
+// import 'core/theme/app_colors.dart';
+// import 'features/auth/views/login_screen.dart';
+
+// Future<void> main() async {
+//   WidgetsFlutterBinding.ensureInitialized();
+
+//   await Firebase.initializeApp(
+//     options: DefaultFirebaseOptions.currentPlatform,
+//   );
+
+//   runApp(const MyApp());
+// }
+
+// class MyApp extends StatelessWidget {
+//   const MyApp({super.key});
+
+//   @override
+//   Widget build(BuildContext context) {
+//     return MaterialApp(
+//       debugShowCheckedModeBanner: false,
+//       title: 'Find Roommate',
+//       theme: ThemeData(
+//         scaffoldBackgroundColor: AppColors.background,
+//         colorScheme: ColorScheme.fromSeed(seedColor: AppColors.primary),
+//         useMaterial3: true,
+//       ),
+//       home: const LoginScreen(),
+//     );
+//   }
+// }
+
+
 import 'package:firebase_core/firebase_core.dart';
-import 'package:roommateapp/firebase_options.dart';
+import 'package:flutter/material.dart';
+import 'package:provider/provider.dart';
+
 import 'core/theme/app_colors.dart';
+import 'features/auth/repositories/auth_repository.dart';
+import 'features/auth/viewmodels/auth_viewmodel.dart';
 import 'features/auth/views/login_screen.dart';
+import 'features/home/repositories/post_repository.dart';
+import 'features/home/repositories/user_profile_repository.dart';
+import 'features/home/viewmodels/post_list_viewmodel.dart';
+import 'features/home/viewmodels/post_viewmodel.dart';
+import 'features/home/viewmodels/user_profile_viewmodel.dart';
+import 'firebase_options.dart';
 
 Future<void> main() async {
   WidgetsFlutterBinding.ensureInitialized();
@@ -146,15 +190,48 @@ class MyApp extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return MaterialApp(
-      debugShowCheckedModeBanner: false,
-      title: 'Find Roommate',
-      theme: ThemeData(
-        scaffoldBackgroundColor: AppColors.background,
-        colorScheme: ColorScheme.fromSeed(seedColor: AppColors.primary),
-        useMaterial3: true,
+    return MultiProvider(
+      providers: [
+        Provider<AuthRepository>(
+          create: (_) => AuthRepository(),
+        ),
+        ChangeNotifierProvider<AuthViewModel>(
+          create: (context) => AuthViewModel(
+            repository: context.read<AuthRepository>(),
+          ),
+        ),
+        Provider<PostRepository>(
+          create: (_) => PostRepository(),
+        ),
+        ChangeNotifierProvider<PostViewModel>(
+          create: (context) => PostViewModel(
+            repository: context.read<PostRepository>(),
+          ),
+        ),
+        ChangeNotifierProvider<PostListViewModel>(
+          create: (context) => PostListViewModel(
+            repository: context.read<PostRepository>(),
+          ),
+        ),
+        Provider<UserProfileRepository>(
+          create: (_) => UserProfileRepository(),
+        ),
+        ChangeNotifierProvider<UserProfileViewModel>(
+          create: (context) => UserProfileViewModel(
+            repository: context.read<UserProfileRepository>(),
+          ),
+        ),
+      ],
+      child: MaterialApp(
+        debugShowCheckedModeBanner: false,
+        title: 'Find Roommate',
+        theme: ThemeData(
+          scaffoldBackgroundColor: AppColors.background,
+          colorScheme: ColorScheme.fromSeed(seedColor: AppColors.primary),
+          useMaterial3: true,
+        ),
+        home: const LoginScreen(),
       ),
-      home: const LoginScreen(),
     );
   }
 }

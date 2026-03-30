@@ -1,6 +1,7 @@
-import 'package:cloud_firestore/cloud_firestore.dart';
-import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
+import 'package:provider/provider.dart';
+
+import '../viewmodels/auth_viewmodel.dart';
 
 class RegisterScreen extends StatefulWidget {
   const RegisterScreen({super.key});
@@ -21,7 +22,6 @@ class _RegisterScreenState extends State<RegisterScreen> {
 
   bool _obscurePassword = true;
   bool _obscureConfirmPassword = true;
-  bool _isLoading = false;
 
   @override
   void dispose() {
@@ -94,72 +94,27 @@ class _RegisterScreenState extends State<RegisterScreen> {
       return;
     }
 
-    setState(() {
-      _isLoading = true;
-    });
+    final vm = context.read<AuthViewModel>();
 
-    final fullName = _fullNameController.text.trim();
-    final email = _emailController.text.trim();
-    final password = _passwordController.text.trim();
-    final phone = _phoneController.text.trim();
-    final address = _addressController.text.trim();
+    final success = await vm.register(
+      fullName: _fullNameController.text.trim(),
+      email: _emailController.text.trim(),
+      password: _passwordController.text.trim(),
+      phone: _phoneController.text.trim(),
+      address: _addressController.text.trim(),
+    );
 
-    try {
-      final credential =
-          await FirebaseAuth.instance.createUserWithEmailAndPassword(
-        email: email,
-        password: password,
-      );
+    if (!mounted) return;
 
-      final user = credential.user;
-
-      if (user != null) {
-        await user.updateDisplayName(fullName);
-
-        await FirebaseFirestore.instance.collection('users').doc(user.uid).set({
-          'fullName': fullName,
-          'email': email,
-          'phone': phone,
-          'address': address,
-          'createdAt': FieldValue.serverTimestamp(),
-        });
-      }
-
-      if (!mounted) return;
-
+    if (success) {
       ScaffoldMessenger.of(context).showSnackBar(
         const SnackBar(content: Text('Đăng ký thành công')),
       );
-
       Navigator.pop(context);
-    } on FirebaseAuthException catch (e) {
-      String message = 'Đăng ký thất bại';
-
-      if (e.code == 'email-already-in-use') {
-        message = 'Email đã được sử dụng';
-      } else if (e.code == 'weak-password') {
-        message = 'Mật khẩu quá yếu';
-      } else if (e.code == 'invalid-email') {
-        message = 'Email không hợp lệ';
-      } else if (e.code == 'network-request-failed') {
-        message = 'Lỗi mạng, vui lòng thử lại';
-      }
-
-      if (!mounted) return;
+    } else {
       ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text(message)),
+        SnackBar(content: Text(vm.errorMessage ?? 'Đăng ký thất bại')),
       );
-    } catch (e) {
-      if (!mounted) return;
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text('Lỗi: $e')),
-      );
-    } finally {
-      if (mounted) {
-        setState(() {
-          _isLoading = false;
-        });
-      }
     }
   }
 
@@ -208,7 +163,7 @@ class _RegisterScreenState extends State<RegisterScreen> {
     );
   }
 
-  Widget _buildPrimaryButton() {
+  Widget _buildPrimaryButton(bool isLoading) {
     return Container(
       width: double.infinity,
       height: 56,
@@ -229,9 +184,9 @@ class _RegisterScreenState extends State<RegisterScreen> {
         color: Colors.transparent,
         child: InkWell(
           borderRadius: BorderRadius.circular(18),
-          onTap: _isLoading ? null : _register,
+          onTap: isLoading ? null : _register,
           child: Center(
-            child: _isLoading
+            child: isLoading
                 ? const SizedBox(
                     width: 22,
                     height: 22,
@@ -256,6 +211,8 @@ class _RegisterScreenState extends State<RegisterScreen> {
 
   @override
   Widget build(BuildContext context) {
+    final vm = context.watch<AuthViewModel>();
+
     return Scaffold(
       backgroundColor: const Color(0xFFF6F7FB),
       appBar: AppBar(
@@ -273,7 +230,6 @@ class _RegisterScreenState extends State<RegisterScreen> {
           padding: const EdgeInsets.fromLTRB(20, 12, 20, 24),
           child: Form(
             key: _formKey,
-            // autovalidateMode: AutovalidateMode.onUserInteraction,
             child: Column(
               children: [
                 Container(
@@ -386,7 +342,7 @@ class _RegisterScreenState extends State<RegisterScreen> {
                   ),
                 ),
                 const SizedBox(height: 24),
-                _buildPrimaryButton(),
+                _buildPrimaryButton(vm.isLoading),
               ],
             ),
           ),

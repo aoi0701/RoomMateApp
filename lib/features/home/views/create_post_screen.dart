@@ -1,12 +1,10 @@
-import 'dart:convert';
 import 'dart:io';
 
-import 'package:cloud_firestore/cloud_firestore.dart';
-import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
-import 'package:http/http.dart' as http;
 import 'package:image_picker/image_picker.dart';
+import 'package:provider/provider.dart';
 
+import '../viewmodels/post_viewmodel.dart';
 
 class CreatePostScreen extends StatefulWidget {
   const CreatePostScreen({super.key});
@@ -16,7 +14,6 @@ class CreatePostScreen extends StatefulWidget {
 }
 
 class _CreatePostScreenState extends State<CreatePostScreen> {
-
   File? _selectedImage;
 
   final _titleController = TextEditingController();
@@ -24,8 +21,6 @@ class _CreatePostScreenState extends State<CreatePostScreen> {
   final _priceController = TextEditingController();
   final _areaController = TextEditingController();
   final _capacityController = TextEditingController();
-
-  bool _isLoading = false;
 
   @override
   void dispose() {
@@ -52,158 +47,35 @@ class _CreatePostScreenState extends State<CreatePostScreen> {
     }
   }
 
+  Future<void> _handleCreatePost() async {
+    FocusScope.of(context).unfocus();
 
+    final vm = context.read<PostViewModel>();
 
-
-  Future<String> _uploadImageToCloudinary(File imageFile) async {
-    const cloudName = 'dg9nhcbfu';
-    const uploadPreset = 'sib1xtoq';
-
-    final uri = Uri.parse(
-      'https://api.cloudinary.com/v1_1/$cloudName/image/upload',
+    final success = await vm.createPost(
+      title: _titleController.text,
+      location: _locationController.text,
+      priceText: _priceController.text,
+      areaText: _areaController.text,
+      capacityText: _capacityController.text,
+      imageFile: _selectedImage,
     );
 
-    final request = http.MultipartRequest('POST', uri)
-      ..fields['upload_preset'] = uploadPreset
-      ..files.add(await http.MultipartFile.fromPath('file', imageFile.path));
+    if (!mounted) return;
 
-    final response = await request.send();
-    final responseBody = await response.stream.bytesToString();
-
-    if (response.statusCode == 200) {
-      final data = jsonDecode(responseBody);
-      return data['secure_url'];
-    } else {
-      throw Exception('Upload Cloudinary thất bại: $responseBody');
-    }
-  }
-
-
-  Future<void> _createPost() async {
-    final user = FirebaseAuth.instance.currentUser;
-    if (user == null) return;
-
-    final title = _titleController.text.trim();
-    final location = _locationController.text.trim();
-
-    final price = int.tryParse(_priceController.text.trim());
-    final area = int.tryParse(_areaController.text.trim());
-    final capacity = int.tryParse(_capacityController.text.trim());
-
-    if (title.isEmpty ||
-        location.isEmpty ||
-        _selectedImage == null ||
-        price == null ||
-        area == null ||
-        capacity == null) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(
-          content: Text('Vui lòng nhập đầy đủ thông tin và chọn ảnh'),
-        ),
-      );
-      return;
-    }
-
-    setState(() {
-      _isLoading = true;
-    });
-
-    try {
-      final imageUrl = await _uploadImageToCloudinary(_selectedImage!);
-
-      await FirebaseFirestore.instance.collection('posts').add({
-        'title': title,
-        'location': location,
-        'price': price,
-        'area': area,
-        'capacity': capacity,
-        'imageUrl': imageUrl,
-        'ownerId': user.uid,
-        'createdAt': FieldValue.serverTimestamp(),
-      });
-
-      if (!mounted) return;
-
+    if (success) {
       ScaffoldMessenger.of(context).showSnackBar(
         const SnackBar(content: Text('Đăng bài thành công')),
       );
-
       Navigator.pop(context);
-    } catch (e) {
-      if (!mounted) return;
+    } else {
       ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text('Lỗi: $e')),
+        SnackBar(
+          content: Text(vm.errorMessage ?? 'Đăng bài thất bại'),
+        ),
       );
-    } finally {
-      if (mounted) {
-        setState(() {
-          _isLoading = false;
-        });
-      }
     }
   }
-
-
-
-  // Future<void> _createPost() async {
-  //   final user = FirebaseAuth.instance.currentUser;
-  //   if (user == null) return;
-
-  //   final title = _titleController.text.trim();
-  //   final location = _locationController.text.trim();
-  //   // final imageUrl = _imageUrlController.text.trim();
-
-  //   final price = int.tryParse(_priceController.text.trim());
-  //   final area = int.tryParse(_areaController.text.trim());
-  //   final capacity = int.tryParse(_capacityController.text.trim());
-
-  //   if (title.isEmpty ||
-  //       location.isEmpty ||
-  //       _selectedImage == null ||
-  //       price == null ||
-  //       area == null ||
-  //       capacity == null) {
-  //     ScaffoldMessenger.of(context).showSnackBar(
-  //       const SnackBar(content: Text('Vui lòng nhập đầy đủ thông tin hợp lệ')),
-  //     );
-  //     return;
-  //   }
-  //   setState(() {
-  //     _isLoading = true;
-  //   });
-  //   try {
-  //     final imageUrl = await _uploadImageToCloudinary(_selectedImage!);
-  //     await FirebaseFirestore.instance.collection('posts').add({
-  //       'title': title,
-  //       'location': location,
-  //       'price': price,
-  //       'area': area,
-  //       'capacity': capacity,
-  //       'imageUrl': imageUrl,
-  //       'ownerId': user.uid,
-  //       'createdAt': FieldValue.serverTimestamp(),
-  //     });
-  //     if (!mounted) return;
-  //     ScaffoldMessenger.of(context).showSnackBar(
-  //       const SnackBar(content: Text('Đăng bài thành công')),
-  //     );
-
-  //     Navigator.pop(context);
-  //   } catch (e) {
-  //     ScaffoldMessenger.of(context).showSnackBar(
-  //       SnackBar(content: Text('Lỗi: $e')),
-  //     );
-  //   } 
-  //     finally {
-  //       if (mounted) {
-  //         setState(() {
-  //           _isLoading = false;
-  //         });
-  //       }
-  //     }
-  // }
-
-
 
   InputDecoration _inputDecoration(String label) {
     return InputDecoration(
@@ -211,12 +83,17 @@ class _CreatePostScreenState extends State<CreatePostScreen> {
       border: OutlineInputBorder(
         borderRadius: BorderRadius.circular(16),
       ),
-      contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
+      contentPadding: const EdgeInsets.symmetric(
+        horizontal: 16,
+        vertical: 14,
+      ),
     );
   }
 
   @override
   Widget build(BuildContext context) {
+    final vm = context.watch<PostViewModel>();
+
     return Scaffold(
       appBar: AppBar(
         title: const Text('Đăng bài'),
@@ -228,39 +105,39 @@ class _CreatePostScreenState extends State<CreatePostScreen> {
           children: [
             TextField(
               controller: _titleController,
+              enabled: !vm.isLoading,
               decoration: _inputDecoration('Tiêu đề'),
             ),
             const SizedBox(height: 14),
             TextField(
               controller: _locationController,
+              enabled: !vm.isLoading,
               decoration: _inputDecoration('Địa chỉ'),
             ),
             const SizedBox(height: 14),
             TextField(
               controller: _priceController,
+              enabled: !vm.isLoading,
               keyboardType: TextInputType.number,
               decoration: _inputDecoration('Giá thuê'),
             ),
             const SizedBox(height: 14),
             TextField(
               controller: _areaController,
+              enabled: !vm.isLoading,
               keyboardType: TextInputType.number,
               decoration: _inputDecoration('Diện tích (m²)'),
             ),
             const SizedBox(height: 14),
             TextField(
               controller: _capacityController,
+              enabled: !vm.isLoading,
               keyboardType: TextInputType.number,
               decoration: _inputDecoration('Số người'),
             ),
             const SizedBox(height: 14),
-            // TextField(
-            //   // controller: _imageUrlController,
-            //   decoration: _inputDecoration('Link ảnh'),
-            // ),
-
-             GestureDetector(
-              onTap: _pickImage,
+            GestureDetector(
+              onTap: vm.isLoading ? null : _pickImage,
               child: Container(
                 width: double.infinity,
                 height: 180,
@@ -281,7 +158,11 @@ class _CreatePostScreenState extends State<CreatePostScreen> {
                     : Column(
                         mainAxisAlignment: MainAxisAlignment.center,
                         children: const [
-                          Icon(Icons.add_a_photo_outlined, size: 40, color: Colors.grey),
+                          Icon(
+                            Icons.add_a_photo_outlined,
+                            size: 40,
+                            color: Colors.grey,
+                          ),
                           SizedBox(height: 8),
                           Text(
                             'Chạm để chọn ảnh từ thiết bị',
@@ -294,22 +175,27 @@ class _CreatePostScreenState extends State<CreatePostScreen> {
                       ),
               ),
             ),
-
-
             const SizedBox(height: 24),
             SizedBox(
               width: double.infinity,
               height: 54,
               child: ElevatedButton(
-                onPressed: _isLoading ? null : _createPost,
+                onPressed: vm.isLoading ? null : _handleCreatePost,
                 style: ElevatedButton.styleFrom(
                   backgroundColor: const Color(0xFF3B6EF5),
                   shape: RoundedRectangleBorder(
                     borderRadius: BorderRadius.circular(18),
                   ),
                 ),
-                child: _isLoading
-                    ? const CircularProgressIndicator(color: Colors.white)
+                child: vm.isLoading
+                    ? const SizedBox(
+                        width: 24,
+                        height: 24,
+                        child: CircularProgressIndicator(
+                          color: Colors.white,
+                          strokeWidth: 2,
+                        ),
+                      )
                     : const Text(
                         'Đăng bài',
                         style: TextStyle(

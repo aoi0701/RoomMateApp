@@ -1,7 +1,10 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
-import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
+import 'package:provider/provider.dart';
+
+import '../../auth/viewmodels/auth_viewmodel.dart';
 import '../../auth/views/login_screen.dart';
+import '../viewmodels/user_profile_viewmodel.dart';
 
 class UserProfileScreen extends StatelessWidget {
   const UserProfileScreen({super.key});
@@ -11,7 +14,9 @@ class UserProfileScreen extends StatelessWidget {
     const primaryColor = Color(0xFF2F6BFF);
     const backgroundColor = Color(0xFFF5F6FA);
 
-    final currentUser = FirebaseAuth.instance.currentUser;
+    final authVm = context.watch<AuthViewModel>();
+    final profileVm = context.read<UserProfileViewModel>();
+    final currentUser = authVm.user;
 
     if (currentUser == null) {
       return const Scaffold(
@@ -25,10 +30,7 @@ class UserProfileScreen extends StatelessWidget {
       backgroundColor: backgroundColor,
       body: SafeArea(
         child: StreamBuilder<DocumentSnapshot<Map<String, dynamic>>>(
-          stream: FirebaseFirestore.instance
-              .collection('users')
-              .doc(currentUser.uid)
-              .snapshots(),
+          stream: profileVm.getUserProfileStream(currentUser.uid),
           builder: (context, snapshot) {
             if (snapshot.connectionState == ConnectionState.waiting) {
               return const Center(
@@ -50,18 +52,25 @@ class UserProfileScreen extends StatelessWidget {
 
             final data = snapshot.data!.data() ?? {};
 
-            final fullName = data['fullName']?.toString().trim().isNotEmpty == true
-                ? data['fullName'].toString()
-                : 'Chưa cập nhật';
-            final email = data['email']?.toString().trim().isNotEmpty == true
-                ? data['email'].toString()
-                : (currentUser.email ?? 'Chưa cập nhật');
-            final phone = data['phone']?.toString().trim().isNotEmpty == true
-                ? data['phone'].toString()
-                : 'Chưa cập nhật';
-            final address = data['address']?.toString().trim().isNotEmpty == true
-                ? data['address'].toString()
-                : 'Chưa cập nhật';
+            final fullName =
+                data['fullName']?.toString().trim().isNotEmpty == true
+                    ? data['fullName'].toString()
+                    : 'Chưa cập nhật';
+
+            final email =
+                data['email']?.toString().trim().isNotEmpty == true
+                    ? data['email'].toString()
+                    : (currentUser.email ?? 'Chưa cập nhật');
+
+            final phone =
+                data['phone']?.toString().trim().isNotEmpty == true
+                    ? data['phone'].toString()
+                    : 'Chưa cập nhật';
+
+            final address =
+                data['address']?.toString().trim().isNotEmpty == true
+                    ? data['address'].toString()
+                    : 'Chưa cập nhật';
 
             return SingleChildScrollView(
               child: Column(
@@ -134,30 +143,32 @@ class UserProfileScreen extends StatelessWidget {
                           width: double.infinity,
                           height: 56,
                           child: ElevatedButton(
+                            onPressed: authVm.isLoading
+                                ? null
+                                : () async {
+                                    await context.read<AuthViewModel>().logout();
 
+                                    if (!context.mounted) return;
 
-                          onPressed: () async {
-                            try {
-                              await FirebaseAuth.instance.signOut();
-
-                              if (!context.mounted) return;
-
-                              Navigator.pushAndRemoveUntil(
-                                context,
-                                MaterialPageRoute(builder: (_) => const LoginScreen()),
-                                (route) => false,
-                              );
-                            } catch (e) {
-                              if (!context.mounted) return;
-
-                              ScaffoldMessenger.of(context).showSnackBar(
-                                SnackBar(content: Text('Lỗi đăng xuất: $e')),
-                              );
-                            }
-                          },
-
-
-
+                                    if (context.read<AuthViewModel>().errorMessage == null) {
+                                      Navigator.pushAndRemoveUntil(
+                                        context,
+                                        MaterialPageRoute(
+                                          builder: (_) => const LoginScreen(),
+                                        ),
+                                        (route) => false,
+                                      );
+                                    } else {
+                                      ScaffoldMessenger.of(context).showSnackBar(
+                                        SnackBar(
+                                          content: Text(
+                                            context.read<AuthViewModel>().errorMessage ??
+                                                'Đăng xuất thất bại',
+                                          ),
+                                        ),
+                                      );
+                                    }
+                                  },
                             style: ElevatedButton.styleFrom(
                               backgroundColor: Colors.red,
                               foregroundColor: Colors.white,
@@ -166,13 +177,22 @@ class UserProfileScreen extends StatelessWidget {
                                 borderRadius: BorderRadius.circular(16),
                               ),
                             ),
-                            child: const Text(
-                              'Đăng xuất',
-                              style: TextStyle(
-                                fontSize: 20,
-                                fontWeight: FontWeight.w700,
-                              ),
-                            ),
+                            child: authVm.isLoading
+                                ? const SizedBox(
+                                    width: 24,
+                                    height: 24,
+                                    child: CircularProgressIndicator(
+                                      strokeWidth: 2,
+                                      color: Colors.white,
+                                    ),
+                                  )
+                                : const Text(
+                                    'Đăng xuất',
+                                    style: TextStyle(
+                                      fontSize: 20,
+                                      fontWeight: FontWeight.w700,
+                                    ),
+                                  ),
                           ),
                         ),
                         const SizedBox(height: 24),

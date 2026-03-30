@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
-import 'package:firebase_auth/firebase_auth.dart';
+import 'package:provider/provider.dart';
+
+import '../../auth/viewmodels/auth_viewmodel.dart';
 import '../../auth/views/login_screen.dart';
 
 class AdminHomeScreen extends StatelessWidget {
@@ -7,6 +9,8 @@ class AdminHomeScreen extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final vm = context.watch<AuthViewModel>();
+
     return Scaffold(
       appBar: AppBar(
         title: const Text('Admin Home'),
@@ -33,20 +37,39 @@ class AdminHomeScreen extends StatelessWidget {
               ),
               const SizedBox(height: 32),
               ElevatedButton(
-                onPressed: () async {
-                  await FirebaseAuth.instance.signOut();
+                onPressed: vm.isLoading
+                    ? null
+                    : () async {
+                        await context.read<AuthViewModel>().logout();
 
-                  if (!context.mounted) return;
+                        if (!context.mounted) return;
 
-                  Navigator.pushAndRemoveUntil(
-                    context,
-                    MaterialPageRoute(
-                      builder: (_) => const LoginScreen(),
-                    ),
-                    (route) => false,
-                  );
-                },
-                child: const Text('Đăng xuất'),
+                        if (context.read<AuthViewModel>().errorMessage == null) {
+                          Navigator.pushAndRemoveUntil(
+                            context,
+                            MaterialPageRoute(
+                              builder: (_) => const LoginScreen(),
+                            ),
+                            (route) => false,
+                          );
+                        } else {
+                          ScaffoldMessenger.of(context).showSnackBar(
+                            SnackBar(
+                              content: Text(
+                                context.read<AuthViewModel>().errorMessage ??
+                                    'Đăng xuất thất bại',
+                              ),
+                            ),
+                          );
+                        }
+                      },
+                child: vm.isLoading
+                    ? const SizedBox(
+                        width: 20,
+                        height: 20,
+                        child: CircularProgressIndicator(strokeWidth: 2),
+                      )
+                    : const Text('Đăng xuất'),
               ),
             ],
           ),

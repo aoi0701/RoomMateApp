@@ -1,19 +1,14 @@
 import 'package:flutter/material.dart';
-// import 'package:roommateapp/features/home/views/home_screen.dart';
+import 'package:provider/provider.dart';
+
 import '../../../core/theme/app_colors.dart';
 import '../viewmodels/auth_viewmodel.dart';
 import '../widgets/auth_text_field.dart';
 import '../widgets/social_login_button.dart';
 import 'forgot_password_screen.dart';
 import 'register_screen.dart';
-
-
-import 'package:firebase_auth/firebase_auth.dart';
-import 'package:cloud_firestore/cloud_firestore.dart';
-import 'package:roommateapp/features/home/views/admin_home_screen.dart';
-import 'package:roommateapp/features/home/views/user_home_screen.dart';
-
-
+import '../../home/views/admin_home_screen.dart';
+import '../../home/views/user_home_screen.dart';
 
 class LoginScreen extends StatefulWidget {
   const LoginScreen({super.key});
@@ -36,7 +31,8 @@ class _LoginScreenState extends State<LoginScreen> {
 
   Widget _buildPrimaryButton({
     required String text,
-    required VoidCallback onTap,
+    required VoidCallback? onTap,
+    bool isLoading = false,
   }) {
     return Container(
       width: double.infinity,
@@ -57,18 +53,27 @@ class _LoginScreenState extends State<LoginScreen> {
         color: Colors.transparent,
         child: InkWell(
           borderRadius: BorderRadius.circular(32),
-          onTap: onTap,
+          onTap: isLoading ? null : onTap,
           child: Padding(
             padding: const EdgeInsets.symmetric(vertical: 18),
             child: Center(
-              child: Text(
-                text,
-                style: const TextStyle(
-                  color: AppColors.white,
-                  fontSize: 18,
-                  fontWeight: FontWeight.w700,
-                ),
-              ),
+              child: isLoading
+                  ? const SizedBox(
+                      width: 22,
+                      height: 22,
+                      child: CircularProgressIndicator(
+                        strokeWidth: 2,
+                        color: AppColors.white,
+                      ),
+                    )
+                  : Text(
+                      text,
+                      style: const TextStyle(
+                        color: AppColors.white,
+                        fontSize: 18,
+                        fontWeight: FontWeight.w700,
+                      ),
+                    ),
             ),
           ),
         ),
@@ -96,8 +101,53 @@ class _LoginScreenState extends State<LoginScreen> {
     );
   }
 
+  Future<void> _handleLogin() async {
+    FocusScope.of(context).unfocus();
+
+    final email = _emailController.text.trim();
+    final password = _passwordController.text.trim();
+
+    if (email.isEmpty || password.isEmpty) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('Vui lòng nhập email và mật khẩu')),
+      );
+      return;
+    }
+
+    final vm = context.read<AuthViewModel>();
+    final role = await vm.login(email, password);
+
+    if (!mounted) return;
+
+    if (role != null) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('Đăng nhập thành công')),
+      );
+
+      if (role == 'admin') {
+        Navigator.pushAndRemoveUntil(
+          context,
+          MaterialPageRoute(builder: (_) => const AdminHomeScreen()),
+          (route) => false,
+        );
+      } else {
+        Navigator.pushAndRemoveUntil(
+          context,
+          MaterialPageRoute(builder: (_) => const UserHomeScreen()),
+          (route) => false,
+        );
+      }
+    } else {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text(vm.errorMessage ?? 'Đăng nhập thất bại')),
+      );
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
+    final vm = context.watch<AuthViewModel>();
+
     return Scaffold(
       backgroundColor: AppColors.background,
       body: SafeArea(
@@ -161,14 +211,16 @@ class _LoginScreenState extends State<LoginScreen> {
               Align(
                 alignment: Alignment.centerRight,
                 child: TextButton(
-                  onPressed: () {
-                    Navigator.push(
-                      context,
-                      MaterialPageRoute(
-                        builder: (_) => const ForgotPasswordScreen(),
-                      ),
-                    );
-                  },
+                  onPressed: vm.isLoading
+                      ? null
+                      : () {
+                          Navigator.push(
+                            context,
+                            MaterialPageRoute(
+                              builder: (_) => const ForgotPasswordScreen(),
+                            ),
+                          );
+                        },
                   child: const Text(
                     'Quên mật khẩu?',
                     style: TextStyle(
@@ -182,55 +234,8 @@ class _LoginScreenState extends State<LoginScreen> {
               const SizedBox(height: 18),
               _buildPrimaryButton(
                 text: 'Đăng nhập',
-                onTap: () async  {
-                    final email = _emailController.text;
-                    final password = _passwordController.text;
-
-                    final vm = AuthViewModel();
-
-                    final success = await vm.login(email, password);
-
-                  if (success) {
-                    final user = FirebaseAuth.instance.currentUser;
-
-                    if (user == null) return;
-
-                    final doc = await FirebaseFirestore.instance
-                        .collection('users')
-                        .doc(user.uid)
-                        .get();
-
-                    final role = doc.data()?['role'] ?? 'user';
-
-                    if (!context.mounted) return;
-
-                    ScaffoldMessenger.of(context).showSnackBar(
-                      const SnackBar(content: Text('Đăng nhập thành công')),
-                    );
-
-                    if (role == 'admin') {
-                      Navigator.pushAndRemoveUntil(
-                        context,
-                        MaterialPageRoute(
-                          builder: (_) => const AdminHomeScreen(),
-                        ),
-                        (route) => false,
-                      );
-                    } else {
-                      Navigator.pushAndRemoveUntil(
-                        context,
-                        MaterialPageRoute(
-                          builder: (_) => const UserHomeScreen(),
-                        ),
-                        (route) => false,
-                      );
-                    }
-                  } else {
-                    ScaffoldMessenger.of(context).showSnackBar(
-                      SnackBar(content: Text(vm.error ?? 'Lỗi')),
-                    );
-                  }
-                },
+                isLoading: vm.isLoading,
+                onTap: _handleLogin,
               ),
               const SizedBox(height: 20),
               _buildDivider(),
@@ -252,14 +257,16 @@ class _LoginScreenState extends State<LoginScreen> {
                     ),
                   ),
                   GestureDetector(
-                    onTap: () {
-                      Navigator.push(
-                        context,
-                        MaterialPageRoute(
-                          builder: (_) => const RegisterScreen(),
-                        ),
-                      );
-                    },
+                    onTap: vm.isLoading
+                        ? null
+                        : () {
+                            Navigator.push(
+                              context,
+                              MaterialPageRoute(
+                                builder: (_) => const RegisterScreen(),
+                              ),
+                            );
+                          },
                     child: const Text(
                       'Đăng ký ngay',
                       style: TextStyle(
