@@ -6,6 +6,11 @@ import '../../../post/presentation/viewmodels/post_list_viewmodel.dart';
 import '../../../post/presentation/views/create_post_screen.dart';
 import '../../../profile/presentation/views/user_profile_screen.dart';
 import '../../../post/data/models/post_model.dart';
+
+
+import '../../../post/presentation/views/post_detail_screen.dart';
+
+
 class UserHomeScreen extends StatefulWidget {
   const UserHomeScreen({super.key});
 
@@ -155,19 +160,68 @@ class _UserHomeScreenState extends State<UserHomeScreen> {
             ),
           ),
           const SizedBox(height: 20),
+
           StreamBuilder<List<PostModel>>(
             stream: vm.postsStream,
             builder: (context, snapshot) {
               if (snapshot.connectionState == ConnectionState.waiting) {
-                return const Center(child: CircularProgressIndicator());
+                return const Center(
+                  child: Padding(
+                    padding: EdgeInsets.all(30),
+                    child: CircularProgressIndicator(),
+                  ),
+                );
               }
 
               if (snapshot.hasError) {
-                return Text('Lỗi: ${snapshot.error}');
+                return Center(
+                  child: Text('Lỗi: ${snapshot.error}'),
+                );
               }
 
               if (!snapshot.hasData || snapshot.data!.isEmpty) {
-                return const Text('Chưa có bài');
+                return Container(
+                  width: double.infinity,
+                  padding: const EdgeInsets.all(24),
+                  decoration: BoxDecoration(
+                    color: Colors.white,
+                    borderRadius: BorderRadius.circular(24),
+                    boxShadow: const [
+                      BoxShadow(
+                        color: Color(0x14000000),
+                        blurRadius: 18,
+                        offset: Offset(0, 8),
+                      ),
+                    ],
+                  ),
+                  child: const Column(
+                    children: [
+                      Icon(
+                        Icons.home_work_outlined,
+                        size: 64,
+                        color: textSecondary,
+                      ),
+                      SizedBox(height: 12),
+                      Text(
+                        'Chưa có bài đăng nào',
+                        style: TextStyle(
+                          fontSize: 18,
+                          fontWeight: FontWeight.w700,
+                          color: textPrimary,
+                        ),
+                      ),
+                      SizedBox(height: 6),
+                      Text(
+                        'Khi có người đăng bài, bài viết sẽ hiển thị ở đây',
+                        textAlign: TextAlign.center,
+                        style: TextStyle(
+                          fontSize: 14,
+                          color: textSecondary,
+                        ),
+                      ),
+                    ],
+                  ),
+                );
               }
 
               final posts = snapshot.data!;
@@ -176,22 +230,26 @@ class _UserHomeScreenState extends State<UserHomeScreen> {
                 itemCount: posts.length,
                 shrinkWrap: true,
                 physics: const NeverScrollableScrollPhysics(),
-                separatorBuilder: (_, index) => const SizedBox(height: 18),
+                separatorBuilder: (context, index) => const SizedBox(height: 18),
                 itemBuilder: (context, index) {
                   final post = posts[index];
 
                   return _PostCard(
-                    title: post.title,
-                    location: post.location,
-                    price: post.price,
-                    area: post.area,
-                    capacity: post.capacity,
-                    imageUrl: post.imageUrl,
+                    post: post,
+                    onTap: () {
+                      Navigator.push(
+                        context,
+                        MaterialPageRoute(
+                          builder: (_) => PostDetailScreen(post: post),
+                        ),
+                      );
+                    },
                   );
                 },
               );
             },
           )
+
         ],
       ),
     );
@@ -293,20 +351,12 @@ class _QuickActionItem extends StatelessWidget {
 }
 
 class _PostCard extends StatelessWidget {
-  final String title;
-  final String location;
-  final int price;
-  final int area;
-  final int capacity;
-  final String imageUrl;
+  final PostModel post;
+  final VoidCallback? onTap;
 
   const _PostCard({
-    required this.title,
-    required this.location,
-    required this.price,
-    required this.area,
-    required this.capacity,
-    required this.imageUrl,
+    required this.post,
+    this.onTap,
   });
 
   String _formatPrice(int value) {
@@ -328,144 +378,147 @@ class _PostCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return Container(
-      decoration: BoxDecoration(
-        color: Colors.white,
-        borderRadius: BorderRadius.circular(28),
-        boxShadow: const [
-          BoxShadow(
-            color: Color(0x14000000),
-            blurRadius: 18,
-            offset: Offset(0, 8),
-          ),
-        ],
-      ),
-      child: Padding(
-        padding: const EdgeInsets.all(16),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            ClipRRect(
-              borderRadius: BorderRadius.circular(24),
-              child: imageUrl.isNotEmpty
-                  ? Image.network(
-                      imageUrl,
-                      height: 220,
-                      width: double.infinity,
-                      fit: BoxFit.cover,
-                      errorBuilder: (context, error, stackTrace) {
-                        return Container(
-                          height: 220,
-                          width: double.infinity,
-                          color: Colors.grey.shade200,
-                          child: const Icon(
-                            Icons.image_not_supported_outlined,
-                            size: 50,
-                            color: Colors.grey,
-                          ),
-                        );
-                      },
-                    )
-                  : Container(
-                      height: 220,
-                      width: double.infinity,
-                      color: Colors.grey.shade200,
-                      child: const Icon(
-                        Icons.image_outlined,
-                        size: 50,
-                        color: Colors.grey,
+    return GestureDetector(
+      onTap: onTap,
+      child: Container(
+        decoration: BoxDecoration(
+          color: Colors.white,
+          borderRadius: BorderRadius.circular(28),
+          boxShadow: const [
+            BoxShadow(
+              color: Color(0x14000000),
+              blurRadius: 18,
+              offset: Offset(0, 8),
+            ),
+          ],
+        ),
+        child: Padding(
+          padding: const EdgeInsets.all(16),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              ClipRRect(
+                borderRadius: BorderRadius.circular(24),
+                child: post.imageUrl.isNotEmpty
+                    ? Image.network(
+                        post.imageUrl,
+                        height: 220,
+                        width: double.infinity,
+                        fit: BoxFit.cover,
+                        errorBuilder: (context, error, stackTrace) {
+                          return Container(
+                            height: 220,
+                            width: double.infinity,
+                            color: Colors.grey.shade200,
+                            child: const Icon(
+                              Icons.image_not_supported_outlined,
+                              size: 50,
+                              color: Colors.grey,
+                            ),
+                          );
+                        },
+                      )
+                    : Container(
+                        height: 220,
+                        width: double.infinity,
+                        color: Colors.grey.shade200,
+                        child: const Icon(
+                          Icons.image_outlined,
+                          size: 50,
+                          color: Colors.grey,
+                        ),
                       ),
-                    ),
-            ),
-            const SizedBox(height: 18),
-            Text(
-              title,
-              style: const TextStyle(
-                fontSize: 22,
-                fontWeight: FontWeight.w800,
-                color: _UserHomeScreenState.textPrimary,
               ),
-            ),
-            const SizedBox(height: 8),
-            Row(
-              children: [
-                const Icon(
-                  Icons.location_on_outlined,
-                  color: _UserHomeScreenState.textSecondary,
-                  size: 22,
+              const SizedBox(height: 18),
+              Text(
+                post.title,
+                style: const TextStyle(
+                  fontSize: 22,
+                  fontWeight: FontWeight.w800,
+                  color: _UserHomeScreenState.textPrimary,
                 ),
-                const SizedBox(width: 6),
-                Expanded(
-                  child: Text(
-                    location,
-                    style: const TextStyle(
-                      color: _UserHomeScreenState.textSecondary,
-                      fontSize: 16,
-                    ),
-                  ),
-                ),
-              ],
-            ),
-            const SizedBox(height: 14),
-            RichText(
-              text: TextSpan(
+              ),
+              const SizedBox(height: 8),
+              Row(
                 children: [
-                  TextSpan(
-                    text: '${_formatPrice(price)}đ',
-                    style: const TextStyle(
-                      color: _UserHomeScreenState.primaryBlue,
-                      fontSize: 22,
-                      fontWeight: FontWeight.w800,
-                    ),
+                  const Icon(
+                    Icons.location_on_outlined,
+                    color: _UserHomeScreenState.textSecondary,
+                    size: 22,
                   ),
-                  const TextSpan(
-                    text: ' / tháng',
-                    style: TextStyle(
-                      color: _UserHomeScreenState.textPrimary,
-                      fontSize: 22,
-                      fontWeight: FontWeight.w500,
+                  const SizedBox(width: 6),
+                  Expanded(
+                    child: Text(
+                      post.location,
+                      style: const TextStyle(
+                        color: _UserHomeScreenState.textSecondary,
+                        fontSize: 16,
+                      ),
                     ),
                   ),
                 ],
               ),
-            ),
-            const SizedBox(height: 18),
-            const Divider(height: 1, color: Color(0xFFE5E7EB)),
-            const SizedBox(height: 18),
-            Row(
-              children: [
-                const Icon(
-                  Icons.open_in_full,
-                  color: _UserHomeScreenState.textSecondary,
-                  size: 24,
+              const SizedBox(height: 14),
+              RichText(
+                text: TextSpan(
+                  children: [
+                    TextSpan(
+                      text: '${_formatPrice(post.price)}đ',
+                      style: const TextStyle(
+                        color: _UserHomeScreenState.primaryBlue,
+                        fontSize: 22,
+                        fontWeight: FontWeight.w800,
+                      ),
+                    ),
+                    const TextSpan(
+                      text: ' / tháng',
+                      style: TextStyle(
+                        color: _UserHomeScreenState.textPrimary,
+                        fontSize: 22,
+                        fontWeight: FontWeight.w500,
+                      ),
+                    ),
+                  ],
                 ),
-                const SizedBox(width: 10),
-                Text(
-                  '${area}m²',
-                  style: const TextStyle(
-                    fontSize: 16,
-                    fontWeight: FontWeight.w500,
-                    color: _UserHomeScreenState.textPrimary,
+              ),
+              const SizedBox(height: 18),
+              const Divider(height: 1, color: Color(0xFFE5E7EB)),
+              const SizedBox(height: 18),
+              Row(
+                children: [
+                  const Icon(
+                    Icons.open_in_full,
+                    color: _UserHomeScreenState.textSecondary,
+                    size: 24,
                   ),
-                ),
-                const SizedBox(width: 34),
-                const Icon(
-                  Icons.group_outlined,
-                  color: _UserHomeScreenState.textSecondary,
-                  size: 24,
-                ),
-                const SizedBox(width: 10),
-                Text(
-                  '$capacity Người',
-                  style: const TextStyle(
-                    fontSize: 16,
-                    fontWeight: FontWeight.w500,
-                    color: _UserHomeScreenState.textPrimary,
+                  const SizedBox(width: 10),
+                  Text(
+                    '${post.area}m²',
+                    style: const TextStyle(
+                      fontSize: 16,
+                      fontWeight: FontWeight.w500,
+                      color: _UserHomeScreenState.textPrimary,
+                    ),
                   ),
-                ),
-              ],
-            ),
-          ],
+                  const SizedBox(width: 34),
+                  const Icon(
+                    Icons.group_outlined,
+                    color: _UserHomeScreenState.textSecondary,
+                    size: 24,
+                  ),
+                  const SizedBox(width: 10),
+                  Text(
+                    '${post.capacity} Người',
+                    style: const TextStyle(
+                      fontSize: 16,
+                      fontWeight: FontWeight.w500,
+                      color: _UserHomeScreenState.textPrimary,
+                    ),
+                  ),
+                ],
+              ),
+            ],
+          ),
         ),
       ),
     );

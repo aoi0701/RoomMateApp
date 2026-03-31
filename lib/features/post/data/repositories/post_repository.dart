@@ -80,4 +80,17 @@ class PostRepository {
               .toList();
         });
   }
+
+  Stream<List<PostModel>> getPostsByUser(String uid) {
+  return _firestore
+      .collection('posts')
+      .where('ownerId', isEqualTo: uid)
+      .orderBy('createdAt', descending: true)
+      .snapshots()
+      .map((snapshot) {
+        return snapshot.docs
+            .map((doc) => PostModel.fromDocument(doc))
+            .toList();
+      });
+}
 }

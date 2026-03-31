@@ -12,4 +12,8 @@ class UserProfileViewModel extends ChangeNotifier {
   Stream<DocumentSnapshot<Map<String, dynamic>>> getUserProfileStream(String uid) {
     return _repository.getUserProfileStream(uid);
   }
+
+  Stream<bool> hasUserPostsStream(String uid) {
+    return _repository.hasUserPostsStream(uid);
+  }
 }

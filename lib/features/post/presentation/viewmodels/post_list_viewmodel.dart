@@ -13,4 +13,9 @@ class PostListViewModel extends ChangeNotifier {
   Stream<List<PostModel>> get postsStream {
     return _repository.getPostsStream();
   }
+
+  Stream<List<PostModel>> getPostsByUser(String uid) {
+    return _repository.getPostsByUser(uid);
+  }
+
 }
