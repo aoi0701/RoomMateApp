@@ -47,6 +47,7 @@ class PostRepository {
     required int price,
     required int area,
     required int capacity,
+    required String description,
     required File imageFile,
   }) async {
     final user = currentUser;
@@ -63,11 +64,81 @@ class PostRepository {
       'price': price,
       'area': area,
       'capacity': capacity,
+      'description': description.trim(),
       'imageUrl': imageUrl,
       'ownerId': user.uid,
       'createdAt': FieldValue.serverTimestamp(),
+      'updatedAt': FieldValue.serverTimestamp(),
     });
   }
+
+  Future<void> updatePost({
+    required String postId,
+    required String title,
+    required String location,
+    required int price,
+    required int area,
+    required int capacity,
+    required String description,
+    File? imageFile,
+  }) async {
+    final user = currentUser;
+
+    if (user == null) {
+      throw Exception('Chưa đăng nhập');
+    }
+
+    final doc = await _firestore.collection('posts').doc(postId).get();
+
+    if (!doc.exists) {
+      throw Exception('Bài không tồn tại');
+    }
+
+    final data = doc.data()!;
+    if (data['ownerId'] != user.uid) {
+      throw Exception('Không có quyền sửa');
+    }
+
+    String imageUrl = data['imageUrl'];
+
+    if (imageFile != null) {
+      imageUrl = await uploadImageToCloudinary(imageFile);
+    }
+
+    await _firestore.collection('posts').doc(postId).update({
+      'title': title.trim(),
+      'location': location.trim(),
+      'price': price,
+      'area': area,
+      'capacity': capacity,
+      'description': description.trim(),
+      'imageUrl': imageUrl,
+      'updatedAt': FieldValue.serverTimestamp(),
+    });
+  }
+
+  Future<void> deletePost(String postId) async {
+    final user = currentUser;
+
+    if (user == null) {
+      throw Exception('Chưa đăng nhập');
+    }
+
+    final doc = await _firestore.collection('posts').doc(postId).get();
+
+    if (!doc.exists) {
+      throw Exception('Bài không tồn tại');
+    }
+
+    final data = doc.data()!;
+    if (data['ownerId'] != user.uid) {
+      throw Exception('Không có quyền xóa');
+    }
+
+    await _firestore.collection('posts').doc(postId).delete();
+  }
+
+
 
   Stream<List<PostModel>> getPostsStream() {
     return _firestore

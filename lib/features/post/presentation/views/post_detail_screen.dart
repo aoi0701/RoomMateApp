@@ -1,7 +1,9 @@
 import 'package:flutter/material.dart';
 
 import '../../data/models/post_model.dart';
-
+import 'package:provider/provider.dart';
+import '../../../roommate/presentation/viewmodels/roommate_request_viewmodel.dart';
+import '../../../roommate/presentation/views/send_request_screen.dart';
 
 
 
@@ -70,7 +72,7 @@ class PostDetailScreen extends StatelessWidget {
                 ),
               ),
             ),
-            _buildBottomAction(),
+            _buildBottomAction(context),
           ],
         ),
       ),
@@ -353,10 +355,10 @@ class PostDetailScreen extends StatelessWidget {
           ),
         ],
       ),
-      child: const Column(
+      child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          Text(
+          const Text(
             'Mô tả',
             style: TextStyle(
               fontSize: 20,
@@ -364,12 +366,13 @@ class PostDetailScreen extends StatelessWidget {
               color: textPrimary,
             ),
           ),
-          SizedBox(height: 12),
+          const SizedBox(height: 12),
+
           Text(
-            'Bài đăng này hiện đang dùng dữ liệu cơ bản từ hệ thống. '
-            'Ở bước tiếp theo bạn có thể mở rộng thêm mô tả chi tiết, '
-            'chi phí điện nước, số người hiện tại và nhu cầu tìm bạn ở ghép.',
-            style: TextStyle(
+            post.description.isNotEmpty
+                ? post.description
+                : 'Chưa có mô tả',
+            style: const TextStyle(
               fontSize: 15,
               height: 1.6,
               color: textSecondary,
@@ -380,74 +383,97 @@ class PostDetailScreen extends StatelessWidget {
     );
   }
 
-  Widget _buildBottomAction() {
-    return Container(
-      padding: const EdgeInsets.fromLTRB(20, 14, 20, 20),
-      decoration: const BoxDecoration(
-        color: Colors.white,
-        boxShadow: [
-          BoxShadow(
-            color: Color(0x0F000000),
-            blurRadius: 10,
-            offset: Offset(0, -2),
+  Widget _buildBottomAction(BuildContext context) {
+  return Container(
+    padding: const EdgeInsets.fromLTRB(20, 14, 20, 20),
+    decoration: const BoxDecoration(
+      color: Colors.white,
+      boxShadow: [
+        BoxShadow(
+          color: Color(0x0F000000),
+          blurRadius: 10,
+          offset: Offset(0, -2),
+        ),
+      ],
+    ),
+    child: Row(
+      children: [
+        Container(
+          width: 58,
+          height: 58,
+          decoration: BoxDecoration(
+            color: lightBlue,
+            borderRadius: BorderRadius.circular(18),
           ),
-        ],
-      ),
-      child: Row(
-        children: [
-          Container(
-            width: 58,
+          child: const Icon(
+            Icons.chat_bubble_outline,
+            color: primaryBlue,
+            size: 28,
+          ),
+        ),
+        const SizedBox(width: 14),
+        Expanded(
+          child: Container(
             height: 58,
             decoration: BoxDecoration(
-              color: lightBlue,
               borderRadius: BorderRadius.circular(18),
-            ),
-            child: const Icon(
-              Icons.chat_bubble_outline,
-              color: primaryBlue,
-              size: 28,
-            ),
-          ),
-          const SizedBox(width: 14),
-          Expanded(
-            child: Container(
-              height: 58,
-              decoration: BoxDecoration(
-                borderRadius: BorderRadius.circular(18),
-                gradient: const LinearGradient(
-                  colors: [Color(0xFF4F7BFF), Color(0xFF3563E9)],
-                ),
-                boxShadow: const [
-                  BoxShadow(
-                    color: Color(0x22000000),
-                    blurRadius: 14,
-                    offset: Offset(0, 6),
-                  ),
-                ],
+              gradient: const LinearGradient(
+                colors: [Color(0xFF4F7BFF), Color(0xFF3563E9)],
               ),
-              child: Material(
-                color: Colors.transparent,
-                child: InkWell(
-                  borderRadius: BorderRadius.circular(18),
-                  onTap: () {},
-                  child: const Center(
-                    child: Text(
-                      'Gửi yêu cầu ở ghép',
-                      style: TextStyle(
-                        color: Colors.white,
-                        fontSize: 17,
-                        fontWeight: FontWeight.w700,
+              boxShadow: const [
+                BoxShadow(
+                  color: Color(0x22000000),
+                  blurRadius: 14,
+                  offset: Offset(0, 6),
+                ),
+              ],
+            ),
+            child: Material(
+              color: Colors.transparent,
+              child: InkWell(
+                borderRadius: BorderRadius.circular(18),
+                onTap: () async {
+                  final viewModel = context.read<RoommateRequestViewModel>();
+
+                  final messenger = ScaffoldMessenger.of(context);
+                  final navigator = Navigator.of(context);
+
+                  final hasRequested =
+                      await viewModel.hasPendingRequest(post.id);
+
+                  if (hasRequested) {
+                    messenger.showSnackBar(
+                      const SnackBar(
+                        content: Text('Bạn đã gửi yêu cầu cho bài này rồi'),
                       ),
+                    );
+                    return;
+                  }
+
+                  navigator.push(
+                    MaterialPageRoute(
+                      builder: (_) => SendRequestScreen(postId: post.id),
+                    ),
+                  );
+                },
+                child: const Center(
+                  child: Text(
+                    'Gửi yêu cầu ở ghép',
+                    style: TextStyle(
+                      color: Colors.white,
+                      fontSize: 17,
+                      fontWeight: FontWeight.w700,
                     ),
                   ),
                 ),
               ),
             ),
           ),
-        ],
-      ),
-    );
-  }
+        ),
+      ],
+    ),
+  );
+}
 }
 
 class _InfoBox extends StatelessWidget {

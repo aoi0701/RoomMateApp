@@ -7,9 +7,11 @@ class PostModel {
   final int price;
   final int area;
   final int capacity;
+  final String description;
   final String imageUrl;
   final String ownerId;
   final DateTime? createdAt;
+  final DateTime? updatedAt;
 
   PostModel({
     required this.id,
@@ -18,12 +20,13 @@ class PostModel {
     required this.price,
     required this.area,
     required this.capacity,
+    required this.description,
     required this.imageUrl,
     required this.ownerId,
     this.createdAt,
+    this.updatedAt,
   });
 
-  /// 🔹 from Firestore Document
   factory PostModel.fromDocument(
     DocumentSnapshot<Map<String, dynamic>> doc,
   ) {
@@ -36,28 +39,14 @@ class PostModel {
       price: data['price'] ?? 0,
       area: data['area'] ?? 0,
       capacity: data['capacity'] ?? 0,
+      description: data['description'] ?? '',
       imageUrl: data['imageUrl'] ?? '',
       ownerId: data['ownerId'] ?? '',
       createdAt: (data['createdAt'] as Timestamp?)?.toDate(),
+      updatedAt: (data['updatedAt'] as Timestamp?)?.toDate(),
     );
   }
 
-  /// 🔹 from Map (dùng khi cần)
-  factory PostModel.fromMap(Map<String, dynamic> map, String id) {
-    return PostModel(
-      id: id,
-      title: map['title'] ?? '',
-      location: map['location'] ?? '',
-      price: map['price'] ?? 0,
-      area: map['area'] ?? 0,
-      capacity: map['capacity'] ?? 0,
-      imageUrl: map['imageUrl'] ?? '',
-      ownerId: map['ownerId'] ?? '',
-      createdAt: (map['createdAt'] as Timestamp?)?.toDate(),
-    );
-  }
-
-  /// 🔹 to Map (ghi lên Firestore)
   Map<String, dynamic> toMap() {
     return {
       'title': title,
@@ -65,15 +54,16 @@ class PostModel {
       'price': price,
       'area': area,
       'capacity': capacity,
+      'description': description,
       'imageUrl': imageUrl,
       'ownerId': ownerId,
       'createdAt': createdAt != null
           ? Timestamp.fromDate(createdAt!)
           : FieldValue.serverTimestamp(),
+      'updatedAt': FieldValue.serverTimestamp(),
     };
   }
 
-  /// 🔹 copyWith (update object)
   PostModel copyWith({
     String? id,
     String? title,
@@ -81,9 +71,11 @@ class PostModel {
     int? price,
     int? area,
     int? capacity,
+    String? description,
     String? imageUrl,
     String? ownerId,
     DateTime? createdAt,
+    DateTime? updatedAt,
   }) {
     return PostModel(
       id: id ?? this.id,
@@ -92,9 +84,11 @@ class PostModel {
       price: price ?? this.price,
       area: area ?? this.area,
       capacity: capacity ?? this.capacity,
+      description: description ?? this.description,
       imageUrl: imageUrl ?? this.imageUrl,
       ownerId: ownerId ?? this.ownerId,
       createdAt: createdAt ?? this.createdAt,
+      updatedAt: updatedAt ?? this.updatedAt,
     );
   }
 }

@@ -459,26 +459,30 @@ class _PostCard extends StatelessWidget {
                 ],
               ),
               const SizedBox(height: 14),
-              RichText(
-                text: TextSpan(
-                  children: [
-                    TextSpan(
-                      text: '${_formatPrice(post.price)}đ',
-                      style: const TextStyle(
-                        color: _UserHomeScreenState.primaryBlue,
-                        fontSize: 22,
-                        fontWeight: FontWeight.w800,
+              FittedBox(
+                fit: BoxFit.scaleDown,
+                alignment: Alignment.centerLeft,
+                child: RichText(
+                  text: TextSpan(
+                    children: [
+                      TextSpan(
+                        text: '${_formatPrice(post.price)}đ',
+                        style: const TextStyle(
+                          color: _UserHomeScreenState.primaryBlue,
+                          fontSize: 22,
+                          fontWeight: FontWeight.w800,
+                        ),
                       ),
-                    ),
-                    const TextSpan(
-                      text: ' / tháng',
-                      style: TextStyle(
-                        color: _UserHomeScreenState.textPrimary,
-                        fontSize: 22,
-                        fontWeight: FontWeight.w500,
+                      const TextSpan(
+                        text: ' / tháng',
+                        style: TextStyle(
+                          color: _UserHomeScreenState.textPrimary,
+                          fontSize: 22,
+                          fontWeight: FontWeight.w500,
+                        ),
                       ),
-                    ),
-                  ],
+                    ],
+                  ),
                 ),
               ),
               const SizedBox(height: 18),

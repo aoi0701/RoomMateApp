@@ -11,6 +11,8 @@ import 'features/profile/data/repositories/user_profile_repository.dart';
 import 'features/post/presentation/viewmodels/post_list_viewmodel.dart';
 import 'features/post/presentation/viewmodels/post_viewmodel.dart';
 import 'features/profile/presentation/viewmodels/user_profile_viewmodel.dart';
+import 'features/roommate/data/repositories/roommate_request_repository.dart';
+import 'features/roommate/presentation/viewmodels/roommate_request_viewmodel.dart';
 import 'firebase_options.dart';
 
 Future<void> main() async {
@@ -29,37 +31,45 @@ class MyApp extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return MultiProvider(
-      providers: [
-        Provider<AuthRepository>(
-          create: (_) => AuthRepository(),
+    providers: [
+      Provider<AuthRepository>(
+        create: (_) => AuthRepository(),
+      ),
+      ChangeNotifierProvider<AuthViewModel>(
+        create: (context) => AuthViewModel(
+          repository: context.read<AuthRepository>(),
         ),
-        ChangeNotifierProvider<AuthViewModel>(
-          create: (context) => AuthViewModel(
-            repository: context.read<AuthRepository>(),
-          ),
+      ),
+      Provider<PostRepository>(
+        create: (_) => PostRepository(),
+      ),
+      ChangeNotifierProvider<PostViewModel>(
+        create: (context) => PostViewModel(
+          repository: context.read<PostRepository>(),
         ),
-        Provider<PostRepository>(
-          create: (_) => PostRepository(),
+      ),
+      ChangeNotifierProvider<PostListViewModel>(
+        create: (context) => PostListViewModel(
+          repository: context.read<PostRepository>(),
         ),
-        ChangeNotifierProvider<PostViewModel>(
-          create: (context) => PostViewModel(
-            repository: context.read<PostRepository>(),
-          ),
+      ),
+      Provider<UserProfileRepository>(
+        create: (_) => UserProfileRepository(),
+      ),
+      ChangeNotifierProvider<UserProfileViewModel>(
+        create: (context) => UserProfileViewModel(
+          repository: context.read<UserProfileRepository>(),
         ),
-        ChangeNotifierProvider<PostListViewModel>(
-          create: (context) => PostListViewModel(
-            repository: context.read<PostRepository>(),
-          ),
+      ),
+      Provider<RoommateRequestRepository>(
+        create: (_) => RoommateRequestRepository(),
+      ),
+      ChangeNotifierProvider<RoommateRequestViewModel>(
+        create: (context) => RoommateRequestViewModel(
+          repository: context.read<RoommateRequestRepository>(),
         ),
-        Provider<UserProfileRepository>(
-          create: (_) => UserProfileRepository(),
-        ),
-        ChangeNotifierProvider<UserProfileViewModel>(
-          create: (context) => UserProfileViewModel(
-            repository: context.read<UserProfileRepository>(),
-          ),
-        ),
-      ],
+      ),
+    ],
       child: MaterialApp(
         debugShowCheckedModeBanner: false,
         title: 'Find Roommate',

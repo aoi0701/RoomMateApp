@@ -7,6 +7,8 @@ import '../../../auth/presentation/views/login_screen.dart';
 import '../viewmodels/user_profile_viewmodel.dart';
 import '../../data/models/user_model.dart';
 import 'package:roommateapp/features/post/presentation/views/my_posts_screen.dart';
+import 'package:roommateapp/features/roommate/presentation/views/received_requests_screen.dart';
+import 'package:roommateapp/features/roommate/presentation/viewmodels/roommate_request_viewmodel.dart';
 
 
 class UserProfileScreen extends StatelessWidget {
@@ -142,6 +144,7 @@ class UserProfileScreen extends StatelessWidget {
                               _ManageItem(
                                 icon: Icons.list_alt,
                                 title: 'Quản lý bài đăng',
+                                showBadge: false,
                                 onTap: () {
                                   Navigator.push(
                                     context,
@@ -154,7 +157,15 @@ class UserProfileScreen extends StatelessWidget {
                                 _ManageItem(
                                   icon: Icons.mail_outline,
                                   title: 'Yêu cầu đã nhận',
-                                  onTap: () {},
+                                  showBadge: true,
+                                  onTap: () {
+                                    Navigator.push(
+                                      context,
+                                      MaterialPageRoute(
+                                        builder: (_) => const ReceivedRequestsScreen(),
+                                      ),
+                                    );
+                                  },
                                 ),
                               ],
                             ),
@@ -374,8 +385,11 @@ class UserProfileScreen extends StatelessWidget {
         children: List.generate(items.length, (index) {
           final item = items[index];
 
+          final pendingCount = context.watch<RoommateRequestViewModel>().pendingCount;
+
           return Column(
             children: [
+              
               ListTile(
                 leading: Icon(
                   item.icon,
@@ -389,7 +403,28 @@ class UserProfileScreen extends StatelessWidget {
                     fontWeight: FontWeight.w500,
                   ),
                 ),
-                trailing: const Icon(Icons.chevron_right, size: 32),
+                trailing: Row(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    if (item.showBadge && pendingCount > 0)
+                      Container(
+                        padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+                        decoration: BoxDecoration(
+                          color: Colors.red,
+                          borderRadius: BorderRadius.circular(999),
+                        ),
+                        child: Text(
+                          pendingCount.toString(),
+                          style: const TextStyle(
+                            color: Colors.white,
+                            fontWeight: FontWeight.bold,
+                          ),
+                        ),
+                      ),
+                    const SizedBox(width: 8),
+                    const Icon(Icons.chevron_right, size: 32),
+                  ],
+                ),
                 onTap: item.onTap,
               ),
               if (index != items.length - 1)
@@ -474,10 +509,12 @@ class _ManageItem {
   final IconData icon;
   final String title;
   final VoidCallback onTap;
+  final bool showBadge;
 
   _ManageItem({
     required this.icon,
     required this.title,
     required this.onTap,
+    this.showBadge = false,
   });
 }
