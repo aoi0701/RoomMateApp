@@ -117,6 +117,28 @@ class PostRepository {
     });
   }
 
+  // Future<void> deletePost(String postId) async {
+  //   final user = currentUser;
+
+  //   if (user == null) {
+  //     throw Exception('Chưa đăng nhập');
+  //   }
+
+  //   final doc = await _firestore.collection('posts').doc(postId).get();
+
+  //   if (!doc.exists) {
+  //     throw Exception('Bài không tồn tại');
+  //   }
+
+  //   final data = doc.data()!;
+  //   if (data['ownerId'] != user.uid) {
+  //     throw Exception('Không có quyền xóa');
+  //   }
+
+  //   await _firestore.collection('posts').doc(postId).delete();
+  // }
+
+
   Future<void> deletePost(String postId) async {
     final user = currentUser;
 
@@ -124,7 +146,8 @@ class PostRepository {
       throw Exception('Chưa đăng nhập');
     }
 
-    final doc = await _firestore.collection('posts').doc(postId).get();
+    final postDocRef = _firestore.collection('posts').doc(postId);
+    final doc = await postDocRef.get();
 
     if (!doc.exists) {
       throw Exception('Bài không tồn tại');
@@ -135,9 +158,21 @@ class PostRepository {
       throw Exception('Không có quyền xóa');
     }
 
-    await _firestore.collection('posts').doc(postId).delete();
-  }
+    final relatedRequests = await _firestore
+        .collection('roommate_requests')
+        .where('postId', isEqualTo: postId)
+        .get();
 
+    final batch = _firestore.batch();
+
+    for (final requestDoc in relatedRequests.docs) {
+      batch.delete(requestDoc.reference);
+    }
+
+    batch.delete(postDocRef);
+
+    await batch.commit();
+  }
 
 
   Stream<List<PostModel>> getPostsStream() {

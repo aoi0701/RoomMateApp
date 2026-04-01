@@ -403,7 +403,11 @@ class MyPostsScreen extends StatelessWidget {
                       Navigator.push(
                         context,
                         MaterialPageRoute(
-                          builder: (_) => PostDetailScreen(post: post),
+                          // builder: (_) => PostDetailScreen(post: post),
+                          builder: (_) => PostDetailScreen(
+                            post: post,
+                            currentUserId: user.uid,
+                          ),
                         ),
                       );
                     },

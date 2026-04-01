@@ -11,8 +11,21 @@ import 'package:roommateapp/features/roommate/presentation/views/received_reques
 import 'package:roommateapp/features/roommate/presentation/viewmodels/roommate_request_viewmodel.dart';
 
 
-class UserProfileScreen extends StatelessWidget {
+class UserProfileScreen extends StatefulWidget {
   const UserProfileScreen({super.key});
+
+  @override
+  State<UserProfileScreen> createState() => _UserProfileScreenState();
+}
+
+class _UserProfileScreenState extends State<UserProfileScreen> {
+  @override
+  void initState() {
+    super.initState();
+    Future.microtask(() {
+      context.read<RoommateRequestViewModel>().ensureReceivedRequestsListening();
+    });
+  }
 
   @override
   Widget build(BuildContext context) {
