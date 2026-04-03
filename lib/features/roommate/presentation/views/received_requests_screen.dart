@@ -25,7 +25,7 @@ class _ReceivedRequestsScreenState extends State<ReceivedRequestsScreen> {
   void initState() {
     super.initState();
     Future.microtask(() {
-      context.read<RoommateRequestViewModel>().listenToReceivedRequests();
+      context.read<RoommateRequestViewModel>().ensureReceivedRequestsListening();
     });
   }
 
@@ -144,10 +144,9 @@ class _ReceivedRequestsScreenState extends State<ReceivedRequestsScreen> {
                                 CircleAvatar(
                                   radius: 24,
                                   backgroundColor: lightBlue,
-                                  backgroundImage:
-                                      request.requesterAvatar.isNotEmpty
-                                          ? NetworkImage(request.requesterAvatar)
-                                          : null,
+                                  backgroundImage: request.requesterAvatar.isNotEmpty
+                                      ? NetworkImage(request.requesterAvatar)
+                                      : null,
                                   child: request.requesterAvatar.isEmpty
                                       ? const Icon(
                                           Icons.person,
@@ -158,8 +157,7 @@ class _ReceivedRequestsScreenState extends State<ReceivedRequestsScreen> {
                                 const SizedBox(width: 12),
                                 Expanded(
                                   child: Column(
-                                    crossAxisAlignment:
-                                        CrossAxisAlignment.start,
+                                    crossAxisAlignment: CrossAxisAlignment.start,
                                     children: [
                                       Text(
                                         request.requesterName.isNotEmpty
@@ -179,8 +177,7 @@ class _ReceivedRequestsScreenState extends State<ReceivedRequestsScreen> {
                                         ),
                                         decoration: BoxDecoration(
                                           color: statusColor.withValues(alpha: 0.12),
-                                          borderRadius:
-                                              BorderRadius.circular(999),
+                                          borderRadius: BorderRadius.circular(999),
                                         ),
                                         child: Text(
                                           statusText,
@@ -226,16 +223,11 @@ class _ReceivedRequestsScreenState extends State<ReceivedRequestsScreen> {
                                           : () => _rejectRequest(request.id),
                                       style: OutlinedButton.styleFrom(
                                         foregroundColor: errorRed,
-                                        side: const BorderSide(
-                                          color: errorRed,
-                                        ),
+                                        side: const BorderSide(color: errorRed),
                                         shape: RoundedRectangleBorder(
-                                          borderRadius:
-                                              BorderRadius.circular(16),
+                                          borderRadius: BorderRadius.circular(16),
                                         ),
-                                        padding: const EdgeInsets.symmetric(
-                                          vertical: 14,
-                                        ),
+                                        padding: const EdgeInsets.symmetric(vertical: 14),
                                       ),
                                       child: const Text(
                                         'Từ chối',
@@ -256,12 +248,9 @@ class _ReceivedRequestsScreenState extends State<ReceivedRequestsScreen> {
                                         foregroundColor: Colors.white,
                                         elevation: 0,
                                         shape: RoundedRectangleBorder(
-                                          borderRadius:
-                                              BorderRadius.circular(16),
+                                          borderRadius: BorderRadius.circular(16),
                                         ),
-                                        padding: const EdgeInsets.symmetric(
-                                          vertical: 14,
-                                        ),
+                                        padding: const EdgeInsets.symmetric(vertical: 14),
                                       ),
                                       child: const Text(
                                         'Chấp nhận',

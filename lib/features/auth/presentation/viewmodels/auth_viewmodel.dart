@@ -1,12 +1,20 @@
+import 'dart:async';
+
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
+
 import '../../data/repositories/auth_repository.dart';
 
 class AuthViewModel extends ChangeNotifier {
   final AuthRepository _repository;
+  late final StreamSubscription<User?> _authSubscription;
 
   AuthViewModel({AuthRepository? repository})
-      : _repository = repository ?? AuthRepository();
+      : _repository = repository ?? AuthRepository() {
+    _authSubscription = _repository.authStateChanges().listen((_) {
+      notifyListeners();
+    });
+  }
 
   bool isLoading = false;
   String? errorMessage;
@@ -131,5 +139,11 @@ class AuthViewModel extends ChangeNotifier {
       default:
         return e.message ?? 'Đã xảy ra lỗi xác thực';
     }
+  }
+
+  @override
+  void dispose() {
+    _authSubscription.cancel();
+    super.dispose();
   }
 }

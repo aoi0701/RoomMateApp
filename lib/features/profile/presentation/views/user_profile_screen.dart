@@ -4,12 +4,11 @@ import 'package:provider/provider.dart';
 
 import '../../../auth/presentation/viewmodels/auth_viewmodel.dart';
 import '../../../auth/presentation/views/login_screen.dart';
-import '../viewmodels/user_profile_viewmodel.dart';
 import '../../data/models/user_model.dart';
+import '../viewmodels/user_profile_viewmodel.dart';
 import 'package:roommateapp/features/post/presentation/views/my_posts_screen.dart';
-import 'package:roommateapp/features/roommate/presentation/views/received_requests_screen.dart';
 import 'package:roommateapp/features/roommate/presentation/viewmodels/roommate_request_viewmodel.dart';
-
+import 'package:roommateapp/features/roommate/presentation/views/received_requests_screen.dart';
 
 class UserProfileScreen extends StatefulWidget {
   const UserProfileScreen({super.key});
@@ -36,15 +35,10 @@ class _UserProfileScreenState extends State<UserProfileScreen> {
     final profileVm = context.read<UserProfileViewModel>();
     final currentUser = authVm.user;
 
-
-
     if (currentUser == null) {
-      return const Scaffold(
-        body: Center(
-          child: Text('Chưa có người dùng đăng nhập'),
-        ),
-      );
+      return const LoginScreen();
     }
+
     final hasPostsStream = profileVm.hasUserPostsStream(currentUser.uid);
 
     return Scaffold(
@@ -71,79 +65,40 @@ class _UserProfileScreenState extends State<UserProfileScreen> {
               );
             }
 
-            // final data = snapshot.data!.data() ?? {};
-
             final user = UserModel.fromDocument(snapshot.data!);
 
-          final fullName =
-              user.fullName.isNotEmpty ? user.fullName : 'Chưa cập nhật';
+            final fullName =
+                user.fullName.isNotEmpty ? user.fullName : 'Chưa cập nhật';
+            final email = user.email.isNotEmpty
+                ? user.email
+                : (currentUser.email ?? 'Chưa cập nhật');
+            final phone =
+                user.phone.isNotEmpty ? user.phone : 'Chưa cập nhật';
+            final address =
+                user.address.isNotEmpty ? user.address : 'Chưa cập nhật';
 
-          final email =
-              user.email.isNotEmpty ? user.email : (currentUser.email ?? 'Chưa cập nhật');
+            return StreamBuilder<bool>(
+              stream: hasPostsStream,
+              builder: (context, postSnapshot) {
+                if (postSnapshot.connectionState == ConnectionState.waiting) {
+                  return const Center(
+                    child: CircularProgressIndicator(),
+                  );
+                }
 
-          final phone =
-              user.phone.isNotEmpty ? user.phone : 'Chưa cập nhật';
+                final hasPosts = postSnapshot.data ?? false;
 
-          final address =
-              user.address.isNotEmpty ? user.address : 'Chưa cập nhật';
-
-          return StreamBuilder<bool>(
-            stream: hasPostsStream,
-            builder: (context, postSnapshot) {
-              if (postSnapshot.connectionState == ConnectionState.waiting) {
-                return const Center(
-                  child: CircularProgressIndicator(),
-                );
-              }
-
-              final hasPosts = postSnapshot.data ?? false;
-
-              return SingleChildScrollView(
-                child: Column(
-                  children: [
-                    _buildHeader(fullName, email),
-                    Padding(
-                      padding: const EdgeInsets.all(16),
-                      child: Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
-                          const Text(
-                            'Thông tin cá nhân',
-                            style: TextStyle(
-                              fontSize: 28,
-                              fontWeight: FontWeight.bold,
-                              color: Colors.black,
-                            ),
-                          ),
-                          const SizedBox(height: 16),
-                          _InfoTile(
-                            icon: Icons.person,
-                            label: 'Họ tên',
-                            value: fullName,
-                          ),
-                          const SizedBox(height: 12),
-                          _InfoTile(
-                            icon: Icons.email,
-                            label: 'Email',
-                            value: email,
-                          ),
-                          const SizedBox(height: 12),
-                          _InfoTile(
-                            icon: Icons.phone,
-                            label: 'Số điện thoại',
-                            value: phone,
-                          ),
-                          const SizedBox(height: 12),
-                          _InfoTile(
-                            icon: Icons.location_on,
-                            label: 'Địa chỉ',
-                            value: address,
-                          ),
-                          const SizedBox(height: 28),
-
-                          if (hasPosts) ...[
+                return SingleChildScrollView(
+                  child: Column(
+                    children: [
+                      _buildHeader(fullName, email),
+                      Padding(
+                        padding: const EdgeInsets.all(16),
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
                             const Text(
-                              'Quản lý',
+                              'Thông tin cá nhân',
                               style: TextStyle(
                                 fontSize: 28,
                                 fontWeight: FontWeight.bold,
@@ -151,144 +106,186 @@ class _UserProfileScreenState extends State<UserProfileScreen> {
                               ),
                             ),
                             const SizedBox(height: 16),
-                            _buildManageCard(
-                              context,
-                              items: [
-                              _ManageItem(
-                                icon: Icons.list_alt,
-                                title: 'Quản lý bài đăng',
-                                showBadge: false,
-                                onTap: () {
-                                  Navigator.push(
-                                    context,
-                                    MaterialPageRoute(
-                                      builder: (_) => const MyPostsScreen(),
-                                    ),
-                                  );
-                                },
-                              ),
-                                _ManageItem(
-                                  icon: Icons.mail_outline,
-                                  title: 'Yêu cầu đã nhận',
-                                  showBadge: true,
-                                  onTap: () {
-                                    Navigator.push(
-                                      context,
-                                      MaterialPageRoute(
-                                        builder: (_) => const ReceivedRequestsScreen(),
-                                      ),
-                                    );
-                                  },
+                            _InfoTile(
+                              icon: Icons.person,
+                              label: 'Họ tên',
+                              value: fullName,
+                            ),
+                            const SizedBox(height: 12),
+                            _InfoTile(
+                              icon: Icons.email,
+                              label: 'Email',
+                              value: email,
+                            ),
+                            const SizedBox(height: 12),
+                            _InfoTile(
+                              icon: Icons.phone,
+                              label: 'Số điện thoại',
+                              value: phone,
+                            ),
+                            const SizedBox(height: 12),
+                            _InfoTile(
+                              icon: Icons.location_on,
+                              label: 'Địa chỉ',
+                              value: address,
+                            ),
+                            const SizedBox(height: 28),
+                            if (hasPosts) ...[
+                              const Text(
+                                'Quản lý',
+                                style: TextStyle(
+                                  fontSize: 28,
+                                  fontWeight: FontWeight.bold,
+                                  color: Colors.black,
                                 ),
-                              ],
-                            ),
-                            const SizedBox(height: 28),
-                          ] else ...[
-                            Container(
-                              width: double.infinity,
-                              padding: const EdgeInsets.all(16),
-                              decoration: BoxDecoration(
-                                color: Colors.white,
-                                borderRadius: BorderRadius.circular(18),
-                                boxShadow: [
-                                  BoxShadow(
-                                    color: Colors.black.withValues(alpha: 0.06),
-                                    blurRadius: 14,
-                                    offset: const Offset(0, 4),
-                                  ),
-                                ],
                               ),
-                              child: const Column(
-                                crossAxisAlignment: CrossAxisAlignment.start,
-                                children: [
-                                  Text(
-                                    'Trạng thái sử dụng',
-                                    style: TextStyle(
-                                      fontSize: 20,
-                                      fontWeight: FontWeight.bold,
-                                      color: Colors.black,
-                                    ),
-                                  ),
-                                  SizedBox(height: 8),
-                                  Text(
-                                    'Bạn chưa có bài đăng nào. Khi đăng bài, hệ thống sẽ hiển thị thêm các mục quản lý bài đăng và yêu cầu đã nhận.',
-                                    style: TextStyle(
-                                      fontSize: 16,
-                                      color: Colors.grey,
-                                      height: 1.5,
-                                    ),
-                                  ),
-                                ],
-                              ),
-                            ),
-                            const SizedBox(height: 28),
-                          ],
-
-                          SizedBox(
-                            width: double.infinity,
-                            height: 56,
-                            child: ElevatedButton(
-                              onPressed: authVm.isLoading
-                                  ? null
-                                  : () async {
-                                      await context.read<AuthViewModel>().logout();
-
-                                      if (!context.mounted) return;
-
-                                      if (context.read<AuthViewModel>().errorMessage == null) {
-                                        Navigator.pushAndRemoveUntil(
-                                          context,
-                                          MaterialPageRoute(
-                                            builder: (_) => const LoginScreen(),
-                                          ),
-                                          (route) => false,
-                                        );
-                                      } else {
-                                        ScaffoldMessenger.of(context).showSnackBar(
-                                          SnackBar(
-                                            content: Text(
-                                              context.read<AuthViewModel>().errorMessage ??
-                                                  'Đăng xuất thất bại',
-                                            ),
-                                          ),
-                                        );
-                                      }
+                              const SizedBox(height: 16),
+                              _buildManageCard(
+                                context,
+                                items: [
+                                  _ManageItem(
+                                    icon: Icons.list_alt,
+                                    title: 'Quản lý bài đăng',
+                                    showBadge: false,
+                                    onTap: () {
+                                      Navigator.push(
+                                        context,
+                                        MaterialPageRoute(
+                                          builder: (_) => const MyPostsScreen(),
+                                        ),
+                                      );
                                     },
-                              style: ElevatedButton.styleFrom(
-                                backgroundColor: Colors.red,
-                                foregroundColor: Colors.white,
-                                elevation: 0,
-                                shape: RoundedRectangleBorder(
-                                  borderRadius: BorderRadius.circular(16),
-                                ),
+                                  ),
+                                  _ManageItem(
+                                    icon: Icons.mail_outline,
+                                    title: 'Yêu cầu đã nhận',
+                                    showBadge: true,
+                                    onTap: () {
+                                      Navigator.push(
+                                        context,
+                                        MaterialPageRoute(
+                                          builder: (_) =>
+                                              const ReceivedRequestsScreen(),
+                                        ),
+                                      );
+                                    },
+                                  ),
+                                ],
                               ),
-                              child: authVm.isLoading
-                                  ? const SizedBox(
-                                      width: 24,
-                                      height: 24,
-                                      child: CircularProgressIndicator(
-                                        strokeWidth: 2,
-                                        color: Colors.white,
-                                      ),
-                                    )
-                                  : const Text(
-                                      'Đăng xuất',
+                              const SizedBox(height: 28),
+                            ] else ...[
+                              Container(
+                                width: double.infinity,
+                                padding: const EdgeInsets.all(16),
+                                decoration: BoxDecoration(
+                                  color: Colors.white,
+                                  borderRadius: BorderRadius.circular(18),
+                                  boxShadow: [
+                                    BoxShadow(
+                                      color: Colors.black.withValues(alpha: 0.06),
+                                      blurRadius: 14,
+                                      offset: const Offset(0, 4),
+                                    ),
+                                  ],
+                                ),
+                                child: const Column(
+                                  crossAxisAlignment: CrossAxisAlignment.start,
+                                  children: [
+                                    Text(
+                                      'Trạng thái sử dụng',
                                       style: TextStyle(
                                         fontSize: 20,
-                                        fontWeight: FontWeight.w700,
+                                        fontWeight: FontWeight.bold,
+                                        color: Colors.black,
                                       ),
                                     ),
+                                    SizedBox(height: 8),
+                                    Text(
+                                      'Bạn chưa có bài đăng nào. Khi đăng bài, hệ thống sẽ hiển thị thêm các mục quản lý bài đăng và yêu cầu đã nhận.',
+                                      style: TextStyle(
+                                        fontSize: 16,
+                                        color: Colors.grey,
+                                        height: 1.5,
+                                      ),
+                                    ),
+                                  ],
+                                ),
+                              ),
+                              const SizedBox(height: 28),
+                            ],
+                            SizedBox(
+                              width: double.infinity,
+                              height: 56,
+                              child: ElevatedButton(
+                                onPressed: authVm.isLoading
+                                    ? null
+                                    : () async {
+                                        await context
+                                            .read<AuthViewModel>()
+                                            .logout();
+
+                                        if (!context.mounted) return;
+
+                                        if (context
+                                                .read<AuthViewModel>()
+                                                .errorMessage !=
+                                            null) {
+                                          ScaffoldMessenger.of(context)
+                                              .showSnackBar(
+                                            SnackBar(
+                                              content: Text(
+                                                context
+                                                        .read<AuthViewModel>()
+                                                        .errorMessage ??
+                                                    'Đăng xuất thất bại',
+                                              ),
+                                            ),
+                                          );
+                                        } else {
+                                          Navigator.pushAndRemoveUntil(
+                                            context,
+                                            MaterialPageRoute(
+                                              builder: (_) => const LoginScreen(),
+                                            ),
+                                            (route) => false,
+                                          );
+                                        }
+                                      },
+                                style: ElevatedButton.styleFrom(
+                                  backgroundColor: Colors.red,
+                                  foregroundColor: Colors.white,
+                                  elevation: 0,
+                                  shape: RoundedRectangleBorder(
+                                    borderRadius: BorderRadius.circular(16),
+                                  ),
+                                ),
+                                child: authVm.isLoading
+                                    ? const SizedBox(
+                                        width: 24,
+                                        height: 24,
+                                        child: CircularProgressIndicator(
+                                          strokeWidth: 2,
+                                          color: Colors.white,
+                                        ),
+                                      )
+                                    : const Text(
+                                        'Đăng xuất',
+                                        style: TextStyle(
+                                          fontSize: 20,
+                                          fontWeight: FontWeight.w700,
+                                        ),
+                                      ),
+                              ),
                             ),
-                          ),
-                          const SizedBox(height: 24),
-                        ],
+                            const SizedBox(height: 24),
+                          ],
+                        ),
                       ),
-                    ),
-                  ],
-                ),
-              );
-            },
-          );
+                    ],
+                  ),
+                );
+              },
+            );
           },
         ),
       ),
@@ -397,12 +394,11 @@ class _UserProfileScreenState extends State<UserProfileScreen> {
       child: Column(
         children: List.generate(items.length, (index) {
           final item = items[index];
-
-          final pendingCount = context.watch<RoommateRequestViewModel>().pendingCount;
+          final pendingCount =
+              context.watch<RoommateRequestViewModel>().pendingCount;
 
           return Column(
             children: [
-              
               ListTile(
                 leading: Icon(
                   item.icon,
@@ -421,7 +417,10 @@ class _UserProfileScreenState extends State<UserProfileScreen> {
                   children: [
                     if (item.showBadge && pendingCount > 0)
                       Container(
-                        padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+                        padding: const EdgeInsets.symmetric(
+                          horizontal: 8,
+                          vertical: 4,
+                        ),
                         decoration: BoxDecoration(
                           color: Colors.red,
                           borderRadius: BorderRadius.circular(999),

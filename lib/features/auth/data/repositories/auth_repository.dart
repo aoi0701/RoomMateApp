@@ -13,6 +13,8 @@ class AuthRepository {
 
   User? get currentUser => _auth.currentUser;
 
+  Stream<User?> authStateChanges() => _auth.authStateChanges();
+
   Future<UserCredential> login({
     required String email,
     required String password,
