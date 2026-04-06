@@ -23,7 +23,7 @@ class AdminHomeScreen extends StatelessWidget {
             mainAxisAlignment: MainAxisAlignment.center,
             children: [
               const Text(
-                'Xin chào Admin 👑',
+                '  Admin ',
                 style: TextStyle(
                   fontSize: 24,
                   fontWeight: FontWeight.bold,
@@ -31,7 +31,7 @@ class AdminHomeScreen extends StatelessWidget {
               ),
               const SizedBox(height: 16),
               const Text(
-                'Đây là màn hình dành cho quản trị viên',
+                'Màn Amdin',
                 textAlign: TextAlign.center,
                 style: TextStyle(fontSize: 16),
               ),
