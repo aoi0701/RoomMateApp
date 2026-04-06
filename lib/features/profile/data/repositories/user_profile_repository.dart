@@ -1,4 +1,5 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
+import '../mappers/habit_roommate_criteria_mapper.dart';
 import '../../data/models/user_model.dart';
 
 class UserProfileRepository {
@@ -27,5 +28,21 @@ class UserProfileRepository {
         .limit(1)
         .snapshots()
         .map((snapshot) => snapshot.docs.isNotEmpty);
+  }
+
+  Future<void> updateHabits({
+    required String uid,
+    required List<String> habits,
+  }) async {
+    final normalizedHabits = habits.toSet().toList();
+    final criteria = HabitRoommateCriteriaMapper.mapHabitsToRoommateCriteria(
+      normalizedHabits,
+    );
+
+    await _firestore.collection('users').doc(uid).update({
+      'habits': normalizedHabits,
+      'roommateCriteria': criteria,
+      'updatedAt': FieldValue.serverTimestamp(),
+    });
   }
 }

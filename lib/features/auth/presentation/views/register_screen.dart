@@ -19,6 +19,7 @@ class _RegisterScreenState extends State<RegisterScreen> {
   final _confirmPasswordController = TextEditingController();
   final _phoneController = TextEditingController();
   final _addressController = TextEditingController();
+  String? _selectedGender;
 
   bool _obscurePassword = true;
   bool _obscureConfirmPassword = true;
@@ -87,6 +88,13 @@ class _RegisterScreenState extends State<RegisterScreen> {
     return null;
   }
 
+  String? _validateGender(String? value) {
+    if ((value ?? '').trim().isEmpty) {
+      return 'Vui lòng chọn giới tính';
+    }
+    return null;
+  }
+
   Future<void> _register() async {
     FocusScope.of(context).unfocus();
 
@@ -102,6 +110,7 @@ class _RegisterScreenState extends State<RegisterScreen> {
       password: _passwordController.text.trim(),
       phone: _phoneController.text.trim(),
       address: _addressController.text.trim(),
+      gender: _selectedGender!.trim(),
     );
 
     if (!mounted) return;
@@ -288,6 +297,34 @@ class _RegisterScreenState extends State<RegisterScreen> {
                           icon: Icons.location_on_outlined,
                         ),
                         validator: _validateAddress,
+                      ),
+                      const SizedBox(height: 16),
+                      DropdownButtonFormField<String>(
+                        initialValue: _selectedGender,
+                        decoration: _inputDecoration(
+                          label: 'Giới tính',
+                          icon: Icons.wc_outlined,
+                        ),
+                        items: const [
+                          DropdownMenuItem(
+                            value: 'Nam',
+                            child: Text('Nam'),
+                          ),
+                          DropdownMenuItem(
+                            value: 'Nữ',
+                            child: Text('Nữ'),
+                          ),
+                          DropdownMenuItem(
+                            value: 'Khác',
+                            child: Text('Khác'),
+                          ),
+                        ],
+                        onChanged: (value) {
+                          setState(() {
+                            _selectedGender = value;
+                          });
+                        },
+                        validator: _validateGender,
                       ),
                       const SizedBox(height: 16),
                       TextFormField(

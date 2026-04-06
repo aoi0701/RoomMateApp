@@ -31,6 +31,7 @@ class AuthRepository {
     required String password,
     required String phone,
     required String address,
+    required String gender,
   }) async {
     final credential = await _auth.createUserWithEmailAndPassword(
       email: email.trim(),
@@ -48,6 +49,9 @@ class AuthRepository {
         'email': user.email,
         'phone': phone.trim(),
         'address': address.trim(),
+        'gender': gender.trim(),
+        'habits': const <String>[],
+        'roommateCriteria': const <String>[],
         'role': 'user',
         'createdAt': FieldValue.serverTimestamp(),
       });

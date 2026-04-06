@@ -1,5 +1,7 @@
 import 'dart:io';
+
 import 'package:flutter/material.dart';
+
 import '../../data/repositories/post_repository.dart';
 
 class PostViewModel extends ChangeNotifier {
@@ -14,11 +16,15 @@ class PostViewModel extends ChangeNotifier {
   Future<bool> createPost({
     required String title,
     required String location,
+    required String province,
+    required String district,
+    required String roomType,
+    required List<String> amenities,
     required String priceText,
     required String areaText,
     required String capacityText,
     required String descriptionText,
-    required File? imageFile,
+    required List<File> imageFiles,
   }) async {
     final price = int.tryParse(priceText.trim());
     final area = int.tryParse(areaText.trim());
@@ -26,11 +32,16 @@ class PostViewModel extends ChangeNotifier {
 
     if (title.trim().isEmpty ||
         location.trim().isEmpty ||
+        province.trim().isEmpty ||
+        roomType.trim().isEmpty ||
         descriptionText.trim().isEmpty ||
-        imageFile == null ||
-        price == null || price <= 0 ||
-        area == null || area <= 0 ||
-        capacity == null || capacity <= 0) {
+        imageFiles.isEmpty ||
+        price == null ||
+        price <= 0 ||
+        area == null ||
+        area <= 0 ||
+        capacity == null ||
+        capacity <= 0) {
       errorMessage = 'Vui lòng nhập đầy đủ thông tin hợp lệ';
       notifyListeners();
       return false;
@@ -44,11 +55,15 @@ class PostViewModel extends ChangeNotifier {
       await _repository.createPost(
         title: title,
         location: location,
+        province: province,
+        district: district,
+        roomType: roomType,
+        amenities: amenities,
         price: price,
         area: area,
         capacity: capacity,
         description: descriptionText,
-        imageFile: imageFile,
+        imageFiles: imageFiles,
       );
 
       return true;
@@ -65,11 +80,15 @@ class PostViewModel extends ChangeNotifier {
     required String postId,
     required String title,
     required String location,
+    required String province,
+    required String district,
+    required String roomType,
+    required List<String> amenities,
     required String priceText,
     required String areaText,
     required String capacityText,
     required String descriptionText,
-    File? imageFile,
+    List<File>? imageFiles,
   }) async {
     final price = int.tryParse(priceText.trim());
     final area = int.tryParse(areaText.trim());
@@ -77,10 +96,15 @@ class PostViewModel extends ChangeNotifier {
 
     if (title.trim().isEmpty ||
         location.trim().isEmpty ||
+        province.trim().isEmpty ||
+        roomType.trim().isEmpty ||
         descriptionText.trim().isEmpty ||
-        price == null || price <= 0 ||
-        area == null || area <= 0 ||
-        capacity == null || capacity <= 0) {
+        price == null ||
+        price <= 0 ||
+        area == null ||
+        area <= 0 ||
+        capacity == null ||
+        capacity <= 0) {
       errorMessage = 'Vui lòng nhập đầy đủ thông tin hợp lệ';
       notifyListeners();
       return false;
@@ -95,11 +119,15 @@ class PostViewModel extends ChangeNotifier {
         postId: postId,
         title: title,
         location: location,
+        province: province,
+        district: district,
+        roomType: roomType,
+        amenities: amenities,
         price: price,
         area: area,
         capacity: capacity,
         description: descriptionText,
-        imageFile: imageFile,
+        imageFiles: imageFiles,
       );
 
       return true;

@@ -24,7 +24,8 @@ class _ReceivedRequestsScreenState extends State<ReceivedRequestsScreen> {
   @override
   void initState() {
     super.initState();
-    Future.microtask(() {
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      if (!mounted) return;
       context.read<RoommateRequestViewModel>().ensureReceivedRequestsListening();
     });
   }
@@ -117,7 +118,8 @@ class _ReceivedRequestsScreenState extends State<ReceivedRequestsScreen> {
                 : ListView.separated(
                     padding: const EdgeInsets.all(20),
                     itemCount: requests.length,
-                    separatorBuilder: (_, __) => const SizedBox(height: 14),
+                    separatorBuilder: (context, index) =>
+                        const SizedBox(height: 14),
                     itemBuilder: (context, index) {
                       final request = requests[index];
                       final statusColor = _statusColor(request.status);

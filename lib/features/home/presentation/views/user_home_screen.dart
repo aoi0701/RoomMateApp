@@ -1,585 +1,22 @@
-// // import 'package:cloud_firestore/cloud_firestore.dart';
-// import 'package:flutter/material.dart';
-// import 'package:provider/provider.dart';
-
-// import '../../../post/presentation/viewmodels/post_list_viewmodel.dart';
-// import '../../../post/presentation/views/create_post_screen.dart';
-// import '../../../profile/presentation/views/user_profile_screen.dart';
-// import '../../../post/data/models/post_model.dart';
-
-
-// import '../../../post/presentation/views/post_detail_screen.dart';
-
-
-// class UserHomeScreen extends StatefulWidget {
-//   const UserHomeScreen({super.key});
-
-//   @override
-//   State<UserHomeScreen> createState() => _UserHomeScreenState();
-// }
-
-// class _UserHomeScreenState extends State<UserHomeScreen> {
-//   int _selectedIndex = 0;
-
-//   static const Color primaryBlue = Color(0xFF3B6EF5);
-//   static const Color bgColor = Color(0xFFF5F7FB);
-//   static const Color textPrimary = Color(0xFF111827);
-//   static const Color textSecondary = Color(0xFF6B7280);
-//   static const Color lightBlue = Color(0xFFEAF2FF);
-
-//   @override
-//   Widget build(BuildContext context) {
-//     return Scaffold(
-//       backgroundColor: bgColor,
-//       body: SafeArea(
-//         child: Column(
-//           children: [
-//             Expanded(
-//               child: SingleChildScrollView(
-//                 child: Column(
-//                   children: [
-//                     _buildHeader(),
-//                     const SizedBox(height: 20),
-//                     _buildQuickActions(context),
-//                     const SizedBox(height: 28),
-//                     _buildFeaturedSection(),
-//                     const SizedBox(height: 24),
-//                   ],
-//                 ),
-//               ),
-//             ),
-//             _buildBottomNav(),
-//           ],
-//         ),
-//       ),
-//     );
-//   }
-
-//   Widget _buildHeader() {
-//     return Container(
-//       width: double.infinity,
-//       padding: const EdgeInsets.fromLTRB(24, 24, 24, 28),
-//       decoration: const BoxDecoration(
-//         color: primaryBlue,
-//         borderRadius: BorderRadius.only(
-//           bottomLeft: Radius.circular(32),
-//           bottomRight: Radius.circular(32),
-//         ),
-//       ),
-//       child: Column(
-//         crossAxisAlignment: CrossAxisAlignment.start,
-//         children: [
-//           const Text(
-//             'Xin chào 👋',
-//             style: TextStyle(
-//               color: Colors.white,
-//               fontSize: 24,
-//               fontWeight: FontWeight.w500,
-//             ),
-//           ),
-//           const SizedBox(height: 6),
-//           const Text(
-//             'Tìm bạn ở ghép phù hợp',
-//             style: TextStyle(
-//               color: Colors.white,
-//               fontSize: 24,
-//               fontWeight: FontWeight.w700,
-//             ),
-//           ),
-//           const SizedBox(height: 24),
-//           Container(
-//             height: 64,
-//             padding: const EdgeInsets.symmetric(horizontal: 18),
-//             decoration: BoxDecoration(
-//               color: Colors.white,
-//               borderRadius: BorderRadius.circular(22),
-//             ),
-//             child: const Row(
-//               children: [
-//                 Icon(Icons.search, color: textSecondary, size: 32),
-//                 SizedBox(width: 14),
-//                 Expanded(
-//                   child: Text(
-//                     'Tìm phòng hoặc khu vực...',
-//                     style: TextStyle(
-//                       color: textSecondary,
-//                       fontSize: 18,
-//                     ),
-//                   ),
-//                 ),
-//                 Icon(Icons.tune, color: textSecondary, size: 30),
-//               ],
-//             ),
-//           ),
-//         ],
-//       ),
-//     );
-//   }
-
-//   Widget _buildQuickActions(BuildContext context) {
-//     return Padding(
-//       padding: const EdgeInsets.symmetric(horizontal: 20),
-//       child: Row(
-//         mainAxisAlignment: MainAxisAlignment.spaceBetween,
-//         children: [
-//           const _QuickActionItem(icon: Icons.search, label: 'Tìm phòng'),
-//           const _QuickActionItem(icon: Icons.access_time, label: 'Gần đây'),
-//           const _QuickActionItem(icon: Icons.local_offer_outlined, label: 'Giá tốt'),
-//           const _QuickActionItem(icon: Icons.group_outlined, label: 'Ở ghép'),
-//           _QuickActionItem(
-//             icon: Icons.add,
-//             label: 'Đăng bài',
-//             onTap: () {
-//               Navigator.push(
-//                 context,
-//                 MaterialPageRoute(
-//                   builder: (_) => const CreatePostScreen(),
-//                 ),
-//               );
-//             },
-//           ),
-//         ],
-//       ),
-//     );
-//   }
-
-//   Widget _buildFeaturedSection() {
-//     final vm = context.read<PostListViewModel>();
-
-//     return Padding(
-//       padding: const EdgeInsets.symmetric(horizontal: 20),
-//       child: Column(
-//         crossAxisAlignment: CrossAxisAlignment.start,
-//         children: [
-//           const Text(
-//             'Phòng trọ nổi bật',
-//             style: TextStyle(
-//               fontSize: 28,
-//               fontWeight: FontWeight.w800,
-//               color: Color(0xFF0F2D6B),
-//             ),
-//           ),
-//           const SizedBox(height: 20),
-
-//           StreamBuilder<List<PostModel>>(
-//             stream: vm.postsStream,
-//             builder: (context, snapshot) {
-//               if (snapshot.connectionState == ConnectionState.waiting) {
-//                 return const Center(
-//                   child: Padding(
-//                     padding: EdgeInsets.all(30),
-//                     child: CircularProgressIndicator(),
-//                   ),
-//                 );
-//               }
-
-//               if (snapshot.hasError) {
-//                 return Center(
-//                   child: Text('Lỗi: ${snapshot.error}'),
-//                 );
-//               }
-
-//               if (!snapshot.hasData || snapshot.data!.isEmpty) {
-//                 return Container(
-//                   width: double.infinity,
-//                   padding: const EdgeInsets.all(24),
-//                   decoration: BoxDecoration(
-//                     color: Colors.white,
-//                     borderRadius: BorderRadius.circular(24),
-//                     boxShadow: const [
-//                       BoxShadow(
-//                         color: Color(0x14000000),
-//                         blurRadius: 18,
-//                         offset: Offset(0, 8),
-//                       ),
-//                     ],
-//                   ),
-//                   child: const Column(
-//                     children: [
-//                       Icon(
-//                         Icons.home_work_outlined,
-//                         size: 64,
-//                         color: textSecondary,
-//                       ),
-//                       SizedBox(height: 12),
-//                       Text(
-//                         'Chưa có bài đăng nào',
-//                         style: TextStyle(
-//                           fontSize: 18,
-//                           fontWeight: FontWeight.w700,
-//                           color: textPrimary,
-//                         ),
-//                       ),
-//                       SizedBox(height: 6),
-//                       Text(
-//                         'Khi có người đăng bài, bài viết sẽ hiển thị ở đây',
-//                         textAlign: TextAlign.center,
-//                         style: TextStyle(
-//                           fontSize: 14,
-//                           color: textSecondary,
-//                         ),
-//                       ),
-//                     ],
-//                   ),
-//                 );
-//               }
-
-//               final posts = snapshot.data!;
-
-//               return ListView.separated(
-//                 itemCount: posts.length,
-//                 shrinkWrap: true,
-//                 physics: const NeverScrollableScrollPhysics(),
-//                 separatorBuilder: (context, index) => const SizedBox(height: 18),
-//                 itemBuilder: (context, index) {
-//                   final post = posts[index];
-
-//                   return _PostCard(
-//                     post: post,
-//                     onTap: () {
-//                       Navigator.push(
-//                         context,
-//                         MaterialPageRoute(
-//                           builder: (_) => PostDetailScreen(post: post),
-//                         ),
-//                       );
-//                     },
-//                   );
-//                 },
-//               );
-//             },
-//           )
-
-//         ],
-//       ),
-//     );
-//   }
-
-//   Widget _buildBottomNav() {
-//     final items = const [
-//       {'icon': Icons.home_filled, 'label': 'Trang chủ'},
-//       {'icon': Icons.description_outlined, 'label': 'Yêu cầu'},
-//       {'icon': Icons.favorite_border, 'label': 'Đã lưu'},
-//       {'icon': Icons.chat_bubble_outline, 'label': 'Nhắn tin'},
-//       {'icon': Icons.person_outline, 'label': 'Cá nhân'},
-//     ];
-
-//     return Container(
-//       height: 86,
-//       padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 8),
-//       decoration: const BoxDecoration(
-//         color: Colors.white,
-//         boxShadow: [
-//           BoxShadow(
-//             color: Color(0x0F000000),
-//             blurRadius: 10,
-//             offset: Offset(0, -2),
-//           ),
-//         ],
-//       ),
-//       child: Row(
-//         mainAxisAlignment: MainAxisAlignment.spaceAround,
-//         children: List.generate(items.length, (index) {
-//           return _BottomNavItem(
-//             icon: items[index]['icon'] as IconData,
-//             label: items[index]['label'] as String,
-//             isActive: _selectedIndex == index,
-//             onTap: () {
-//               if (index == 4) {
-//                 Navigator.push(
-//                   context,
-//                   MaterialPageRoute(
-//                     builder: (_) => const UserProfileScreen(),
-//                   ),
-//                 );
-//               } else {
-//                 setState(() {
-//                   _selectedIndex = index;
-//                 });
-//               }
-//             },
-//           );
-//         }),
-//       ),
-//     );
-//   }
-// }
-
-// class _QuickActionItem extends StatelessWidget {
-//   final IconData icon;
-//   final String label;
-//   final VoidCallback? onTap;
-
-//   const _QuickActionItem({
-//     required this.icon,
-//     required this.label,
-//     this.onTap,
-//   });
-
-//   @override
-//   Widget build(BuildContext context) {
-//     return GestureDetector(
-//       onTap: onTap,
-//       child: Column(
-//         children: [
-//           Container(
-//             width: 64,
-//             height: 64,
-//             decoration: const BoxDecoration(
-//               color: _UserHomeScreenState.lightBlue,
-//               shape: BoxShape.circle,
-//             ),
-//             child: Icon(
-//               icon,
-//               color: _UserHomeScreenState.primaryBlue,
-//               size: 32,
-//             ),
-//           ),
-//           const SizedBox(height: 10),
-//           Text(
-//             label,
-//             style: const TextStyle(
-//               fontSize: 15,
-//               fontWeight: FontWeight.w500,
-//               color: _UserHomeScreenState.textPrimary,
-//             ),
-//           ),
-//         ],
-//       ),
-//     );
-//   }
-// }
-
-// class _PostCard extends StatelessWidget {
-//   final PostModel post;
-//   final VoidCallback? onTap;
-
-//   const _PostCard({
-//     required this.post,
-//     this.onTap,
-//   });
-
-//   String _formatPrice(int value) {
-//     final text = value.toString();
-//     final buffer = StringBuffer();
-//     int count = 0;
-
-//     for (int i = text.length - 1; i >= 0; i--) {
-//       buffer.write(text[i]);
-//       count++;
-//       if (count == 3 && i != 0) {
-//         buffer.write('.');
-//         count = 0;
-//       }
-//     }
-
-//     return buffer.toString().split('').reversed.join();
-//   }
-
-//   @override
-//   Widget build(BuildContext context) {
-//     return GestureDetector(
-//       onTap: onTap,
-//       child: Container(
-//         decoration: BoxDecoration(
-//           color: Colors.white,
-//           borderRadius: BorderRadius.circular(28),
-//           boxShadow: const [
-//             BoxShadow(
-//               color: Color(0x14000000),
-//               blurRadius: 18,
-//               offset: Offset(0, 8),
-//             ),
-//           ],
-//         ),
-//         child: Padding(
-//           padding: const EdgeInsets.all(16),
-//           child: Column(
-//             crossAxisAlignment: CrossAxisAlignment.start,
-//             children: [
-//               ClipRRect(
-//                 borderRadius: BorderRadius.circular(24),
-//                 child: post.imageUrl.isNotEmpty
-//                     ? Image.network(
-//                         post.imageUrl,
-//                         height: 220,
-//                         width: double.infinity,
-//                         fit: BoxFit.cover,
-//                         errorBuilder: (context, error, stackTrace) {
-//                           return Container(
-//                             height: 220,
-//                             width: double.infinity,
-//                             color: Colors.grey.shade200,
-//                             child: const Icon(
-//                               Icons.image_not_supported_outlined,
-//                               size: 50,
-//                               color: Colors.grey,
-//                             ),
-//                           );
-//                         },
-//                       )
-//                     : Container(
-//                         height: 220,
-//                         width: double.infinity,
-//                         color: Colors.grey.shade200,
-//                         child: const Icon(
-//                           Icons.image_outlined,
-//                           size: 50,
-//                           color: Colors.grey,
-//                         ),
-//                       ),
-//               ),
-//               const SizedBox(height: 18),
-//               Text(
-//                 post.title,
-//                 style: const TextStyle(
-//                   fontSize: 22,
-//                   fontWeight: FontWeight.w800,
-//                   color: _UserHomeScreenState.textPrimary,
-//                 ),
-//               ),
-//               const SizedBox(height: 8),
-//               Row(
-//                 children: [
-//                   const Icon(
-//                     Icons.location_on_outlined,
-//                     color: _UserHomeScreenState.textSecondary,
-//                     size: 22,
-//                   ),
-//                   const SizedBox(width: 6),
-//                   Expanded(
-//                     child: Text(
-//                       post.location,
-//                       style: const TextStyle(
-//                         color: _UserHomeScreenState.textSecondary,
-//                         fontSize: 16,
-//                       ),
-//                     ),
-//                   ),
-//                 ],
-//               ),
-//               const SizedBox(height: 14),
-//               FittedBox(
-//                 fit: BoxFit.scaleDown,
-//                 alignment: Alignment.centerLeft,
-//                 child: RichText(
-//                   text: TextSpan(
-//                     children: [
-//                       TextSpan(
-//                         text: '${_formatPrice(post.price)}đ',
-//                         style: const TextStyle(
-//                           color: _UserHomeScreenState.primaryBlue,
-//                           fontSize: 22,
-//                           fontWeight: FontWeight.w800,
-//                         ),
-//                       ),
-//                       const TextSpan(
-//                         text: ' / tháng',
-//                         style: TextStyle(
-//                           color: _UserHomeScreenState.textPrimary,
-//                           fontSize: 22,
-//                           fontWeight: FontWeight.w500,
-//                         ),
-//                       ),
-//                     ],
-//                   ),
-//                 ),
-//               ),
-//               const SizedBox(height: 18),
-//               const Divider(height: 1, color: Color(0xFFE5E7EB)),
-//               const SizedBox(height: 18),
-//               Row(
-//                 children: [
-//                   const Icon(
-//                     Icons.open_in_full,
-//                     color: _UserHomeScreenState.textSecondary,
-//                     size: 24,
-//                   ),
-//                   const SizedBox(width: 10),
-//                   Text(
-//                     '${post.area}m²',
-//                     style: const TextStyle(
-//                       fontSize: 16,
-//                       fontWeight: FontWeight.w500,
-//                       color: _UserHomeScreenState.textPrimary,
-//                     ),
-//                   ),
-//                   const SizedBox(width: 34),
-//                   const Icon(
-//                     Icons.group_outlined,
-//                     color: _UserHomeScreenState.textSecondary,
-//                     size: 24,
-//                   ),
-//                   const SizedBox(width: 10),
-//                   Text(
-//                     '${post.capacity} Người',
-//                     style: const TextStyle(
-//                       fontSize: 16,
-//                       fontWeight: FontWeight.w500,
-//                       color: _UserHomeScreenState.textPrimary,
-//                     ),
-//                   ),
-//                 ],
-//               ),
-//             ],
-//           ),
-//         ),
-//       ),
-//     );
-//   }
-// }
-
-// class _BottomNavItem extends StatelessWidget {
-//   final IconData icon;
-//   final String label;
-//   final bool isActive;
-//   final VoidCallback onTap;
-
-//   const _BottomNavItem({
-//     required this.icon,
-//     required this.label,
-//     required this.isActive,
-//     required this.onTap,
-//   });
-
-//   @override
-//   Widget build(BuildContext context) {
-//     final color = isActive
-//         ? _UserHomeScreenState.primaryBlue
-//         : _UserHomeScreenState.textSecondary;
-
-//     return GestureDetector(
-//       onTap: onTap,
-//       child: Column(
-//         mainAxisAlignment: MainAxisAlignment.center,
-//         children: [
-//           Icon(icon, color: color, size: 30),
-//           const SizedBox(height: 4),
-//           Text(
-//             label,
-//             style: TextStyle(
-//               color: color,
-//               fontSize: 13,
-//               fontWeight: isActive ? FontWeight.w700 : FontWeight.w500,
-//             ),
-//           ),
-//         ],
-//       ),
-//     );
-//   }
-// }
-
-
-
+import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 
+import '../../../../core/theme/app_colors.dart';
+import '../../data/helpers/home_formatters.dart';
+import '../../data/models/room_search_filter_model.dart';
+import '../../data/models/roommate_profile_model.dart';
+import '../viewmodels/home_search_filter_viewmodel.dart';
+import '../viewmodels/roommate_profile_viewmodel.dart';
+import 'room_search_filter_screen.dart';
+import '../../../auth/presentation/viewmodels/auth_viewmodel.dart';
+import '../../../post/data/models/post_model.dart';
 import '../../../post/presentation/viewmodels/post_list_viewmodel.dart';
 import '../../../post/presentation/views/create_post_screen.dart';
-import '../../../profile/presentation/views/user_profile_screen.dart';
-import '../../../post/data/models/post_model.dart';
 import '../../../post/presentation/views/post_detail_screen.dart';
-import '../../../auth/presentation/viewmodels/auth_viewmodel.dart';
+import '../../../profile/data/models/user_model.dart';
+import '../../../profile/presentation/viewmodels/user_profile_viewmodel.dart';
+import '../../../profile/presentation/views/user_profile_screen.dart';
 
 class UserHomeScreen extends StatefulWidget {
   const UserHomeScreen({super.key});
@@ -589,20 +26,25 @@ class UserHomeScreen extends StatefulWidget {
 }
 
 class _UserHomeScreenState extends State<UserHomeScreen> {
-  int _selectedIndex = 0;
+  static const Color primaryBlue = AppColors.primary;
+  static const Color headerBlue = AppColors.primary;
+  static const Color bgColor = AppColors.background;
+  static const Color textPrimary = AppColors.textPrimary;
+  static const Color textSecondary = AppColors.textSecondary;
+  static const Color lightBlue = Color(0xFFEAF2FF);
+  static const Color softMint = Color(0xFFE7F8F3);
 
   final TextEditingController _searchController = TextEditingController();
+  int _selectedIndex = 0;
 
-  String _searchQuery = '';
-  String? _selectedLocation;
-  int? _selectedCapacity;
-  int? _maxPrice;
-
-  static const Color primaryBlue = Color(0xFF3B6EF5);
-  static const Color bgColor = Color(0xFFF5F7FB);
-  static const Color textPrimary = Color(0xFF111827);
-  static const Color textSecondary = Color(0xFF6B7280);
-  static const Color lightBlue = Color(0xFFEAF2FF);
+  @override
+  void initState() {
+    super.initState();
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      if (!mounted) return;
+      context.read<HomeSearchFilterViewModel>().resetFilter(clearSaved: true);
+    });
+  }
 
   @override
   void dispose() {
@@ -610,296 +52,18 @@ class _UserHomeScreenState extends State<UserHomeScreen> {
     super.dispose();
   }
 
-  bool get _hasActiveFilters =>
-      _selectedLocation != null || _selectedCapacity != null || _maxPrice != null;
-
-  List<PostModel> _applyFilters(List<PostModel> posts) {
-    return posts.where((post) {
-      final query = _searchQuery.trim().toLowerCase();
-
-      final matchesSearch = query.isEmpty ||
-          post.title.toLowerCase().contains(query) ||
-          post.location.toLowerCase().contains(query);
-
-      final matchesLocation = _selectedLocation == null ||
-          post.location.toLowerCase().contains(_selectedLocation!.toLowerCase());
-
-      final matchesCapacity =
-          _selectedCapacity == null || post.capacity >= _selectedCapacity!;
-
-      final matchesPrice = _maxPrice == null || post.price <= _maxPrice!;
-
-      return matchesSearch &&
-          matchesLocation &&
-          matchesCapacity &&
-          matchesPrice;
-    }).toList();
+  List<PostModel> _applyFilters(
+    List<PostModel> posts,
+    RoomSearchFilterModel filter,
+  ) {
+    return posts.where(filter.matchesPost).toList();
   }
 
-  Future<void> _openFilterSheet(List<PostModel> posts) async {
-    final locations = posts
-        .map((e) => e.location.trim())
-        .where((e) => e.isNotEmpty)
-        .toSet()
-        .toList()
-      ..sort();
-
-    String? tempLocation = _selectedLocation;
-    int? tempCapacity = _selectedCapacity;
-    int? tempMaxPrice = _maxPrice;
-
-    await showModalBottomSheet(
-      context: context,
-      isScrollControlled: true,
-      backgroundColor: Colors.white,
-      shape: const RoundedRectangleBorder(
-        borderRadius: BorderRadius.vertical(top: Radius.circular(28)),
-      ),
-      builder: (context) {
-        return StatefulBuilder(
-          builder: (context, setModalState) {
-            Widget buildChoiceChip({
-              required String label,
-              required bool selected,
-              required VoidCallback onTap,
-            }) {
-              return GestureDetector(
-                onTap: onTap,
-                child: Container(
-                  padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 10),
-                  decoration: BoxDecoration(
-                    color: selected ? primaryBlue : const Color(0xFFF3F4F6),
-                    borderRadius: BorderRadius.circular(999),
-                  ),
-                  child: Text(
-                    label,
-                    style: TextStyle(
-                      color: selected ? Colors.white : textPrimary,
-                      fontWeight: FontWeight.w600,
-                    ),
-                  ),
-                ),
-              );
-            }
-
-            return Padding(
-              padding: EdgeInsets.only(
-                left: 20,
-                right: 20,
-                top: 20,
-                bottom: MediaQuery.of(context).viewInsets.bottom + 24,
-              ),
-              child: Column(
-                mainAxisSize: MainAxisSize.min,
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  const Center(
-                    child: SizedBox(
-                      width: 48,
-                      child: Divider(
-                        thickness: 4,
-                        color: Color(0xFFD1D5DB),
-                      ),
-                    ),
-                  ),
-                  const SizedBox(height: 14),
-                  const Text(
-                    'Lọc bài đăng',
-                    style: TextStyle(
-                      fontSize: 22,
-                      fontWeight: FontWeight.w800,
-                      color: textPrimary,
-                    ),
-                  ),
-                  const SizedBox(height: 20),
-
-                  const Text(
-                    'Khu vực',
-                    style: TextStyle(
-                      fontSize: 16,
-                      fontWeight: FontWeight.w700,
-                      color: textPrimary,
-                    ),
-                  ),
-                  const SizedBox(height: 12),
-                  Wrap(
-                    spacing: 10,
-                    runSpacing: 10,
-                    children: [
-                      buildChoiceChip(
-                        label: 'Tất cả',
-                        selected: tempLocation == null,
-                        onTap: () {
-                          setModalState(() {
-                            tempLocation = null;
-                          });
-                        },
-                      ),
-                      ...locations.map(
-                        (location) => buildChoiceChip(
-                          label: location,
-                          selected: tempLocation == location,
-                          onTap: () {
-                            setModalState(() {
-                              tempLocation =
-                                  tempLocation == location ? null : location;
-                            });
-                          },
-                        ),
-                      ),
-                    ],
-                  ),
-
-                  const SizedBox(height: 22),
-                  const Text(
-                    'Số người',
-                    style: TextStyle(
-                      fontSize: 16,
-                      fontWeight: FontWeight.w700,
-                      color: textPrimary,
-                    ),
-                  ),
-                  const SizedBox(height: 12),
-                  Wrap(
-                    spacing: 10,
-                    runSpacing: 10,
-                    children: [
-                      buildChoiceChip(
-                        label: 'Tất cả',
-                        selected: tempCapacity == null,
-                        onTap: () {
-                          setModalState(() {
-                            tempCapacity = null;
-                          });
-                        },
-                      ),
-                      ...[1, 2, 3, 4].map(
-                        (capacity) => buildChoiceChip(
-                          label: 'Từ $capacity người',
-                          selected: tempCapacity == capacity,
-                          onTap: () {
-                            setModalState(() {
-                              tempCapacity =
-                                  tempCapacity == capacity ? null : capacity;
-                            });
-                          },
-                        ),
-                      ),
-                    ],
-                  ),
-
-                  const SizedBox(height: 22),
-                  const Text(
-                    'Giá tối đa',
-                    style: TextStyle(
-                      fontSize: 16,
-                      fontWeight: FontWeight.w700,
-                      color: textPrimary,
-                    ),
-                  ),
-                  const SizedBox(height: 12),
-                  Wrap(
-                    spacing: 10,
-                    runSpacing: 10,
-                    children: [
-                      buildChoiceChip(
-                        label: 'Tất cả',
-                        selected: tempMaxPrice == null,
-                        onTap: () {
-                          setModalState(() {
-                            tempMaxPrice = null;
-                          });
-                        },
-                      ),
-                      ...[1000000, 2000000, 3000000, 5000000].map(
-                        (price) => buildChoiceChip(
-                          label: '≤ ${_formatMoney(price)}đ',
-                          selected: tempMaxPrice == price,
-                          onTap: () {
-                            setModalState(() {
-                              tempMaxPrice =
-                                  tempMaxPrice == price ? null : price;
-                            });
-                          },
-                        ),
-                      ),
-                    ],
-                  ),
-
-                  const SizedBox(height: 28),
-                  Row(
-                    children: [
-                      Expanded(
-                        child: OutlinedButton(
-                          onPressed: () {
-                            setState(() {
-                              _selectedLocation = null;
-                              _selectedCapacity = null;
-                              _maxPrice = null;
-                            });
-                            Navigator.pop(context);
-                          },
-                          style: OutlinedButton.styleFrom(
-                            side: const BorderSide(color: primaryBlue),
-                            padding: const EdgeInsets.symmetric(vertical: 14),
-                            shape: RoundedRectangleBorder(
-                              borderRadius: BorderRadius.circular(16),
-                            ),
-                          ),
-                          child: const Text(
-                            'Xóa lọc',
-                            style: TextStyle(
-                              color: primaryBlue,
-                              fontWeight: FontWeight.w700,
-                            ),
-                          ),
-                        ),
-                      ),
-                      const SizedBox(width: 12),
-                      Expanded(
-                        child: ElevatedButton(
-                          onPressed: () {
-                            setState(() {
-                              _selectedLocation = tempLocation;
-                              _selectedCapacity = tempCapacity;
-                              _maxPrice = tempMaxPrice;
-                            });
-                            Navigator.pop(context);
-                          },
-                          style: ElevatedButton.styleFrom(
-                            backgroundColor: primaryBlue,
-                            foregroundColor: Colors.white,
-                            elevation: 0,
-                            padding: const EdgeInsets.symmetric(vertical: 14),
-                            shape: RoundedRectangleBorder(
-                              borderRadius: BorderRadius.circular(16),
-                            ),
-                          ),
-                          child: const Text(
-                            'Áp dụng',
-                            style: TextStyle(
-                              fontWeight: FontWeight.w700,
-                            ),
-                          ),
-                        ),
-                      ),
-                    ],
-                  ),
-                ],
-              ),
-            );
-          },
-        );
-      },
-    );
-  }
-
-  static String _formatMoney(int value) {
+  static String formatMoney(int value) {
     final text = value.toString();
     final buffer = StringBuffer();
-    int count = 0;
-
-    for (int i = text.length - 1; i >= 0; i--) {
+    var count = 0;
+    for (var i = text.length - 1; i >= 0; i--) {
       buffer.write(text[i]);
       count++;
       if (count == 3 && i != 0) {
@@ -907,113 +71,193 @@ class _UserHomeScreenState extends State<UserHomeScreen> {
         count = 0;
       }
     }
-
     return buffer.toString().split('').reversed.join();
+  }
+
+  String _greetingText() {
+    final hour = DateTime.now().hour;
+    if (hour < 12) return 'Chào buổi sáng';
+    if (hour < 18) return 'Chào buổi chiều';
+    return 'Chào buổi tối';
+  }
+
+  Future<void> _openFilterScreen(RoomSearchFilterModel filter) async {
+    final result = await Navigator.push<RoomSearchFilterModel>(
+      context,
+      MaterialPageRoute(
+        builder: (_) => RoomSearchFilterScreen(initialFilter: filter),
+      ),
+    );
+
+    if (result != null && mounted) {
+      context.read<HomeSearchFilterViewModel>().updateFilterLocally(result);
+    }
+  }
+
+  void _openCreatePost() {
+    Navigator.push(
+      context,
+      MaterialPageRoute(builder: (_) => const CreatePostScreen()),
+    );
+  }
+
+  void _openPostDetail(PostModel post) {
+    Navigator.push(
+      context,
+      MaterialPageRoute(
+        builder: (_) => PostDetailScreen(
+          post: post,
+          currentUserId: context.read<AuthViewModel>().user?.uid,
+        ),
+      ),
+    );
+  }
+
+  void _openSuggestedProfile(RoommateProfileModel profile) {
+    Navigator.push(
+      context,
+      MaterialPageRoute(
+        builder: (_) => UserProfileScreen(
+          userId: profile.userId,
+          matchPercentage: profile.matchPercentage,
+          showInviteAction: true,
+        ),
+      ),
+    );
+  }
+
+  Future<void> _sendInvite(RoommateProfileModel profile) async {
+    final vm = context.read<RoommateProfileViewModel>();
+    final success = await vm.sendInvite(targetUserId: profile.userId);
+    if (!mounted) return;
+
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(
+        content: Text(
+          success
+              ? 'Đã gửi lời mời ở ghép'
+              : (vm.errorMessage ?? 'Không thể gửi lời mời'),
+        ),
+      ),
+    );
   }
 
   @override
   Widget build(BuildContext context) {
+    final postVm = context.read<PostListViewModel>();
+    final filterVm = context.watch<HomeSearchFilterViewModel>();
+    final roommateVm = context.read<RoommateProfileViewModel>();
+    final activeFilter = filterVm.currentFilter;
+
     return Scaffold(
       backgroundColor: bgColor,
       body: SafeArea(
-        child: Column(
+        child: Stack(
           children: [
-            Expanded(
-              child: SingleChildScrollView(
-                child: Column(
-                  children: [
-                    _buildHeader(),
-                    const SizedBox(height: 20),
-                    _buildQuickActions(context),
-                    const SizedBox(height: 28),
-                    _buildFeaturedSection(),
-                    const SizedBox(height: 24),
-                  ],
+            Column(
+              children: [
+                Expanded(
+                  child: SingleChildScrollView(
+                    padding: const EdgeInsets.only(bottom: 128),
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        _buildHeader(activeFilter),
+                        const SizedBox(height: 18),
+                        _buildSuggestedProfilesSection(roommateVm),
+                        const SizedBox(height: 28),
+                        _buildFeaturedPostsSection(postVm, activeFilter),
+                      ],
+                    ),
+                  ),
                 ),
-              ),
+                _buildBottomNav(),
+              ],
             ),
-            _buildBottomNav(),
+            Positioned(
+              right: 20,
+              bottom: 104,
+              child: _CreatePostFab(onTap: _openCreatePost),
+            ),
           ],
         ),
       ),
     );
   }
 
-  Widget _buildHeader() {
+  Widget _buildHeader(RoomSearchFilterModel filter) {
+    _searchController.value = TextEditingValue(
+      text: filter.hasActiveFilters ? filter.summaryText : '',
+      selection: TextSelection.collapsed(
+        offset: filter.hasActiveFilters ? filter.summaryText.length : 0,
+      ),
+    );
+
     return Container(
       width: double.infinity,
-      padding: const EdgeInsets.fromLTRB(24, 24, 24, 28),
+      padding: const EdgeInsets.fromLTRB(24, 20, 24, 28),
       decoration: const BoxDecoration(
-        color: primaryBlue,
+        color: headerBlue,
         borderRadius: BorderRadius.only(
-          bottomLeft: Radius.circular(32),
-          bottomRight: Radius.circular(32),
+          bottomLeft: Radius.circular(36),
+          bottomRight: Radius.circular(36),
         ),
       ),
       child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          const Text(
-            'Xin chào 👋',
-            style: TextStyle(
-              color: Colors.white,
-              fontSize: 24,
+          Text(
+            _greetingText(),
+            style: const TextStyle(
+              color: Colors.white70,
+              fontSize: 15,
               fontWeight: FontWeight.w500,
             ),
           ),
-          const SizedBox(height: 6),
+          const SizedBox(height: 10),
           const Text(
-            'Tìm bạn ở ghép phù hợp',
+            'Tìm bạn ở ghép',
+            textAlign: TextAlign.center,
             style: TextStyle(
               color: Colors.white,
-              fontSize: 24,
-              fontWeight: FontWeight.w700,
+              fontSize: 30,
+              fontWeight: FontWeight.w800,
             ),
           ),
-          const SizedBox(height: 24),
+          const SizedBox(height: 22),
           Container(
-            height: 64,
+            height: 60,
             padding: const EdgeInsets.symmetric(horizontal: 18),
             decoration: BoxDecoration(
               color: Colors.white,
-              borderRadius: BorderRadius.circular(22),
+              borderRadius: BorderRadius.circular(20),
+              boxShadow: const [
+                BoxShadow(
+                  color: Color(0x14000000),
+                  blurRadius: 18,
+                  offset: Offset(0, 10),
+                ),
+              ],
             ),
             child: Row(
               children: [
-                const Icon(Icons.search, color: textSecondary, size: 32),
-                const SizedBox(width: 14),
+                const Icon(Icons.search, color: textSecondary, size: 30),
+                const SizedBox(width: 12),
                 Expanded(
                   child: TextField(
                     controller: _searchController,
-                    onChanged: (value) {
-                      setState(() {
-                        _searchQuery = value;
-                      });
-                    },
+                    readOnly: true,
+                    onTap: () => _openFilterScreen(filter),
                     decoration: const InputDecoration(
-                      hintText: 'Tìm theo tiêu đề hoặc địa điểm...',
+                      hintText: 'Vị trí, ngân sách',
                       hintStyle: TextStyle(
                         color: textSecondary,
                         fontSize: 18,
                       ),
                       border: InputBorder.none,
                     ),
-                    style: const TextStyle(
-                      color: textPrimary,
-                      fontSize: 18,
-                    ),
                   ),
                 ),
-                if (_searchQuery.isNotEmpty)
-                  GestureDetector(
-                    onTap: () {
-                      _searchController.clear();
-                      setState(() {
-                        _searchQuery = '';
-                      });
-                    },
-                    child: const Icon(Icons.close, color: textSecondary, size: 24),
-                  ),
+                const Icon(Icons.tune_rounded, color: primaryBlue),
               ],
             ),
           ),
@@ -1022,128 +266,99 @@ class _UserHomeScreenState extends State<UserHomeScreen> {
     );
   }
 
-  Widget _buildQuickActions(BuildContext context) {
-    return Padding(
-      padding: const EdgeInsets.symmetric(horizontal: 20),
-      child: Row(
-        mainAxisAlignment: MainAxisAlignment.spaceBetween,
-        children: [
-          const _QuickActionItem(icon: Icons.search, label: 'Tìm phòng'),
-          const _QuickActionItem(icon: Icons.access_time, label: 'Gần đây'),
-          const _QuickActionItem(icon: Icons.local_offer_outlined, label: 'Giá tốt'),
-          const _QuickActionItem(icon: Icons.group_outlined, label: 'Ở ghép'),
-          _QuickActionItem(
-            icon: Icons.add,
-            label: 'Đăng bài',
-            onTap: () {
-              Navigator.push(
-                context,
-                MaterialPageRoute(
-                  builder: (_) => const CreatePostScreen(),
-                ),
-              );
-            },
-          ),
-        ],
-      ),
-    );
-  }
-
-  Widget _buildFeaturedSection() {
-    final vm = context.read<PostListViewModel>();
-
+  Widget _buildSuggestedProfilesSection(RoommateProfileViewModel roommateVm) {
     return Padding(
       padding: const EdgeInsets.symmetric(horizontal: 20),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          Consumer<PostListViewModel>(
-            builder: (context, _, __) {
-              return StreamBuilder<List<PostModel>>(
-                stream: vm.postsStream,
-                builder: (context, snapshot) {
-                  final posts = snapshot.data ?? [];
+          const Text(
+            'Gợi ý bạn ở ghép phù hợp',
+            style: TextStyle(
+              fontSize: 18,
+              fontWeight: FontWeight.w800,
+              color: textPrimary,
+            ),
+          ),
+          const SizedBox(height: 14),
+          StreamBuilder<List<RoommateProfileModel>>(
+            stream: roommateVm.suggestedProfilesStream,
+            builder: (context, snapshot) {
+              final profiles = snapshot.data ?? const <RoommateProfileModel>[];
 
-                  return Row(
-                    children: [
-                      const Expanded(
-                        child: Text(
-                          'Phòng trọ nổi bật',
-                          style: TextStyle(
-                            fontSize: 28,
-                            fontWeight: FontWeight.w800,
-                            color: Color(0xFF0F2D6B),
-                          ),
-                        ),
-                      ),
-                      IconButton(
-                        tooltip: 'Lọc bài đăng',
-                        onPressed: posts.isEmpty
-                            ? null
-                            : () => _openFilterSheet(posts),
-                        icon: const Icon(
-                          Icons.tune,
-                          color: primaryBlue,
-                        ),
-                      ),
-                    ],
-                  );
-                },
+              if (snapshot.connectionState == ConnectionState.waiting) {
+                return const Center(
+                  child: Padding(
+                    padding: EdgeInsets.all(20),
+                    child: CircularProgressIndicator(),
+                  ),
+                );
+              }
+
+              if (snapshot.hasError) {
+                return _buildMessageCard(
+                  Icons.error_outline,
+                  'Không tải được gợi ý',
+                  '${snapshot.error}',
+                );
+              }
+
+              if (profiles.isEmpty) {
+                return _buildMessageCard(
+                  Icons.person_search_outlined,
+                  'Chưa có hồ sơ phù hợp',
+                  'Hãy cập nhật thói quen và tiêu chí trong hồ sơ để nhận gợi ý tốt hơn.',
+                );
+              }
+
+              return SizedBox(
+                height: 320,
+                child: ListView.separated(
+                  scrollDirection: Axis.horizontal,
+                  itemCount: profiles.take(6).length,
+                  separatorBuilder: (context, index) =>
+                      const SizedBox(width: 16),
+                  itemBuilder: (context, index) {
+                    final profile = profiles[index];
+                    return _SuggestedProfileCard(
+                      profile: profile,
+                      onViewDetail: () => _openSuggestedProfile(profile),
+                      onInviteTap: () => _sendInvite(profile),
+                    );
+                  },
+                ),
               );
             },
           ),
-          const SizedBox(height: 10),
+        ],
+      ),
+    );
+  }
 
-          if (_searchQuery.isNotEmpty || _hasActiveFilters)
-            Wrap(
-              spacing: 8,
-              runSpacing: 8,
-              children: [
-                if (_searchQuery.isNotEmpty)
-                  _FilterChipLabel(
-                    label: 'Tìm: $_searchQuery',
-                    onRemove: () {
-                      _searchController.clear();
-                      setState(() {
-                        _searchQuery = '';
-                      });
-                    },
-                  ),
-                if (_selectedLocation != null)
-                  _FilterChipLabel(
-                    label: 'Khu vực: $_selectedLocation',
-                    onRemove: () {
-                      setState(() {
-                        _selectedLocation = null;
-                      });
-                    },
-                  ),
-                if (_selectedCapacity != null)
-                  _FilterChipLabel(
-                    label: 'Từ $_selectedCapacity người',
-                    onRemove: () {
-                      setState(() {
-                        _selectedCapacity = null;
-                      });
-                    },
-                  ),
-                if (_maxPrice != null)
-                  _FilterChipLabel(
-                    label: '≤ ${_formatMoney(_maxPrice!)}đ',
-                    onRemove: () {
-                      setState(() {
-                        _maxPrice = null;
-                      });
-                    },
-                  ),
-              ],
+  Widget _buildFeaturedPostsSection(
+    PostListViewModel postVm,
+    RoomSearchFilterModel activeFilter,
+  ) {
+    return Padding(
+      padding: const EdgeInsets.symmetric(horizontal: 20),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          const Text(
+            'Bài đăng nổi bật',
+            style: TextStyle(
+              fontSize: 18,
+              fontWeight: FontWeight.w800,
+              color: textPrimary,
             ),
-
-          const SizedBox(height: 20),
-
+          ),
+          const SizedBox(height: 14),
           StreamBuilder<List<PostModel>>(
-            stream: vm.postsStream,
+            stream: postVm.postsStream,
             builder: (context, snapshot) {
+              final allPosts = snapshot.data ?? const <PostModel>[];
+              final posts = _applyFilters(allPosts, activeFilter);
+
               if (snapshot.connectionState == ConnectionState.waiting) {
                 return const Center(
                   child: Padding(
@@ -1154,130 +369,76 @@ class _UserHomeScreenState extends State<UserHomeScreen> {
               }
 
               if (snapshot.hasError) {
-                return Center(
-                  child: Text('Lỗi: ${snapshot.error}'),
+                return _buildMessageCard(
+                  Icons.error_outline,
+                  'Không tải được bài đăng',
+                  '${snapshot.error}',
                 );
               }
 
-              if (!snapshot.hasData || snapshot.data!.isEmpty) {
-                return Container(
-                  width: double.infinity,
-                  padding: const EdgeInsets.all(24),
-                  decoration: BoxDecoration(
-                    color: Colors.white,
-                    borderRadius: BorderRadius.circular(24),
-                    boxShadow: const [
-                      BoxShadow(
-                        color: Color(0x14000000),
-                        blurRadius: 18,
-                        offset: Offset(0, 8),
-                      ),
-                    ],
-                  ),
-                  child: const Column(
-                    children: [
-                      Icon(
-                        Icons.home_work_outlined,
-                        size: 64,
-                        color: textSecondary,
-                      ),
-                      SizedBox(height: 12),
-                      Text(
-                        'Chưa có bài đăng nào',
-                        style: TextStyle(
-                          fontSize: 18,
-                          fontWeight: FontWeight.w700,
-                          color: textPrimary,
-                        ),
-                      ),
-                      SizedBox(height: 6),
-                      Text(
-                        'Khi có người đăng bài, bài viết sẽ hiển thị ở đây',
-                        textAlign: TextAlign.center,
-                        style: TextStyle(
-                          fontSize: 14,
-                          color: textSecondary,
-                        ),
-                      ),
-                    ],
-                  ),
-                );
-              }
-
-              final filteredPosts = _applyFilters(snapshot.data!);
-
-              if (filteredPosts.isEmpty) {
-                return Container(
-                  width: double.infinity,
-                  padding: const EdgeInsets.all(24),
-                  decoration: BoxDecoration(
-                    color: Colors.white,
-                    borderRadius: BorderRadius.circular(24),
-                    boxShadow: const [
-                      BoxShadow(
-                        color: Color(0x14000000),
-                        blurRadius: 18,
-                        offset: Offset(0, 8),
-                      ),
-                    ],
-                  ),
-                  child: const Column(
-                    children: [
-                      Icon(
-                        Icons.search_off,
-                        size: 64,
-                        color: textSecondary,
-                      ),
-                      SizedBox(height: 12),
-                      Text(
-                        'Không tìm thấy bài đăng phù hợp',
-                        style: TextStyle(
-                          fontSize: 18,
-                          fontWeight: FontWeight.w700,
-                          color: textPrimary,
-                        ),
-                      ),
-                      SizedBox(height: 6),
-                      Text(
-                        'Hãy thử đổi từ khóa tìm kiếm hoặc bộ lọc',
-                        textAlign: TextAlign.center,
-                        style: TextStyle(
-                          fontSize: 14,
-                          color: textSecondary,
-                        ),
-                      ),
-                    ],
-                  ),
+              if (posts.isEmpty) {
+                return _buildMessageCard(
+                  Icons.home_work_outlined,
+                  'Chưa có bài đăng nào',
+                  'Khi có người đăng bài, nội dung sẽ hiển thị tại đây.',
                 );
               }
 
               return ListView.separated(
-                itemCount: filteredPosts.length,
+                itemCount: posts.length,
                 shrinkWrap: true,
                 physics: const NeverScrollableScrollPhysics(),
-                separatorBuilder: (context, index) => const SizedBox(height: 18),
+                separatorBuilder: (context, index) =>
+                    const SizedBox(height: 18),
                 itemBuilder: (context, index) {
-                  final post = filteredPosts[index];
-
-                  return _PostCard(
+                  final post = posts[index];
+                  return _FeaturedPostCard(
                     post: post,
-                    onTap: () {
-                      Navigator.push(
-                        context,
-                        MaterialPageRoute(
-                          // builder: (_) => PostDetailScreen(post: post),
-                          builder: (_) => PostDetailScreen(
-                            post: post,
-                            currentUserId: context.read<AuthViewModel>().user?.uid,
-                          ),
-                        ),
-                      );
-                    },
+                    onViewDetail: () => _openPostDetail(post),
                   );
                 },
               );
             },
-          )
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildMessageCard(IconData icon, String title, String subtitle) {
+    return Container(
+      width: double.infinity,
+      padding: const EdgeInsets.all(24),
+      decoration: BoxDecoration(
+        color: Colors.white,
+        borderRadius: BorderRadius.circular(24),
+        boxShadow: const [
+          BoxShadow(
+            color: Color(0x14000000),
+            blurRadius: 18,
+            offset: Offset(0, 8),
+          ),
+        ],
+      ),
+      child: Column(
+        children: [
+          Icon(icon, size: 54, color: textSecondary),
+          const SizedBox(height: 12),
+          Text(
+            title,
+            textAlign: TextAlign.center,
+            style: const TextStyle(
+              fontSize: 18,
+              fontWeight: FontWeight.w700,
+              color: textPrimary,
+            ),
+          ),
+          const SizedBox(height: 6),
+          Text(
+            subtitle,
+            textAlign: TextAlign.center,
+            style: const TextStyle(fontSize: 14, color: textSecondary),
+          ),
         ],
       ),
     );
@@ -1313,7 +474,13 @@ class _UserHomeScreenState extends State<UserHomeScreen> {
             label: items[index]['label'] as String,
             isActive: _selectedIndex == index,
             onTap: () {
-              if (index == 4) {
+              if (index == 0) {
+                context
+                    .read<HomeSearchFilterViewModel>()
+                    .resetFilter(clearSaved: true);
+                _searchController.clear();
+                setState(() => _selectedIndex = index);
+              } else if (index == 4) {
                 Navigator.push(
                   context,
                   MaterialPageRoute(
@@ -1321,9 +488,7 @@ class _UserHomeScreenState extends State<UserHomeScreen> {
                   ),
                 );
               } else {
-                setState(() {
-                  _selectedIndex = index;
-                });
+                setState(() => _selectedIndex = index);
               }
             },
           );
@@ -1333,42 +498,540 @@ class _UserHomeScreenState extends State<UserHomeScreen> {
   }
 }
 
-class _QuickActionItem extends StatelessWidget {
-  final IconData icon;
-  final String label;
-  final VoidCallback? onTap;
+class _SuggestedProfileCard extends StatelessWidget {
+  final RoommateProfileModel profile;
+  final VoidCallback onViewDetail;
+  final VoidCallback onInviteTap;
 
-  const _QuickActionItem({
-    required this.icon,
-    required this.label,
-    this.onTap,
+  const _SuggestedProfileCard({
+    required this.profile,
+    required this.onViewDetail,
+    required this.onInviteTap,
   });
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      width: 300,
+      padding: const EdgeInsets.all(16),
+      decoration: BoxDecoration(
+        color: Colors.white,
+        borderRadius: BorderRadius.circular(24),
+        boxShadow: const [
+          BoxShadow(
+            color: Color(0x12000000),
+            blurRadius: 18,
+            offset: Offset(0, 8),
+          ),
+        ],
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Row(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              _ProfileAvatar(
+                name: profile.displayName,
+                avatarUrl: profile.avatarUrl,
+              ),
+              const SizedBox(width: 12),
+              Expanded(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(
+                      profile.displayName,
+                      maxLines: 1,
+                      overflow: TextOverflow.ellipsis,
+                      style: const TextStyle(
+                        fontSize: 18,
+                        fontWeight: FontWeight.w800,
+                        color: _UserHomeScreenState.textPrimary,
+                      ),
+                    ),
+                    const SizedBox(height: 4),
+                    Text(
+                      profile.address,
+                      maxLines: 2,
+                      overflow: TextOverflow.ellipsis,
+                      style: const TextStyle(
+                        fontSize: 13,
+                        color: _UserHomeScreenState.textSecondary,
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+              _MatchBadge(percentage: profile.matchPercentage),
+            ],
+          ),
+          const SizedBox(height: 12),
+          Text(
+            profile.bio.isNotEmpty
+                ? profile.bio
+                : 'Đang tìm bạn ở ghép phù hợp.',
+            maxLines: 2,
+            overflow: TextOverflow.ellipsis,
+            style: const TextStyle(
+              fontSize: 14,
+              height: 1.45,
+              color: _UserHomeScreenState.textPrimary,
+            ),
+          ),
+          const SizedBox(height: 12),
+          Wrap(
+            spacing: 8,
+            runSpacing: 8,
+            children: profile.habits
+                .take(3)
+                .map((item) => _TagPill(label: item))
+                .toList(),
+          ),
+          const SizedBox(height: 16),
+          Row(
+            children: [
+              Expanded(
+                child: ElevatedButton(
+                  onPressed: onViewDetail,
+                  style: ElevatedButton.styleFrom(
+                    backgroundColor: _UserHomeScreenState.primaryBlue,
+                    foregroundColor: Colors.white,
+                    elevation: 0,
+                    padding: const EdgeInsets.symmetric(vertical: 14),
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(16),
+                    ),
+                  ),
+                  child: const Text(
+                    'Xem chi tiết',
+                    style: TextStyle(fontWeight: FontWeight.w700),
+                  ),
+                ),
+              ),
+              const SizedBox(width: 10),
+              OutlinedButton(
+                onPressed: onInviteTap,
+                style: OutlinedButton.styleFrom(
+                  foregroundColor: _UserHomeScreenState.primaryBlue,
+                  side: const BorderSide(
+                    color: _UserHomeScreenState.primaryBlue,
+                  ),
+                  padding: const EdgeInsets.symmetric(
+                    horizontal: 14,
+                    vertical: 14,
+                  ),
+                  shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(16),
+                  ),
+                ),
+                child: const Row(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    Icon(Icons.person_add_alt_1_outlined, size: 18),
+                    SizedBox(width: 6),
+                    Text(
+                      'Mời',
+                      style: TextStyle(fontWeight: FontWeight.w700),
+                    ),
+                  ],
+                ),
+              ),
+            ],
+          ),
+        ],
+      ),
+    );
+  }
+}
+
+class _FeaturedPostCard extends StatelessWidget {
+  final PostModel post;
+  final VoidCallback onViewDetail;
+
+  const _FeaturedPostCard({
+    required this.post,
+    required this.onViewDetail,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      decoration: BoxDecoration(
+        color: Colors.white,
+        borderRadius: BorderRadius.circular(28),
+        boxShadow: const [
+          BoxShadow(
+            color: Color(0x14000000),
+            blurRadius: 20,
+            offset: Offset(0, 10),
+          ),
+        ],
+      ),
+      child: Padding(
+        padding: const EdgeInsets.all(16),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            ClipRRect(
+              borderRadius: BorderRadius.circular(22),
+              child: AspectRatio(
+                aspectRatio: 16 / 9,
+                child: post.imageUrl.trim().isNotEmpty
+                    ? Image.network(
+                        post.imageUrl,
+                        fit: BoxFit.cover,
+                        errorBuilder: (context, error, stackTrace) =>
+                            _PostImageFallback(title: post.title),
+                      )
+                    : _PostImageFallback(title: post.title),
+              ),
+            ),
+            const SizedBox(height: 14),
+            _PostOwnerHeader(post: post),
+            const SizedBox(height: 12),
+            Text(
+              post.title.isNotEmpty ? post.title : 'Bài đăng tìm bạn ở ghép',
+              maxLines: 2,
+              overflow: TextOverflow.ellipsis,
+              style: const TextStyle(
+                fontSize: 20,
+                fontWeight: FontWeight.w800,
+                color: _UserHomeScreenState.textPrimary,
+                height: 1.25,
+              ),
+            ),
+            const SizedBox(height: 8),
+            Text(
+              post.description.isNotEmpty ? post.description : post.location,
+              maxLines: 2,
+              overflow: TextOverflow.ellipsis,
+              style: const TextStyle(
+                fontSize: 14,
+                height: 1.45,
+                color: _UserHomeScreenState.textPrimary,
+              ),
+            ),
+            const SizedBox(height: 14),
+            Wrap(
+              spacing: 8,
+              runSpacing: 8,
+              children: _buildPostTags(post),
+            ),
+            const SizedBox(height: 16),
+            Row(
+              children: [
+                Expanded(
+                  child: ElevatedButton(
+                    onPressed: onViewDetail,
+                    style: ElevatedButton.styleFrom(
+                      backgroundColor: _UserHomeScreenState.primaryBlue,
+                      foregroundColor: Colors.white,
+                      elevation: 0,
+                      padding: const EdgeInsets.symmetric(vertical: 14),
+                      shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(16),
+                      ),
+                    ),
+                    child: const Text(
+                      'Xem chi tiết',
+                      style: TextStyle(fontWeight: FontWeight.w700),
+                    ),
+                  ),
+                ),
+                const SizedBox(width: 10),
+                OutlinedButton(
+                  onPressed: onViewDetail,
+                  style: OutlinedButton.styleFrom(
+                    foregroundColor: _UserHomeScreenState.primaryBlue,
+                    side: const BorderSide(
+                      color: _UserHomeScreenState.primaryBlue,
+                    ),
+                    padding: const EdgeInsets.symmetric(
+                      horizontal: 14,
+                      vertical: 14,
+                    ),
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(16),
+                    ),
+                  ),
+                  child: const Row(
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      Icon(Icons.chat_bubble_outline_rounded, size: 18),
+                      SizedBox(width: 6),
+                      Text(
+                        'Nhắn tin',
+                        style: TextStyle(fontWeight: FontWeight.w700),
+                      ),
+                    ],
+                  ),
+                ),
+              ],
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+}
+
+class _PostOwnerHeader extends StatelessWidget {
+  final PostModel post;
+
+  const _PostOwnerHeader({required this.post});
+
+  @override
+  Widget build(BuildContext context) {
+    final profileVm = context.read<UserProfileViewModel>();
+
+    return StreamBuilder<DocumentSnapshot<Map<String, dynamic>>>(
+      stream: profileVm.getUserProfileStream(post.ownerId),
+      builder: (context, snapshot) {
+        final user = snapshot.hasData && snapshot.data!.exists
+            ? UserModel.fromDocument(snapshot.data!)
+            : null;
+
+        final displayName = formatLastTwoWords(user?.fullName ?? '');
+        final displayAddress = formatReadableAddress(
+          fullAddress: user?.address ?? '',
+          preferredLocation: user?.preferredLocation ?? '',
+          district: post.district,
+          province: post.province,
+        );
+
+        return Row(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            _ProfileAvatar(
+              name: displayName,
+              avatarUrl: user?.avatarUrl ?? '',
+              size: 56,
+            ),
+            const SizedBox(width: 12),
+            Expanded(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(
+                    displayName,
+                    maxLines: 1,
+                    overflow: TextOverflow.ellipsis,
+                    style: const TextStyle(
+                      fontSize: 18,
+                      fontWeight: FontWeight.w800,
+                      color: _UserHomeScreenState.textPrimary,
+                    ),
+                  ),
+                  const SizedBox(height: 4),
+                  Text(
+                    displayAddress,
+                    maxLines: 2,
+                    overflow: TextOverflow.ellipsis,
+                    style: const TextStyle(
+                      fontSize: 13,
+                      color: _UserHomeScreenState.textSecondary,
+                    ),
+                  ),
+                ],
+              ),
+            ),
+            const SizedBox(width: 10),
+            Container(
+              padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+              decoration: BoxDecoration(
+                color: _UserHomeScreenState.lightBlue,
+                borderRadius: BorderRadius.circular(14),
+              ),
+              child: Text(
+                post.price > 0
+                    ? '${_UserHomeScreenState.formatMoney(post.price)}d'
+                    : 'Thoa thuan',
+                style: const TextStyle(
+                  fontSize: 14,
+                  fontWeight: FontWeight.w800,
+                  color: _UserHomeScreenState.primaryBlue,
+                ),
+              ),
+            ),
+          ],
+        );
+      },
+    );
+  }
+}
+
+class _ProfileAvatar extends StatelessWidget {
+  final String name;
+  final String avatarUrl;
+  final double size;
+
+  const _ProfileAvatar({
+    required this.name,
+    required this.avatarUrl,
+    this.size = 68,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    if (avatarUrl.trim().isNotEmpty) {
+      return ClipRRect(
+        borderRadius: BorderRadius.circular(size / 2),
+        child: Image.network(
+          avatarUrl,
+          width: size,
+          height: size,
+          fit: BoxFit.cover,
+          errorBuilder: (context, error, stackTrace) => _buildFallback(),
+        ),
+      );
+    }
+
+    return _buildFallback();
+  }
+
+  Widget _buildFallback() {
+    final trimmedName = name.trim();
+    return Container(
+      width: size,
+      height: size,
+      decoration: const BoxDecoration(
+        color: Color(0xFFDDEBFF),
+        shape: BoxShape.circle,
+      ),
+      child: Center(
+        child: Text(
+          trimmedName.isNotEmpty ? trimmedName.substring(0, 1) : 'U',
+          style: TextStyle(
+            fontSize: size * 0.36,
+            fontWeight: FontWeight.w800,
+            color: _UserHomeScreenState.primaryBlue,
+          ),
+        ),
+      ),
+    );
+  }
+}
+
+class _MatchBadge extends StatelessWidget {
+  final int percentage;
+
+  const _MatchBadge({required this.percentage});
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 8),
+      decoration: BoxDecoration(
+        color: _UserHomeScreenState.lightBlue,
+        borderRadius: BorderRadius.circular(14),
+      ),
+      child: Column(
+        children: [
+          const Text(
+            'Phu hop',
+            style: TextStyle(
+              fontSize: 11,
+              color: _UserHomeScreenState.textSecondary,
+              fontWeight: FontWeight.w600,
+            ),
+          ),
+          const SizedBox(height: 2),
+          Text(
+            '$percentage%',
+            style: const TextStyle(
+              fontSize: 16,
+              fontWeight: FontWeight.w800,
+              color: _UserHomeScreenState.primaryBlue,
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+}
+
+class _PostImageFallback extends StatelessWidget {
+  final String title;
+
+  const _PostImageFallback({required this.title});
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      color: const Color(0xFFE8EEF9),
+      child: Center(
+        child: Padding(
+          padding: const EdgeInsets.symmetric(horizontal: 24),
+          child: Text(
+            title,
+            textAlign: TextAlign.center,
+            maxLines: 2,
+            overflow: TextOverflow.ellipsis,
+            style: const TextStyle(
+              fontSize: 18,
+              fontWeight: FontWeight.w700,
+              color: _UserHomeScreenState.textPrimary,
+            ),
+          ),
+        ),
+      ),
+    );
+  }
+}
+
+List<Widget> _buildPostTags(PostModel post) {
+  final tags = <String>[];
+  if (post.amenities.isNotEmpty) {
+    tags.addAll(post.amenities.take(3));
+  }
+  if (tags.isEmpty && post.roomType.trim().isNotEmpty) {
+    tags.add(post.roomType.trim());
+  }
+  if (tags.length < 3 && post.area > 0) {
+    tags.add('${post.area} m2');
+  }
+  if (tags.length < 3 && post.capacity > 0) {
+    tags.add('${post.capacity} nguoi');
+  }
+
+  return tags.take(3).map((item) => _TagPill(label: item)).toList();
+}
+
+class _CreatePostFab extends StatelessWidget {
+  final VoidCallback onTap;
+
+  const _CreatePostFab({required this.onTap});
 
   @override
   Widget build(BuildContext context) {
     return GestureDetector(
       onTap: onTap,
       child: Column(
+        mainAxisSize: MainAxisSize.min,
         children: [
           Container(
-            width: 64,
-            height: 64,
+            width: 84,
+            height: 84,
             decoration: const BoxDecoration(
-              color: _UserHomeScreenState.lightBlue,
               shape: BoxShape.circle,
+              color: Color(0xFF8EDBCA),
+              boxShadow: [
+                BoxShadow(
+                  color: Color(0x22000000),
+                  blurRadius: 20,
+                  offset: Offset(0, 10),
+                ),
+              ],
             ),
-            child: Icon(
-              icon,
-              color: _UserHomeScreenState.primaryBlue,
-              size: 32,
-            ),
+            child: const Icon(Icons.add, size: 42, color: Colors.white),
           ),
-          const SizedBox(height: 10),
-          Text(
-            label,
-            style: const TextStyle(
-              fontSize: 15,
-              fontWeight: FontWeight.w500,
+          const SizedBox(height: 8),
+          const Text(
+            'Tạo bài đăng',
+            style: TextStyle(
+              fontSize: 14,
+              fontWeight: FontWeight.w700,
               color: _UserHomeScreenState.textPrimary,
             ),
           ),
@@ -1378,179 +1041,25 @@ class _QuickActionItem extends StatelessWidget {
   }
 }
 
-class _PostCard extends StatelessWidget {
-  final PostModel post;
-  final VoidCallback? onTap;
+class _TagPill extends StatelessWidget {
+  final String label;
 
-  const _PostCard({
-    required this.post,
-    this.onTap,
-  });
-
-  String _formatPrice(int value) {
-    final text = value.toString();
-    final buffer = StringBuffer();
-    int count = 0;
-
-    for (int i = text.length - 1; i >= 0; i--) {
-      buffer.write(text[i]);
-      count++;
-      if (count == 3 && i != 0) {
-        buffer.write('.');
-        count = 0;
-      }
-    }
-
-    return buffer.toString().split('').reversed.join();
-  }
+  const _TagPill({required this.label});
 
   @override
   Widget build(BuildContext context) {
-    return GestureDetector(
-      onTap: onTap,
-      child: Container(
-        decoration: BoxDecoration(
-          color: Colors.white,
-          borderRadius: BorderRadius.circular(28),
-          boxShadow: const [
-            BoxShadow(
-              color: Color(0x14000000),
-              blurRadius: 18,
-              offset: Offset(0, 8),
-            ),
-          ],
-        ),
-        child: Padding(
-          padding: const EdgeInsets.all(16),
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              ClipRRect(
-                borderRadius: BorderRadius.circular(24),
-                child: post.imageUrl.isNotEmpty
-                    ? Image.network(
-                        post.imageUrl,
-                        height: 220,
-                        width: double.infinity,
-                        fit: BoxFit.cover,
-                        errorBuilder: (context, error, stackTrace) {
-                          return Container(
-                            height: 220,
-                            width: double.infinity,
-                            color: Colors.grey.shade200,
-                            child: const Icon(
-                              Icons.image_not_supported_outlined,
-                              size: 50,
-                              color: Colors.grey,
-                            ),
-                          );
-                        },
-                      )
-                    : Container(
-                        height: 220,
-                        width: double.infinity,
-                        color: Colors.grey.shade200,
-                        child: const Icon(
-                          Icons.image_outlined,
-                          size: 50,
-                          color: Colors.grey,
-                        ),
-                      ),
-              ),
-              const SizedBox(height: 18),
-              Text(
-                post.title,
-                style: const TextStyle(
-                  fontSize: 22,
-                  fontWeight: FontWeight.w800,
-                  color: _UserHomeScreenState.textPrimary,
-                ),
-              ),
-              const SizedBox(height: 8),
-              Row(
-                children: [
-                  const Icon(
-                    Icons.location_on_outlined,
-                    color: _UserHomeScreenState.textSecondary,
-                    size: 22,
-                  ),
-                  const SizedBox(width: 6),
-                  Expanded(
-                    child: Text(
-                      post.location,
-                      style: const TextStyle(
-                        color: _UserHomeScreenState.textSecondary,
-                        fontSize: 16,
-                      ),
-                    ),
-                  ),
-                ],
-              ),
-              const SizedBox(height: 14),
-              FittedBox(
-                fit: BoxFit.scaleDown,
-                alignment: Alignment.centerLeft,
-                child: RichText(
-                  text: TextSpan(
-                    children: [
-                      TextSpan(
-                        text: '${_formatPrice(post.price)}đ',
-                        style: const TextStyle(
-                          color: _UserHomeScreenState.primaryBlue,
-                          fontSize: 22,
-                          fontWeight: FontWeight.w800,
-                        ),
-                      ),
-                      const TextSpan(
-                        text: ' / tháng',
-                        style: TextStyle(
-                          color: _UserHomeScreenState.textPrimary,
-                          fontSize: 22,
-                          fontWeight: FontWeight.w500,
-                        ),
-                      ),
-                    ],
-                  ),
-                ),
-              ),
-              const SizedBox(height: 18),
-              const Divider(height: 1, color: Color(0xFFE5E7EB)),
-              const SizedBox(height: 18),
-              Row(
-                children: [
-                  const Icon(
-                    Icons.open_in_full,
-                    color: _UserHomeScreenState.textSecondary,
-                    size: 24,
-                  ),
-                  const SizedBox(width: 10),
-                  Text(
-                    '${post.area}m²',
-                    style: const TextStyle(
-                      fontSize: 16,
-                      fontWeight: FontWeight.w500,
-                      color: _UserHomeScreenState.textPrimary,
-                    ),
-                  ),
-                  const SizedBox(width: 34),
-                  const Icon(
-                    Icons.group_outlined,
-                    color: _UserHomeScreenState.textSecondary,
-                    size: 24,
-                  ),
-                  const SizedBox(width: 10),
-                  Text(
-                    '${post.capacity} Người',
-                    style: const TextStyle(
-                      fontSize: 16,
-                      fontWeight: FontWeight.w500,
-                      color: _UserHomeScreenState.textPrimary,
-                    ),
-                  ),
-                ],
-              ),
-            ],
-          ),
+    return Container(
+      padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
+      decoration: BoxDecoration(
+        color: _UserHomeScreenState.softMint,
+        borderRadius: BorderRadius.circular(999),
+      ),
+      child: Text(
+        label,
+        style: const TextStyle(
+          fontSize: 12,
+          fontWeight: FontWeight.w600,
+          color: _UserHomeScreenState.textPrimary,
         ),
       ),
     );
@@ -1581,56 +1090,14 @@ class _BottomNavItem extends StatelessWidget {
       child: Column(
         mainAxisAlignment: MainAxisAlignment.center,
         children: [
-          Icon(icon, color: color, size: 30),
+          Icon(icon, color: color, size: 28),
           const SizedBox(height: 4),
           Text(
             label,
             style: TextStyle(
               color: color,
-              fontSize: 13,
+              fontSize: 12,
               fontWeight: isActive ? FontWeight.w700 : FontWeight.w500,
-            ),
-          ),
-        ],
-      ),
-    );
-  }
-}
-
-class _FilterChipLabel extends StatelessWidget {
-  final String label;
-  final VoidCallback onRemove;
-
-  const _FilterChipLabel({
-    required this.label,
-    required this.onRemove,
-  });
-
-  @override
-  Widget build(BuildContext context) {
-    return Container(
-      padding: const EdgeInsets.only(left: 12, right: 8, top: 8, bottom: 8),
-      decoration: BoxDecoration(
-        color: _UserHomeScreenState.lightBlue,
-        borderRadius: BorderRadius.circular(999),
-      ),
-      child: Row(
-        mainAxisSize: MainAxisSize.min,
-        children: [
-          Text(
-            label,
-            style: const TextStyle(
-              color: _UserHomeScreenState.primaryBlue,
-              fontWeight: FontWeight.w600,
-            ),
-          ),
-          const SizedBox(width: 6),
-          GestureDetector(
-            onTap: onRemove,
-            child: const Icon(
-              Icons.close,
-              size: 18,
-              color: _UserHomeScreenState.primaryBlue,
             ),
           ),
         ],

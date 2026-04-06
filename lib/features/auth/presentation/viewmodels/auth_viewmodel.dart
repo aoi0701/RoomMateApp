@@ -58,6 +58,7 @@ class AuthViewModel extends ChangeNotifier {
     required String password,
     required String phone,
     required String address,
+    required String gender,
   }) async {
     try {
       isLoading = true;
@@ -70,6 +71,7 @@ class AuthViewModel extends ChangeNotifier {
         password: password,
         phone: phone,
         address: address,
+        gender: gender,
       );
 
       return true;

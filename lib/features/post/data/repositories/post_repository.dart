@@ -4,6 +4,7 @@ import 'dart:io';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:http/http.dart' as http;
+
 import '../models/post_model.dart';
 
 class PostRepository {
@@ -22,9 +23,8 @@ class PostRepository {
     const cloudName = 'dg9nhcbfu';
     const uploadPreset = 'sib1xtoq';
 
-    final uri = Uri.parse(
-      'https://api.cloudinary.com/v1_1/$cloudName/image/upload',
-    );
+    final uri =
+        Uri.parse('https://api.cloudinary.com/v1_1/$cloudName/image/upload');
 
     final request = http.MultipartRequest('POST', uri)
       ..fields['upload_preset'] = uploadPreset
@@ -36,19 +36,23 @@ class PostRepository {
     if (response.statusCode == 200) {
       final data = jsonDecode(responseBody);
       return data['secure_url'] as String;
-    } else {
-      throw Exception('Upload Cloudinary thất bại: $responseBody');
     }
+
+    throw Exception('Upload Cloudinary thất bại: $responseBody');
   }
 
   Future<void> createPost({
     required String title,
     required String location,
+    required String province,
+    required String district,
+    required String roomType,
+    required List<String> amenities,
     required int price,
     required int area,
     required int capacity,
     required String description,
-    required File imageFile,
+    required List<File> imageFiles,
   }) async {
     final user = currentUser;
 
@@ -56,16 +60,25 @@ class PostRepository {
       throw Exception('Người dùng chưa đăng nhập');
     }
 
-    final imageUrl = await uploadImageToCloudinary(imageFile);
+    final selectedImages = imageFiles.take(5).toList();
+    final imageUrls = <String>[];
+    for (final imageFile in selectedImages) {
+      imageUrls.add(await uploadImageToCloudinary(imageFile));
+    }
 
     await _firestore.collection('posts').add({
       'title': title.trim(),
       'location': location.trim(),
+      'province': province.trim(),
+      'district': district.trim(),
+      'roomType': roomType.trim(),
+      'amenities': amenities.toSet().toList(),
       'price': price,
       'area': area,
       'capacity': capacity,
       'description': description.trim(),
-      'imageUrl': imageUrl,
+      'imageUrl': imageUrls.isNotEmpty ? imageUrls.first : '',
+      'imageUrls': imageUrls,
       'ownerId': user.uid,
       'createdAt': FieldValue.serverTimestamp(),
       'updatedAt': FieldValue.serverTimestamp(),
@@ -76,11 +89,15 @@ class PostRepository {
     required String postId,
     required String title,
     required String location,
+    required String province,
+    required String district,
+    required String roomType,
+    required List<String> amenities,
     required int price,
     required int area,
     required int capacity,
     required String description,
-    File? imageFile,
+    List<File>? imageFiles,
   }) async {
     final user = currentUser;
 
@@ -99,45 +116,37 @@ class PostRepository {
       throw Exception('Không có quyền sửa');
     }
 
-    String imageUrl = data['imageUrl'];
+    var imageUrl = data['imageUrl'] as String? ?? '';
+    var imageUrls = List<String>.from(data['imageUrls'] ?? const []);
+    if (imageUrls.isEmpty && imageUrl.trim().isNotEmpty) {
+      imageUrls = [imageUrl];
+    }
 
-    if (imageFile != null) {
-      imageUrl = await uploadImageToCloudinary(imageFile);
+    final selectedImages = (imageFiles ?? const <File>[]).take(5).toList();
+    if (selectedImages.isNotEmpty) {
+      imageUrls = <String>[];
+      for (final imageFile in selectedImages) {
+        imageUrls.add(await uploadImageToCloudinary(imageFile));
+      }
+      imageUrl = imageUrls.first;
     }
 
     await _firestore.collection('posts').doc(postId).update({
       'title': title.trim(),
       'location': location.trim(),
+      'province': province.trim(),
+      'district': district.trim(),
+      'roomType': roomType.trim(),
+      'amenities': amenities.toSet().toList(),
       'price': price,
       'area': area,
       'capacity': capacity,
       'description': description.trim(),
       'imageUrl': imageUrl,
+      'imageUrls': imageUrls,
       'updatedAt': FieldValue.serverTimestamp(),
     });
   }
-
-  // Future<void> deletePost(String postId) async {
-  //   final user = currentUser;
-
-  //   if (user == null) {
-  //     throw Exception('Chưa đăng nhập');
-  //   }
-
-  //   final doc = await _firestore.collection('posts').doc(postId).get();
-
-  //   if (!doc.exists) {
-  //     throw Exception('Bài không tồn tại');
-  //   }
-
-  //   final data = doc.data()!;
-  //   if (data['ownerId'] != user.uid) {
-  //     throw Exception('Không có quyền xóa');
-  //   }
-
-  //   await _firestore.collection('posts').doc(postId).delete();
-  // }
-
 
   Future<void> deletePost(String postId) async {
     final user = currentUser;
@@ -174,29 +183,24 @@ class PostRepository {
     await batch.commit();
   }
 
-
   Stream<List<PostModel>> getPostsStream() {
     return _firestore
         .collection('posts')
         .orderBy('createdAt', descending: true)
         .snapshots()
         .map((snapshot) {
-          return snapshot.docs
-              .map((doc) => PostModel.fromDocument(doc))
-              .toList();
-        });
+      return snapshot.docs.map(PostModel.fromDocument).toList();
+    });
   }
 
   Stream<List<PostModel>> getPostsByUser(String uid) {
-  return _firestore
-      .collection('posts')
-      .where('ownerId', isEqualTo: uid)
-      .orderBy('createdAt', descending: true)
-      .snapshots()
-      .map((snapshot) {
-        return snapshot.docs
-            .map((doc) => PostModel.fromDocument(doc))
-            .toList();
-      });
-}
+    return _firestore
+        .collection('posts')
+        .where('ownerId', isEqualTo: uid)
+        .orderBy('createdAt', descending: true)
+        .snapshots()
+        .map((snapshot) {
+      return snapshot.docs.map(PostModel.fromDocument).toList();
+    });
+  }
 }

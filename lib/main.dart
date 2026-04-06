@@ -9,6 +9,10 @@ import 'features/auth/presentation/viewmodels/auth_viewmodel.dart';
 import 'features/auth/presentation/views/login_screen.dart';
 import 'features/admin/presentation/views/admin_home_screen.dart';
 import 'features/home/presentation/views/user_home_screen.dart';
+import 'features/home/data/repositories/home_search_filter_repository.dart';
+import 'features/home/data/repositories/roommate_profile_repository.dart';
+import 'features/home/presentation/viewmodels/home_search_filter_viewmodel.dart';
+import 'features/home/presentation/viewmodels/roommate_profile_viewmodel.dart';
 import 'features/post/data/repositories/post_repository.dart';
 import 'features/profile/data/repositories/user_profile_repository.dart';
 import 'features/post/presentation/viewmodels/post_list_viewmodel.dart';
@@ -45,6 +49,22 @@ class MyApp extends StatelessWidget {
       ),
       Provider<PostRepository>(
         create: (_) => PostRepository(),
+      ),
+      Provider<HomeSearchFilterRepository>(
+        create: (_) => HomeSearchFilterRepository(),
+      ),
+      Provider<RoommateProfileRepository>(
+        create: (_) => RoommateProfileRepository(),
+      ),
+      ChangeNotifierProvider<HomeSearchFilterViewModel>(
+        create: (context) => HomeSearchFilterViewModel(
+          repository: context.read<HomeSearchFilterRepository>(),
+        ),
+      ),
+      ChangeNotifierProvider<RoommateProfileViewModel>(
+        create: (context) => RoommateProfileViewModel(
+          repository: context.read<RoommateProfileRepository>(),
+        ),
       ),
       ChangeNotifierProvider<PostViewModel>(
         create: (context) => PostViewModel(
