@@ -1,6 +1,5 @@
 import 'package:firebase_core/firebase_core.dart';
 import 'package:firebase_auth/firebase_auth.dart';
-import 'package:flutter/foundation.dart' show kIsWeb;
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 
@@ -9,7 +8,6 @@ import 'features/auth/data/repositories/auth_repository.dart';
 import 'features/auth/presentation/viewmodels/auth_viewmodel.dart';
 import 'features/auth/presentation/views/login_screen.dart';
 import 'features/admin/presentation/views/admin_home_screen.dart';
-import 'features/admin/presentation/views/web/admin_web_shell.dart';
 import 'features/home/presentation/views/user_home_screen.dart';
 import 'features/home/data/repositories/home_search_filter_repository.dart';
 import 'features/home/data/repositories/roommate_profile_repository.dart';
@@ -155,10 +153,7 @@ class AuthGate extends StatelessWidget {
 
             final role = roleSnapshot.data ?? 'user';
             if (role == 'admin') {
-              // Dùng web shell nếu chạy trên browser, mobile dùng màn hình cũ
-              return kIsWeb
-                  ? const AdminWebShell()
-                  : const AdminHomeScreen();
+              return const AdminHomeScreen();
             }
 
             return const UserHomeScreen();
