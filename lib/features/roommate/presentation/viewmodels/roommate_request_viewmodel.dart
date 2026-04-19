@@ -14,6 +14,8 @@ class RoommateRequestViewModel extends ChangeNotifier {
 
   bool _isLoading = false;
   String? _errorMessage;
+  bool _isReceivedRequestsLoading = false;
+  bool _isSentRequestsLoading = false;
 
   List<RoommateRequestModel> _receivedRequests = [];
   List<RoommateRequestModel> _sentRequests = [];
@@ -26,6 +28,8 @@ class RoommateRequestViewModel extends ChangeNotifier {
 
   bool get isLoading => _isLoading;
   String? get errorMessage => _errorMessage;
+  bool get isReceivedRequestsLoading => _isReceivedRequestsLoading;
+  bool get isSentRequestsLoading => _isSentRequestsLoading;
 
   List<RoommateRequestModel> get receivedRequests => _receivedRequests;
   List<RoommateRequestModel> get sentRequests => _sentRequests;
@@ -91,6 +95,9 @@ class RoommateRequestViewModel extends ChangeNotifier {
     }
 
     _receivedListeningUserId = currentUid;
+    _isReceivedRequestsLoading = true;
+    _errorMessage = null;
+    notifyListeners();
     listenToReceivedRequests();
   }
 
@@ -110,6 +117,9 @@ class RoommateRequestViewModel extends ChangeNotifier {
     }
 
     _sentListeningUserId = currentUid;
+    _isSentRequestsLoading = true;
+    _errorMessage = null;
+    notifyListeners();
     listenToSentRequests();
   }
 
@@ -120,10 +130,12 @@ class RoommateRequestViewModel extends ChangeNotifier {
     _receivedSubscription = _repository.getReceivedRequests().listen(
       (requests) {
         _receivedRequests = requests;
+        _isReceivedRequestsLoading = false;
         _errorMessage = null;
         notifyListeners();
       },
       onError: (error) {
+        _isReceivedRequestsLoading = false;
         _errorMessage = error.toString().replaceFirst('Exception: ', '');
         _receivedListeningUserId = null;
         notifyListeners();
@@ -138,10 +150,12 @@ class RoommateRequestViewModel extends ChangeNotifier {
     _sentSubscription = _repository.getSentRequests().listen(
       (requests) {
         _sentRequests = requests;
+        _isSentRequestsLoading = false;
         _errorMessage = null;
         notifyListeners();
       },
       onError: (error) {
+        _isSentRequestsLoading = false;
         _errorMessage = error.toString().replaceFirst('Exception: ', '');
         _sentListeningUserId = null;
         notifyListeners();
