@@ -70,6 +70,26 @@ class HabitRoommateCriteriaMapper {
       id: 'criteria_shared_living',
       label: 'Có thể sinh hoạt chung, nấu ăn chung văn minh',
     ),
+    'work_from_home': RoommateCriteriaModel(
+      id: 'criteria_work_from_home',
+      label: 'Cần không gian yên tĩnh để làm việc tại nhà',
+    ),
+    'no_visitor': RoommateCriteriaModel(
+      id: 'criteria_no_visitor',
+      label: 'Không muốn khách lạ vào phòng',
+    ),
+    'no_pet': RoommateCriteriaModel(
+      id: 'criteria_no_pet',
+      label: 'Không muốn có thú cưng trong nhà',
+    ),
+    'split_expense': RoommateCriteriaModel(
+      id: 'criteria_split_expense',
+      label: 'Sẵn sàng chia đều chi phí sinh hoạt',
+    ),
+    'budget_conscious': RoommateCriteriaModel(
+      id: 'criteria_budget_conscious',
+      label: 'Tiết kiệm, chi tiêu hợp lý',
+    ),
   };
 
   static List<String> mapHabitsToRoommateCriteria(List<String> habits) {

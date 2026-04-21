@@ -12,6 +12,8 @@ class RoommateProfileModel {
   final int? age;
   final String occupation;
   final int matchPercentage;
+  final List<String> matchedReasons;
+  final List<String> conflictReasons;
 
   const RoommateProfileModel({
     required this.userId,
@@ -27,5 +29,7 @@ class RoommateProfileModel {
     required this.age,
     required this.occupation,
     required this.matchPercentage,
+    this.matchedReasons = const [],
+    this.conflictReasons = const [],
   });
 }

@@ -120,6 +120,8 @@ class _UserHomeScreenState extends State<UserHomeScreen> {
         builder: (_) => UserProfileScreen(
           userId: profile.userId,
           matchPercentage: profile.matchPercentage,
+          matchedReasons: profile.matchedReasons,
+          conflictReasons: profile.conflictReasons,
           showInviteAction: true,
         ),
       ),

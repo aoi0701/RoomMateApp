@@ -16,12 +16,16 @@ import 'edit_habits_screen.dart';
 class UserProfileScreen extends StatefulWidget {
   final String? userId;
   final int? matchPercentage;
+  final List<String> matchedReasons;
+  final List<String> conflictReasons;
   final bool showInviteAction;
 
   const UserProfileScreen({
     super.key,
     this.userId,
     this.matchPercentage,
+    this.matchedReasons = const [],
+    this.conflictReasons = const [],
     this.showInviteAction = false,
   });
 
@@ -135,7 +139,11 @@ class _UserProfileScreenState extends State<UserProfileScreen> {
                       ),
                       if (!isOwnProfile && widget.matchPercentage != null) ...[
                         const SizedBox(height: 14),
-                        _buildMatchBanner(widget.matchPercentage!),
+                        _buildMatchBanner(
+                          widget.matchPercentage!,
+                          widget.matchedReasons,
+                          widget.conflictReasons,
+                        ),
                       ],
                       const SizedBox(height: 18),
                       _buildCombinedInfoCard(
@@ -355,7 +363,11 @@ class _UserProfileScreenState extends State<UserProfileScreen> {
     );
   }
 
-  Widget _buildMatchBanner(int percentage) {
+  Widget _buildMatchBanner(
+    int percentage,
+    List<String> matchedReasons,
+    List<String> conflictReasons,
+  ) {
     return Container(
       width: double.infinity,
       padding: const EdgeInsets.symmetric(horizontal: 18, vertical: 14),
@@ -363,32 +375,57 @@ class _UserProfileScreenState extends State<UserProfileScreen> {
         color: lightBlue,
         borderRadius: BorderRadius.circular(18),
       ),
-      child: Row(
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          const Icon(
-            Icons.percent_rounded,
-            color: primaryColor,
-            size: 26,
-          ),
-          const SizedBox(width: 10),
-          const Expanded(
-            child: Text(
-              'Ti le phu hop',
-              style: TextStyle(
-                fontSize: 16,
-                fontWeight: FontWeight.w700,
-                color: textPrimary,
+          Row(
+            children: [
+              const Icon(Icons.percent_rounded, color: primaryColor, size: 26),
+              const SizedBox(width: 10),
+              const Expanded(
+                child: Text(
+                  'Ti le phu hop',
+                  style: TextStyle(
+                    fontSize: 16,
+                    fontWeight: FontWeight.w700,
+                    color: textPrimary,
+                  ),
+                ),
               ),
-            ),
+              Text(
+                '$percentage%',
+                style: const TextStyle(
+                  fontSize: 22,
+                  fontWeight: FontWeight.w800,
+                  color: primaryColor,
+                ),
+              ),
+            ],
           ),
-          Text(
-            '$percentage%',
-            style: const TextStyle(
-              fontSize: 22,
-              fontWeight: FontWeight.w800,
-              color: primaryColor,
+          if (matchedReasons.isNotEmpty) ...[
+            const SizedBox(height: 10),
+            const Text(
+              'Diem chung',
+              style: TextStyle(fontSize: 13, fontWeight: FontWeight.w600, color: textPrimary),
             ),
-          ),
+            const SizedBox(height: 4),
+            ...matchedReasons.map((r) => Padding(
+              padding: const EdgeInsets.only(bottom: 2),
+              child: Text('- $r', style: const TextStyle(fontSize: 13, color: textPrimary)),
+            )),
+          ],
+          if (conflictReasons.isNotEmpty) ...[
+            const SizedBox(height: 10),
+            const Text(
+              'Diem khac biet',
+              style: TextStyle(fontSize: 13, fontWeight: FontWeight.w600, color: textPrimary),
+            ),
+            const SizedBox(height: 4),
+            ...conflictReasons.map((r) => Padding(
+              padding: const EdgeInsets.only(bottom: 2),
+              child: Text('- $r', style: const TextStyle(fontSize: 13, color: textPrimary)),
+            )),
+          ],
         ],
       ),
     );

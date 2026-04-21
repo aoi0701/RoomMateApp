@@ -44,7 +44,6 @@ class RoommateProfileRepository {
           );
 
       final currentHabits = currentUser?.habits ?? const <String>[];
-      final currentCriteria = currentUser?.roommateCriteria ?? const <String>[];
 
       final suggestions = users
           .where((user) => user.uid != currentUserId)
@@ -53,11 +52,9 @@ class RoommateProfileRepository {
             final resolvedAddress = _resolveSuggestedAddress(user, userPosts);
             final resolvedBudgetRange = _resolveBudgetRange(user, userPosts);
 
-            final matchPercentage = calculateRoommateMatchPercentage(
+            final matchResult = calculateRoommateMatch(
               currentHabits: currentHabits,
-              currentCriteria: currentCriteria,
               targetHabits: user.habits,
-              targetCriteria: user.roommateCriteria,
             );
 
             return RoommateProfileModel(
@@ -75,7 +72,9 @@ class RoommateProfileRepository {
               gender: user.gender.trim(),
               age: user.age,
               occupation: user.occupation.trim(),
-              matchPercentage: matchPercentage,
+              matchPercentage: matchResult.score,
+              matchedReasons: matchResult.matchedReasons,
+              conflictReasons: matchResult.conflictReasons,
             );
           })
           .toList()

@@ -26,6 +26,26 @@ class _EditHabitsScreenState extends State<EditHabitsScreen> {
     _selectedHabits = widget.initialHabits.toSet();
   }
 
+  static const _groupLabels = {
+    'hygiene': 'Ve sinh & Khong gian',
+    'schedule': 'Lich sinh hoat',
+    'social': 'Xa giao',
+    'lifestyle': 'Sinh hoat hang ngay',
+    'pet': 'Thu cung',
+    'finance': 'Tai chinh',
+  };
+
+  List<MapEntry<String, List<ProfileHabitModel>>> get _groupEntries {
+    final grouped = <String, List<ProfileHabitModel>>{};
+    for (final habit in ProfileHabitCatalog.all) {
+      grouped.putIfAbsent(habit.group, () => []).add(habit);
+    }
+    return _groupLabels.entries
+        .where((e) => grouped.containsKey(e.key))
+        .map((e) => MapEntry(e.value, grouped[e.key]!))
+        .toList();
+  }
+
   void _toggleHabit(String habitId) {
     setState(() {
       if (_selectedHabits.contains(habitId)) {
@@ -97,15 +117,37 @@ class _EditHabitsScreenState extends State<EditHabitsScreen> {
               const SizedBox(height: 18),
               Expanded(
                 child: SingleChildScrollView(
-                  child: Wrap(
-                    spacing: 12,
-                    runSpacing: 12,
-                    children: ProfileHabitCatalog.all.map((habit) {
-                      final selected = _selectedHabits.contains(habit.id);
-                      return _EditableHabitChip(
-                        habit: habit,
-                        selected: selected,
-                        onTap: () => _toggleHabit(habit.id),
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: _groupEntries.map((entry) {
+                      final groupLabel = entry.key;
+                      final habits = entry.value;
+                      return Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Text(
+                            groupLabel,
+                            style: const TextStyle(
+                              fontSize: 14,
+                              fontWeight: FontWeight.w700,
+                              color: Color(0xFF374151),
+                            ),
+                          ),
+                          const SizedBox(height: 10),
+                          Wrap(
+                            spacing: 12,
+                            runSpacing: 12,
+                            children: habits.map((habit) {
+                              final selected = _selectedHabits.contains(habit.id);
+                              return _EditableHabitChip(
+                                habit: habit,
+                                selected: selected,
+                                onTap: () => _toggleHabit(habit.id),
+                              );
+                            }).toList(),
+                          ),
+                          const SizedBox(height: 20),
+                        ],
                       );
                     }).toList(),
                   ),
