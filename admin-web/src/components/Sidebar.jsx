@@ -24,7 +24,7 @@ export default function Sidebar() {
     <aside className="w-56 min-h-screen bg-white border-r border-gray-200 flex flex-col fixed left-0 top-0 bottom-0">
       {/* Logo */}
       <div className="px-5 py-5 border-b border-gray-100">
-        <h1 className="text-xl font-bold text-blue-600">RoomMate</h1>
+        <h1 className="text-xl font-bold text-primary">RoomMate</h1>
         <p className="text-xs text-gray-400 uppercase tracking-wider mt-0.5">Bảng quản trị</p>
       </div>
 
@@ -38,7 +38,7 @@ export default function Sidebar() {
             className={({ isActive }) =>
               `flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-medium transition-colors ${
                 isActive
-                  ? 'bg-blue-50 text-blue-600 border-r-2 border-blue-600'
+                  ? 'bg-primary-light text-primary border-r-2 border-primary'
                   : 'text-gray-600 hover:bg-gray-50 hover:text-gray-900'
               }`
             }
@@ -52,7 +52,7 @@ export default function Sidebar() {
       {/* Bottom */}
       <div className="px-3 pb-4 space-y-2">
         <div className="flex items-center gap-2 px-2 py-2">
-          <div className="w-8 h-8 rounded-full bg-blue-100 flex items-center justify-center text-blue-600 font-bold text-sm">{initials}</div>
+          <div className="w-8 h-8 rounded-full bg-primary-light flex items-center justify-center text-primary font-bold text-sm">{initials}</div>
           <div className="flex-1 min-w-0">
             <p className="text-sm font-medium text-gray-800 truncate">{user?.displayName ?? user?.email}</p>
             <p className="text-xs text-gray-400">Quản trị viên</p>

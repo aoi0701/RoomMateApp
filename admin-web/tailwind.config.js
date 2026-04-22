@@ -4,7 +4,14 @@ export default {
   theme: {
     extend: {
       colors: {
-        primary: '#2563EB',
+        primary: {
+          DEFAULT: '#2F6BFF',
+          dark: '#1F5AE0',
+          light: '#EEF3FF',
+        },
+      },
+      fontFamily: {
+        sans: ['Be Vietnam Pro', 'sans-serif'],
       },
     },
   },
