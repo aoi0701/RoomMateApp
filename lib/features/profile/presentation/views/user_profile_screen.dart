@@ -151,6 +151,11 @@ class _UserProfileScreenState extends State<UserProfileScreen> {
                       ),
                       const SizedBox(height: 18),
                       _buildRoommateCriteriaSection(user.roommateCriteria),
+                      const SizedBox(height: 18),
+                      _buildIntroductionSection(
+                        fullName,
+                        user.bio,
+                      ),
                       if (isOwnProfile) ...[
                         const SizedBox(height: 22),
                         const Text(
