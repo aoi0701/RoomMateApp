@@ -116,19 +116,19 @@ class _ReceivedRequestsScreenState extends State<ReceivedRequestsScreen> {
           body: SafeArea(
             child: viewModel.isReceivedRequestsLoading
                 ? const AppLoadingState(
-                    message: 'Dang tai danh sach yeu cau...',
+                    message: 'Đang tải danh sách yêu cầu...',
                   )
                 : viewModel.errorMessage != null
                     ? AppErrorState(
-                        title: 'Khong tai duoc yeu cau',
+                        title: 'Không tải được yêu cầu',
                         message: viewModel.errorMessage!,
                         onRetry: viewModel.ensureReceivedRequestsListening,
                       )
                     : requests.isEmpty
                         ? const AppEmptyState(
-                            title: 'Chua co yeu cau nao',
+                            title: 'Chưa có yêu cầu nào',
                             message:
-                                'Cac yeu cau o ghep gui den ban se hien thi o day.',
+                                'Các yêu cầu ở ghép gửi đến bạn sẽ hiển thị ở đây.',
                             icon: Icons.inbox_outlined,
                           )
                         : ListView.separated(

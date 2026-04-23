@@ -57,7 +57,7 @@ class _CreatePostScreenState extends State<CreatePostScreen> {
       if (!mounted) return;
       ScaffoldMessenger.of(context).showSnackBar(
         const SnackBar(
-          content: Text('Ban chi co the them toi da 5 anh.'),
+          content: Text('Bạn chỉ có thể thêm tối đa 5 ảnh.'),
         ),
       );
       return;
@@ -76,7 +76,7 @@ class _CreatePostScreenState extends State<CreatePostScreen> {
 
     ScaffoldMessenger.of(context).showSnackBar(
       const SnackBar(
-        content: Text('Chi luu toi da 5 anh cho moi bai dang.'),
+        content: Text('Chỉ lưu tối đa 5 ảnh cho mỗi bài đăng.'),
       ),
     );
   }
@@ -104,7 +104,7 @@ class _CreatePostScreenState extends State<CreatePostScreen> {
     ScaffoldMessenger.of(context).showSnackBar(
       SnackBar(
         content: Text(
-          success ? 'Dang bai thanh cong' : (vm.errorMessage ?? 'Dang bai that bai'),
+          success ? 'Đăng bài thành công' : (vm.errorMessage ?? 'Đăng bài thất bại'),
         ),
       ),
     );
@@ -261,7 +261,7 @@ class _CreatePostScreenState extends State<CreatePostScreen> {
   Widget _buildHabitsSection(String? uid) {
     if (uid == null) {
       return const Text(
-        'Chua co thong tin ho so de hien thi thoi quen sinh hoat.',
+        'Chưa có thông tin hồ sơ để hiển thị thói quen sinh hoạt.',
         style: TextStyle(color: textSecondary),
       );
     }
@@ -277,7 +277,7 @@ class _CreatePostScreenState extends State<CreatePostScreen> {
 
         if (!snapshot.hasData || !snapshot.data!.exists) {
           return const Text(
-            'Chua co du lieu ho so.',
+            'Chưa có dữ liệu hồ sơ.',
             style: TextStyle(color: textSecondary),
           );
         }
@@ -297,7 +297,7 @@ class _CreatePostScreenState extends State<CreatePostScreen> {
               borderRadius: BorderRadius.circular(18),
             ),
             child: const Text(
-              'Ban chua cap nhat thoi quen trong ho so. Hay vao trang ho so de bo sung, muc nay se tu dong dong bo sang man dang bai.',
+              'Bạn chưa cập nhật thói quen trong hồ sơ. Hãy vào trang hồ sơ để bổ sung, mục này sẽ tự động đồng bộ sang màn đăng bài.',
               style: TextStyle(
                 fontSize: 14,
                 height: 1.5,
@@ -348,7 +348,7 @@ class _CreatePostScreenState extends State<CreatePostScreen> {
             ),
             const SizedBox(height: 12),
             const Text(
-              'Thoi quen sinh hoat duoc lay tu dong tu ho so ca nhan cua ban.',
+              'Thói quen sinh hoạt được lấy tự động từ hồ sơ cá nhân của bạn.',
               style: TextStyle(fontSize: 13, color: textSecondary),
             ),
           ],
@@ -394,7 +394,7 @@ class _CreatePostScreenState extends State<CreatePostScreen> {
                         Icon(Icons.add, size: 38, color: textSecondary),
                         SizedBox(height: 8),
                         Text(
-                          'Them anh',
+                          'Thêm ảnh',
                           style: TextStyle(
                             color: textSecondary,
                             fontWeight: FontWeight.w600,
@@ -448,7 +448,7 @@ class _CreatePostScreenState extends State<CreatePostScreen> {
         ),
         const SizedBox(height: 10),
         Text(
-          'Toi da 5 anh (${_selectedImages.length}/5)',
+          'Tối đa 5 ảnh (${_selectedImages.length}/5)',
           style: const TextStyle(fontSize: 13, color: textSecondary),
         ),
       ],
@@ -466,7 +466,7 @@ class _CreatePostScreenState extends State<CreatePostScreen> {
     return Scaffold(
       backgroundColor: bgColor,
       appBar: AppBar(
-        title: const Text('Dang tin Tim ban o ghep'),
+        title: const Text('Đăng tin Tìm bạn ở ghép'),
         centerTitle: true,
         backgroundColor: bgColor,
         surfaceTintColor: bgColor,
@@ -477,15 +477,15 @@ class _CreatePostScreenState extends State<CreatePostScreen> {
           child: Column(
             children: [
               _buildSection(
-                title: '1. Thong tin co ban',
+                title: '1. Thông tin cơ bản',
                 child: Column(
                   children: [
                     TextField(
                       controller: _titleController,
                       enabled: !vm.isLoading,
                       decoration: _inputDecoration(
-                        'Tieu de bai dang',
-                        hintText: 'Vi du: Tim ban nu o ghep quan Cau Giay',
+                        'Tiêu đề bài đăng',
+                        hintText: 'Ví dụ: Tìm bạn nữ ở ghép quận Cầu Giấy',
                       ),
                     ),
                     const SizedBox(height: 14),
@@ -493,8 +493,8 @@ class _CreatePostScreenState extends State<CreatePostScreen> {
                       controller: _locationController,
                       enabled: !vm.isLoading,
                       decoration: _inputDecoration(
-                        'Dia chi chi tiet',
-                        hintText: 'Vi du: 123 Nguyen Van Cu, gan truong...',
+                        'Địa chỉ chi tiết',
+                        hintText: 'Ví dụ: 123 Nguyễn Văn Cừ, gần trường...',
                       ),
                     ),
                     const SizedBox(height: 14),
@@ -505,9 +505,9 @@ class _CreatePostScreenState extends State<CreatePostScreen> {
                           return Column(
                             children: [
                               _buildDropdownField(
-                                label: 'Tinh/Thanh pho',
+                                label: 'Tỉnh/Thành phố',
                                 value: _selectedProvince,
-                                hint: 'Chon khu vuc',
+                                hint: 'Chọn khu vực',
                                 options: RoomFilterData.provinces,
                                 onChanged: vm.isLoading
                                     ? (_) {}
@@ -520,9 +520,9 @@ class _CreatePostScreenState extends State<CreatePostScreen> {
                               ),
                               const SizedBox(height: 14),
                               _buildDropdownField(
-                                label: 'Quan/Huyen',
+                                label: 'Quận/Huyện',
                                 value: _selectedDistrict,
-                                hint: 'Chon quan/huyen',
+                                hint: 'Chọn quận/huyện',
                                 options: districts,
                                 onChanged: vm.isLoading
                                     ? (_) {}
@@ -540,9 +540,9 @@ class _CreatePostScreenState extends State<CreatePostScreen> {
                           children: [
                             Expanded(
                               child: _buildDropdownField(
-                                label: 'Tinh/Thanh pho',
+                                label: 'Tỉnh/Thành phố',
                                 value: _selectedProvince,
-                                hint: 'Chon khu vuc',
+                                hint: 'Chọn khu vực',
                                 options: RoomFilterData.provinces,
                                 onChanged: vm.isLoading
                                     ? (_) {}
@@ -557,9 +557,9 @@ class _CreatePostScreenState extends State<CreatePostScreen> {
                             const SizedBox(width: 12),
                             Expanded(
                               child: _buildDropdownField(
-                                label: 'Quan/Huyen',
+                                label: 'Quận/Huyện',
                                 value: _selectedDistrict,
-                                hint: 'Chon quan/huyen',
+                                hint: 'Chọn quận/huyện',
                                 options: districts,
                                 onChanged: vm.isLoading
                                     ? (_) {}
@@ -576,9 +576,9 @@ class _CreatePostScreenState extends State<CreatePostScreen> {
                     ),
                     const SizedBox(height: 14),
                     _buildDropdownField(
-                      label: 'Loai phong',
+                      label: 'Loại phòng',
                       value: _selectedRoomType,
-                      hint: 'Chon loai phong',
+                      hint: 'Chọn loại phòng',
                       options: RoomFilterData.roomTypes,
                       onChanged: vm.isLoading
                           ? (_) {}
@@ -593,7 +593,7 @@ class _CreatePostScreenState extends State<CreatePostScreen> {
               ),
               const SizedBox(height: 18),
               _buildSection(
-                title: '2. Thong tin phong o ghep',
+                title: '2. Thông tin phòng ở ghép',
                 child: Column(
                   children: [
                     Row(
@@ -603,7 +603,7 @@ class _CreatePostScreenState extends State<CreatePostScreen> {
                             controller: _capacityController,
                             enabled: !vm.isLoading,
                             keyboardType: TextInputType.number,
-                            decoration: _inputDecoration('So nguoi'),
+                            decoration: _inputDecoration('Số người'),
                           ),
                         ),
                         const SizedBox(width: 12),
@@ -612,7 +612,7 @@ class _CreatePostScreenState extends State<CreatePostScreen> {
                             controller: _areaController,
                             enabled: !vm.isLoading,
                             keyboardType: TextInputType.number,
-                            decoration: _inputDecoration('Dien tich (m²)'),
+                            decoration: _inputDecoration('Diện tích (m²)'),
                           ),
                         ),
                       ],
@@ -622,39 +622,39 @@ class _CreatePostScreenState extends State<CreatePostScreen> {
                       controller: _priceController,
                       enabled: !vm.isLoading,
                       keyboardType: TextInputType.number,
-                      decoration: _inputDecoration('Tien thue / thang'),
+                      decoration: _inputDecoration('Tiền thuê / tháng'),
                     ),
                   ],
                 ),
               ),
               const SizedBox(height: 18),
               _buildSection(
-                title: '3. Thoi quen sinh hoat',
+                title: '3. Thói quen sinh hoạt',
                 child: _buildHabitsSection(uid),
               ),
               const SizedBox(height: 18),
               _buildSection(
-                title: '4. Tien ich khac',
+                title: '4. Tiện ích khác',
                 child: _buildAmenitiesSection(vm.isLoading),
               ),
               const SizedBox(height: 18),
               _buildSection(
-                title: '5. Mo ta chi tiet',
+                title: '5. Mô tả chi tiết',
                 child: TextField(
                   controller: _descriptionController,
                   enabled: !vm.isLoading,
                   minLines: 5,
                   maxLines: 7,
                   decoration: _inputDecoration(
-                    'Mo ta',
+                    'Mô tả',
                     hintText:
-                        'Viet chi tiet ve can phong, tien ich va mong muon cua ban...',
+                        'Viết chi tiết về căn phòng, tiện ích và mong muốn của bạn...',
                   ),
                 ),
               ),
               const SizedBox(height: 18),
               _buildSection(
-                title: '6. Hinh anh',
+                title: '6. Hình ảnh',
                 child: _buildImagePicker(vm),
               ),
               const SizedBox(height: 24),
@@ -672,7 +672,7 @@ class _CreatePostScreenState extends State<CreatePostScreen> {
                         ),
                       ),
                       child: const Text(
-                        'Quay lai',
+                        'Quay lại',
                         style: TextStyle(
                           color: textPrimary,
                           fontWeight: FontWeight.w700,
@@ -702,7 +702,7 @@ class _CreatePostScreenState extends State<CreatePostScreen> {
                               ),
                             )
                           : const Text(
-                              'Dang bai',
+                              'Đăng bài',
                               style: TextStyle(
                                 fontSize: 16,
                                 fontWeight: FontWeight.w700,

@@ -26,28 +26,28 @@ class _AdminHomeScreenState extends State<AdminHomeScreen> {
 
   static const List<_AdminMenuItem> _menuItems = [
     _AdminMenuItem(
-      label: 'Tong quan',
+      label: 'Tổng quan',
       icon: Icons.space_dashboard_rounded,
       title: 'RoomMate',
       description: '',
     ),
     _AdminMenuItem(
-      label: 'Nguoi dung',
+      label: 'Người dùng',
       icon: Icons.groups_rounded,
-      title: 'Quan ly nguoi dung',
-      description: 'Danh sach thanh vien moi.',
+      title: 'Quản lý người dùng',
+      description: 'Danh sách thành viên mới.',
     ),
     _AdminMenuItem(
-      label: 'Bai dang',
+      label: 'Bài đăng',
       icon: Icons.home_work_rounded,
-      title: 'Quan ly bai dang',
-      description: 'Theo doi bai dang moi, gia phong va khu vuc duoc tim kiem nhieu.',
+      title: 'Quản lý bài đăng',
+      description: 'Theo dõi bài đăng mới, giá phòng và khu vực được tìm kiếm nhiều.',
     ),
     _AdminMenuItem(
-      label: 'Yeu cau',
+      label: 'Yêu cầu',
       icon: Icons.mark_chat_unread_rounded,
-      title: 'Quan ly yeu cau',
-      description: 'Giam sat cac roommate request, muc do phan hoi va trang thai xu ly.',
+      title: 'Quản lý yêu cầu',
+      description: 'Giám sát các roommate request, mức độ phản hồi và trạng thái xử lý.',
     ),
   ];
 
@@ -238,7 +238,7 @@ class _AdminTopBar extends StatelessWidget {
             constraints: const BoxConstraints(maxWidth: 240),
             child: TextField(
               decoration: InputDecoration(
-                hintText: 'Tim kiem RoomMate...',
+                hintText: 'Tìm kiếm RoomMate...',
                 hintStyle: const TextStyle(color: AppColors.textSecondary),
                 prefixIcon: const Icon(Icons.search_rounded),
                 filled: true,
@@ -272,7 +272,7 @@ class _AdminTopBar extends StatelessWidget {
                     ),
                   )
                 : const Icon(Icons.logout_rounded),
-            label: Text(isLoading ? 'Dang xu ly' : 'Dang xuat'),
+            label: Text(isLoading ? 'Đang xử lý' : 'Đăng xuất'),
           ),
         ],
       ),
@@ -330,7 +330,7 @@ class _AdminSidebar extends StatelessWidget {
                       ),
                       SizedBox(height: 2),
                       Text(
-                        'BANG DIEU KHIEN',
+                        'BẢNG ĐIỀU KHIỂN',
                         style: TextStyle(
                           fontSize: 11,
                           letterSpacing: 1.3,
@@ -364,7 +364,7 @@ class _AdminSidebar extends StatelessWidget {
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
                       Text(
-                        'Quan tri RoomMate',
+                        'Quản trị RoomMate',
                         style: TextStyle(
                           fontWeight: FontWeight.w700,
                           color: AppColors.textPrimary,
@@ -372,7 +372,7 @@ class _AdminSidebar extends StatelessWidget {
                       ),
                       SizedBox(height: 4),
                       Text(
-                        'Trung tam quan tri web',
+                        'Trung tâm quản trị web',
                         style: TextStyle(
                           color: AppColors.textSecondary,
                           fontSize: 13,
@@ -422,7 +422,7 @@ class _AdminSidebar extends StatelessWidget {
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 Text(
-                  'Thong ke RoomMate',
+                  'Thống kê RoomMate',
                   style: TextStyle(
                     color: Colors.white,
                     fontWeight: FontWeight.w800,
@@ -528,9 +528,9 @@ class _DashboardSection extends StatelessWidget {
                         postSnapshot.hasError ||
                         requestSnapshot.hasError) {
                       return _SectionCard(
-                        title: 'Tong quan du lieu',
+                        title: 'Tổng quan dữ liệu',
                         child: AppErrorState(
-                          title: 'Khong tai duoc thong ke',
+                          title: 'Không tải được thống kê',
                           message: _firstErrorMessage([
                             userSnapshot.error,
                             postSnapshot.error,
@@ -549,9 +549,9 @@ class _DashboardSection extends StatelessWidget {
                         !postSnapshot.hasData &&
                         !requestSnapshot.hasData) {
                       return const _SectionCard(
-                        title: 'Tong quan du lieu',
+                        title: 'Tổng quan dữ liệu',
                         child: AppLoadingState(
-                          message: 'Dang tai thong ke he thong...',
+                          message: 'Đang tải thống kê hệ thống...',
                         ),
                       );
                     }
@@ -568,23 +568,23 @@ class _DashboardSection extends StatelessWidget {
                       runSpacing: 18,
                       children: [
                         _OverviewCard(
-                          title: 'Nguoi dung',
+                          title: 'Người dùng',
                           value: '$users',
-                          subtitle: 'Thanh vien da dang ky',
+                          subtitle: 'Thành viên đã đăng ký',
                           accent: const Color(0xFF0F766E),
                           icon: Icons.groups_rounded,
                         ),
                         _OverviewCard(
-                          title: 'Bai dang',
+                          title: 'Bài đăng',
                           value: '$posts',
-                          subtitle: 'Phong dang hien thi',
+                          subtitle: 'Phòng đang hiển thị',
                           accent: const Color(0xFF2563EB),
                           icon: Icons.home_work_rounded,
                         ),
                         _OverviewCard(
-                          title: 'Yeu cau',
+                          title: 'Yêu cầu',
                           value: '$requests',
-                          subtitle: 'Roommate request moi',
+                          subtitle: 'Roommate request mới',
                           accent: const Color(0xFFF97316),
                           icon: Icons.mark_chat_unread_rounded,
                         ),
@@ -653,14 +653,14 @@ class _DashboardMainColumn extends StatelessWidget {
           builder: (context, snapshot) {
             if (snapshot.hasError) {
               return _SectionCard(
-                title: 'Bai dang gan day',
+                title: 'Bài đăng gần đây',
                 trailing: const _TagPill(
-                  label: 'Loi du lieu',
+                  label: 'Lỗi dữ liệu',
                   color: Color(0xFFFEE2E2),
                   textColor: Color(0xFFDC2626),
                 ),
                 child: AppErrorState(
-                  title: 'Khong tai duoc bai dang',
+                  title: 'Không tải được bài đăng',
                   message: _snapshotErrorText(snapshot.error),
                   compact: true,
                 ),
@@ -668,9 +668,9 @@ class _DashboardMainColumn extends StatelessWidget {
             }
 
             return _SectionCard(
-              title: 'Bai dang gan day',
+              title: 'Bài đăng gần đây',
               trailing: const _TagPill(
-                label: 'Du lieu thuc',
+                label: 'Dữ liệu thực',
                 color: Color(0xFFE0F2FE),
                 textColor: Color(0xFF0369A1),
               ),
@@ -689,14 +689,14 @@ class _DashboardMainColumn extends StatelessWidget {
           builder: (context, snapshot) {
             if (snapshot.hasError) {
               return _SectionCard(
-                title: 'Thanh vien moi',
+                title: 'Thành viên mới',
                 trailing: const _TagPill(
-                  label: 'Loi du lieu',
+                  label: 'Lỗi dữ liệu',
                   color: Color(0xFFFEE2E2),
                   textColor: Color(0xFFDC2626),
                 ),
                 child: AppErrorState(
-                  title: 'Khong tai duoc nguoi dung',
+                  title: 'Không tải được người dùng',
                   message: _snapshotErrorText(snapshot.error),
                   compact: true,
                 ),
@@ -707,7 +707,7 @@ class _DashboardMainColumn extends StatelessWidget {
                 .where((user) => user.role != 'admin')
                 .toList();
             return _SectionCard(
-              title: 'Thanh vien moi',
+              title: 'Thành viên mới',
               trailing: const _TagPill(
                 label: 'RoomMate',
                 color: Color(0xFFDCFCE7),
@@ -741,9 +741,9 @@ class _DashboardSideColumn extends StatelessWidget {
           builder: (context, snapshot) {
             if (snapshot.hasError) {
               return _SectionCard(
-                title: 'Yeu cau gan day',
+                title: 'Yêu cầu gần đây',
                 child: AppErrorState(
-                  title: 'Khong tai duoc yeu cau',
+                  title: 'Không tải được yêu cầu',
                   message: _snapshotErrorText(snapshot.error),
                   compact: true,
                 ),
@@ -751,7 +751,7 @@ class _DashboardSideColumn extends StatelessWidget {
             }
 
             return _SectionCard(
-              title: 'Yeu cau gan day',
+              title: 'Yêu cầu gần đây',
               child: _RequestsPreviewList(
                 requests: snapshot.data ?? const [],
                 isLoading:
@@ -788,9 +788,9 @@ class _UsersSection extends StatelessWidget {
       builder: (context, snapshot) {
         if (snapshot.hasError) {
           return _SectionCard(
-            title: 'Danh sach nguoi dung moi',
+            title: 'Danh sách người dùng mới',
             child: AppErrorState(
-              title: 'Khong tai duoc danh sach nguoi dung',
+              title: 'Không tải được danh sách người dùng',
               message: _snapshotErrorText(snapshot.error),
             ),
           );
@@ -800,9 +800,9 @@ class _UsersSection extends StatelessWidget {
             .where((user) => user.role != 'admin')
             .toList();
         return _SectionCard(
-          title: 'Danh sach nguoi dung moi',
+          title: 'Danh sách người dùng mới',
           trailing: Text(
-            '${users.length} thanh vien',
+            '${users.length} thành viên',
             style: const TextStyle(
               color: AppColors.textSecondary,
               fontWeight: FontWeight.w600,
@@ -831,18 +831,18 @@ class _PostsSection extends StatelessWidget {
       builder: (context, snapshot) {
         if (snapshot.hasError) {
           return _SectionCard(
-            title: 'Danh sach bai dang',
+            title: 'Danh sách bài đăng',
             child: AppErrorState(
-              title: 'Khong tai duoc danh sach bai dang',
+              title: 'Không tải được danh sách bài đăng',
               message: _snapshotErrorText(snapshot.error),
             ),
           );
         }
 
         return _SectionCard(
-          title: 'Danh sach bai dang',
+          title: 'Danh sách bài đăng',
           trailing: Text(
-            '${snapshot.data?.length ?? 0} bai dang',
+            '${snapshot.data?.length ?? 0} bài đăng',
             style: const TextStyle(
               color: AppColors.textSecondary,
               fontWeight: FontWeight.w600,
@@ -871,18 +871,18 @@ class _RequestsSection extends StatelessWidget {
       builder: (context, snapshot) {
         if (snapshot.hasError) {
           return _SectionCard(
-            title: 'Danh sach roommate request',
+            title: 'Danh sách roommate request',
             child: AppErrorState(
-              title: 'Khong tai duoc roommate request',
+              title: 'Không tải được roommate request',
               message: _snapshotErrorText(snapshot.error),
             ),
           );
         }
 
         return _SectionCard(
-          title: 'Danh sach roommate request',
+          title: 'Danh sách roommate request',
           trailing: Text(
-            '${snapshot.data?.length ?? 0} yeu cau',
+            '${snapshot.data?.length ?? 0} yêu cầu',
             style: const TextStyle(
               color: AppColors.textSecondary,
               fontWeight: FontWeight.w600,
@@ -934,7 +934,7 @@ class _RoomMateHeroCard extends StatelessWidget {
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 Text(
-                  'Quan tri web RoomMate',
+                  'Quản trị web RoomMate',
                   style: TextStyle(
                     fontSize: 32,
                     fontWeight: FontWeight.w900,
@@ -958,7 +958,7 @@ class _RoomMateHeroCard extends StatelessWidget {
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 Text(
-                  'Trang thai he thong',
+                  'Trạng thái hệ thống',
                   style: TextStyle(
                     color: Colors.white,
                     fontWeight: FontWeight.w700,
@@ -966,17 +966,17 @@ class _RoomMateHeroCard extends StatelessWidget {
                 ),
                 SizedBox(height: 12),
                 _HeroProgressItem(
-                  label: 'Tuong tac nguoi dung',
+                  label: 'Tương tác người dùng',
                   value: '84%',
                 ),
                 SizedBox(height: 10),
                 _HeroProgressItem(
-                  label: 'Do phu bai dang',
+                  label: 'Độ phủ bài đăng',
                   value: '72%',
                 ),
                 SizedBox(height: 10),
                 _HeroProgressItem(
-                  label: 'Yeu cau cho xu ly',
+                  label: 'Yêu cầu chờ xử lý',
                   value: '36%',
                 ),
               ],
@@ -1182,12 +1182,12 @@ class _PostsPreviewList extends StatelessWidget {
   Widget build(BuildContext context) {
     if (isLoading) {
       return const AppLoadingState(
-        message: 'Dang tai bai dang...',
+        message: 'Đang tải bài đăng...',
       );
     }
 
     if (posts.isEmpty) {
-      return const _EmptyState(message: 'Chua co bai dang nao de hien thi.');
+      return const _EmptyState(message: 'Chưa có bài đăng nào để hiển thị.');
     }
 
     return Column(
@@ -1236,7 +1236,7 @@ class _PostPreviewTile extends StatelessWidget {
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 Text(
-                  post.title.isEmpty ? 'Phong moi' : post.title,
+                  post.title.isEmpty ? 'Phòng mới' : post.title,
                   maxLines: 1,
                   overflow: TextOverflow.ellipsis,
                   style: const TextStyle(
@@ -1286,12 +1286,12 @@ class _UsersPreviewGrid extends StatelessWidget {
   Widget build(BuildContext context) {
     if (isLoading) {
       return const AppLoadingState(
-        message: 'Dang tai nguoi dung...',
+        message: 'Đang tải người dùng...',
       );
     }
 
     if (users.isEmpty) {
-      return const _EmptyState(message: 'Chua co nguoi dung moi.');
+      return const _EmptyState(message: 'Chưa có người dùng mới.');
     }
 
     return Wrap(
@@ -1356,7 +1356,7 @@ class _UserProfileMiniCard extends StatelessWidget {
           ),
           const SizedBox(height: 12),
           Text(
-            user.fullName.isEmpty ? 'Thanh vien moi' : user.fullName,
+            user.fullName.isEmpty ? 'Thành viên mới' : user.fullName,
             maxLines: 1,
             overflow: TextOverflow.ellipsis,
             style: const TextStyle(
@@ -1368,7 +1368,7 @@ class _UserProfileMiniCard extends StatelessWidget {
           const SizedBox(height: 4),
           Text(
             user.preferredLocation.isEmpty
-                ? 'Chua cap nhat khu vuc'
+                ? 'Chưa cập nhật khu vực'
                 : user.preferredLocation,
             maxLines: 1,
             overflow: TextOverflow.ellipsis,
@@ -1403,12 +1403,12 @@ class _RequestsPreviewList extends StatelessWidget {
   Widget build(BuildContext context) {
     if (isLoading) {
       return const AppLoadingState(
-        message: 'Dang tai yeu cau...',
+        message: 'Đang tải yêu cầu...',
       );
     }
 
     if (requests.isEmpty) {
-      return const _EmptyState(message: 'Chua co roommate request moi.');
+      return const _EmptyState(message: 'Chưa có roommate request mới.');
     }
 
     return Column(
@@ -1465,7 +1465,7 @@ class _RequestPreviewTile extends StatelessWidget {
               children: [
                 Text(
                   request.requesterName.isEmpty
-                      ? 'Yeu cau moi'
+                      ? 'Yêu cầu mới'
                       : request.requesterName,
                   maxLines: 1,
                   overflow: TextOverflow.ellipsis,
@@ -1476,7 +1476,7 @@ class _RequestPreviewTile extends StatelessWidget {
                 ),
                 const SizedBox(height: 4),
                 Text(
-                  request.message.isEmpty ? 'Khong co noi dung.' : request.message,
+                  request.message.isEmpty ? 'Không có nội dung.' : request.message,
                   maxLines: 2,
                   overflow: TextOverflow.ellipsis,
                   style: const TextStyle(
@@ -1525,7 +1525,7 @@ class _InsightPromoCard extends StatelessWidget {
           ),
           SizedBox(height: 16),
           Text(
-            'Kiem soat chat luong bai dang va ket noi ghep phong nhanh hon.',
+            'Kiểm soát chất lượng bài đăng và kết nối ghép phòng nhanh hơn.',
             style: TextStyle(
               color: Colors.white,
               fontSize: 24,
@@ -1535,7 +1535,7 @@ class _InsightPromoCard extends StatelessWidget {
           ),
           SizedBox(height: 12),
           Text(
-            'Giao dien duoc toi uu cho web de admin theo doi du lieu he thong bang cac the thong ke, danh sach va activity card.',
+            'Giao diện được tối ưu cho web để admin theo dõi dữ liệu hệ thống bằng các thẻ thống kê, danh sách và activity card.',
             style: TextStyle(
               color: Color(0xFFCCFBF1),
               height: 1.5,
@@ -1569,7 +1569,7 @@ class _SimpleBarChartCard extends StatelessWidget {
             ),
             SizedBox(width: 8),
             Text(
-              'Tong muc tuong tac tuan nay',
+              'Tổng mức tương tác tuần này',
               style: TextStyle(
                 color: AppColors.textPrimary,
                 fontWeight: FontWeight.w700,
@@ -1633,12 +1633,12 @@ class _UsersTable extends StatelessWidget {
   Widget build(BuildContext context) {
     if (isLoading) {
       return const AppLoadingState(
-        message: 'Dang tai danh sach nguoi dung...',
+        message: 'Đang tải danh sách người dùng...',
       );
     }
 
     if (users.isEmpty) {
-      return const _EmptyState(message: 'Chua co nguoi dung de hien thi.');
+      return const _EmptyState(message: 'Chưa có người dùng để hiển thị.');
     }
 
     return SingleChildScrollView(
@@ -1650,10 +1650,10 @@ class _UsersTable extends StatelessWidget {
           color: AppColors.textPrimary,
         ),
         columns: const [
-          DataColumn(label: Text('Nguoi dung')),
-          DataColumn(label: Text('Khu vuc')),
-          DataColumn(label: Text('Nghe nghiep')),
-          DataColumn(label: Text('Vai tro')),
+          DataColumn(label: Text('Người dùng')),
+          DataColumn(label: Text('Khu vực')),
+          DataColumn(label: Text('Nghề nghiệp')),
+          DataColumn(label: Text('Vai trò')),
         ],
         rows: users
             .map(
@@ -1693,12 +1693,12 @@ class _PostsTable extends StatelessWidget {
   Widget build(BuildContext context) {
     if (isLoading) {
       return const AppLoadingState(
-        message: 'Dang tai danh sach bai dang...',
+        message: 'Đang tải danh sách bài đăng...',
       );
     }
 
     if (posts.isEmpty) {
-      return const _EmptyState(message: 'Chua co bai dang de hien thi.');
+      return const _EmptyState(message: 'Chưa có bài đăng để hiển thị.');
     }
 
     return SingleChildScrollView(
@@ -1710,11 +1710,11 @@ class _PostsTable extends StatelessWidget {
           color: AppColors.textPrimary,
         ),
         columns: const [
-          DataColumn(label: Text('Tieu de')),
-          DataColumn(label: Text('Khu vuc')),
-          DataColumn(label: Text('Loai phong')),
-          DataColumn(label: Text('Gia')),
-          DataColumn(label: Text('Suc chua')),
+          DataColumn(label: Text('Tiêu đề')),
+          DataColumn(label: Text('Khu vực')),
+          DataColumn(label: Text('Loại phòng')),
+          DataColumn(label: Text('Giá')),
+          DataColumn(label: Text('Sức chứa')),
         ],
         rows: posts
             .map(
@@ -1763,12 +1763,12 @@ class _RequestsTable extends StatelessWidget {
   Widget build(BuildContext context) {
     if (isLoading) {
       return const AppLoadingState(
-        message: 'Dang tai roommate request...',
+        message: 'Đang tải roommate request...',
       );
     }
 
     if (requests.isEmpty) {
-      return const _EmptyState(message: 'Chua co roommate request de hien thi.');
+      return const _EmptyState(message: 'Chưa có roommate request để hiển thị.');
     }
 
     return SingleChildScrollView(
@@ -1780,10 +1780,10 @@ class _RequestsTable extends StatelessWidget {
           color: AppColors.textPrimary,
         ),
         columns: const [
-          DataColumn(label: Text('Nguoi gui')),
+          DataColumn(label: Text('Người gửi')),
           DataColumn(label: Text('Post ID')),
-          DataColumn(label: Text('Noi dung')),
-          DataColumn(label: Text('Trang thai')),
+          DataColumn(label: Text('Nội dung')),
+          DataColumn(label: Text('Trạng thái')),
         ],
         rows: requests
             .map(
@@ -1859,7 +1859,7 @@ class _EmptyState extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return AppEmptyState(
-      title: 'Chua co du lieu',
+      title: 'Chưa có dữ liệu',
       message: message,
       compact: true,
       icon: Icons.inbox_outlined,
@@ -1897,19 +1897,19 @@ _StatusMeta _statusMeta(RoommateRequestStatus status) {
   switch (status) {
     case RoommateRequestStatus.accepted:
       return const _StatusMeta(
-        label: 'Da chap nhan',
+        label: 'Đã chấp nhận',
         background: Color(0xFFDCFCE7),
         foreground: Color(0xFF15803D),
       );
     case RoommateRequestStatus.rejected:
       return const _StatusMeta(
-        label: 'Da tu choi',
+        label: 'Đã từ chối',
         background: Color(0xFFFEE2E2),
         foreground: Color(0xFFDC2626),
       );
     case RoommateRequestStatus.pending:
       return const _StatusMeta(
-        label: 'Dang cho',
+        label: 'Đang chờ',
         background: Color(0xFFFFEDD5),
         foreground: Color(0xFFEA580C),
       );
@@ -1936,11 +1936,11 @@ String _joinText(List<String> values) {
       .map((value) => value.trim())
       .where((value) => value.isNotEmpty)
       .toList();
-  return filtered.isEmpty ? 'Dang cap nhat' : filtered.join(' • ');
+  return filtered.isEmpty ? 'Đang cập nhật' : filtered.join(' • ');
 }
 
 String _fallbackText(String value) {
-  return value.trim().isEmpty ? 'Dang cap nhat' : value.trim();
+  return value.trim().isEmpty ? 'Đang cập nhật' : value.trim();
 }
 
 String _initials(String value) {
@@ -1959,7 +1959,7 @@ String _initials(String value) {
 }
 
 String _snapshotErrorText(Object? error) {
-  if (error == null) return 'Da xay ra loi khi tai du lieu.';
+  if (error == null) return 'Đã xảy ra lỗi khi tải dữ liệu.';
   return error.toString().replaceFirst('Exception: ', '');
 }
 
@@ -1967,5 +1967,5 @@ String _firstErrorMessage(List<Object?> errors) {
   for (final error in errors) {
     if (error != null) return _snapshotErrorText(error);
   }
-  return 'Da xay ra loi khi tai du lieu.';
+  return 'Đã xảy ra lỗi khi tải dữ liệu.';
 }

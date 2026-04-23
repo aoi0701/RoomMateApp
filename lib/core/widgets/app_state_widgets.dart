@@ -5,7 +5,7 @@ import '../theme/app_colors.dart';
 class AppLoadingState extends StatelessWidget {
   const AppLoadingState({
     super.key,
-    this.message = 'Dang tai du lieu...',
+    this.message = 'Đang tải dữ liệu...',
     this.padding = const EdgeInsets.all(24),
   });
 
@@ -112,7 +112,7 @@ class AppErrorState extends StatelessWidget {
     required this.title,
     required this.message,
     this.onRetry,
-    this.retryLabel = 'Thu lai',
+    this.retryLabel = 'Thử lại',
     this.compact = false,
   });
 

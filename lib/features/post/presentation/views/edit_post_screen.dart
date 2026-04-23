@@ -93,7 +93,7 @@ class _EditPostScreenState extends State<EditPostScreen> {
 
     ScaffoldMessenger.of(context).showSnackBar(
       const SnackBar(
-        content: Text('Chi luu toi da 5 anh cho moi bai dang.'),
+        content: Text('Chỉ lưu tối đa 5 ảnh cho mỗi bài đăng.'),
       ),
     );
   }
@@ -123,8 +123,8 @@ class _EditPostScreenState extends State<EditPostScreen> {
       SnackBar(
         content: Text(
           success
-              ? 'Cap nhat bai dang thanh cong'
-              : (vm.errorMessage ?? 'Cap nhat bai dang that bai'),
+              ? 'Cập nhật bài đăng thành công'
+              : (vm.errorMessage ?? 'Cập nhật bài đăng thất bại'),
         ),
       ),
     );
@@ -281,7 +281,7 @@ class _EditPostScreenState extends State<EditPostScreen> {
   Widget _buildHabitsSection(String? uid) {
     if (uid == null) {
       return const Text(
-        'Chua co thong tin ho so de hien thi thoi quen sinh hoat.',
+        'Chưa có thông tin hồ sơ để hiển thị thói quen sinh hoạt.',
         style: TextStyle(color: textSecondary),
       );
     }
@@ -297,7 +297,7 @@ class _EditPostScreenState extends State<EditPostScreen> {
 
         if (!snapshot.hasData || !snapshot.data!.exists) {
           return const Text(
-            'Chua co du lieu ho so.',
+            'Chưa có dữ liệu hồ sơ.',
             style: TextStyle(color: textSecondary),
           );
         }
@@ -310,7 +310,7 @@ class _EditPostScreenState extends State<EditPostScreen> {
 
         if (selectedHabits.isEmpty) {
           return const Text(
-            'Ban chua cap nhat thoi quen trong ho so.',
+            'Bạn chưa cập nhật thói quen trong hồ sơ.',
             style: TextStyle(color: textSecondary),
           );
         }
@@ -392,7 +392,7 @@ class _EditPostScreenState extends State<EditPostScreen> {
                         Icon(Icons.add, size: 38, color: textSecondary),
                         SizedBox(height: 8),
                         Text(
-                          'Them anh',
+                          'Thêm ảnh',
                           style: TextStyle(
                             color: textSecondary,
                             fontWeight: FontWeight.w600,
@@ -468,14 +468,14 @@ class _EditPostScreenState extends State<EditPostScreen> {
             Expanded(
               child: Text(
                 displayLocalImages
-                    ? 'Dang dung ${_selectedImages.length}/5 anh moi'
-                    : 'Dang hien ${_existingImageUrls.length}/5 anh',
+                    ? 'Đang dùng ${_selectedImages.length}/5 ảnh mới'
+                    : 'Đang hiện ${_existingImageUrls.length}/5 anh',
                 style: const TextStyle(fontSize: 13, color: textSecondary),
               ),
             ),
             TextButton(
               onPressed: vm.isLoading ? null : _pickImages,
-              child: Text(displayLocalImages ? 'Chon lai anh' : 'Thay anh'),
+              child: Text(displayLocalImages ? 'Chọn lại ảnh' : 'Thay ảnh'),
             ),
           ],
         ),
@@ -494,7 +494,7 @@ class _EditPostScreenState extends State<EditPostScreen> {
     return Scaffold(
       backgroundColor: bgColor,
       appBar: AppBar(
-        title: const Text('Chinh sua bai dang'),
+        title: const Text('Chỉnh sửa bài đăng'),
         centerTitle: true,
         backgroundColor: bgColor,
         surfaceTintColor: bgColor,
@@ -505,19 +505,19 @@ class _EditPostScreenState extends State<EditPostScreen> {
           child: Column(
             children: [
               _buildSection(
-                title: '1. Thong tin co ban',
+                title: '1. Thông tin cơ bản',
                 child: Column(
                   children: [
                     TextField(
                       controller: _titleController,
                       enabled: !vm.isLoading,
-                      decoration: _inputDecoration('Tieu de bai dang'),
+                      decoration: _inputDecoration('Tiêu đề bài đăng'),
                     ),
                     const SizedBox(height: 14),
                     TextField(
                       controller: _locationController,
                       enabled: !vm.isLoading,
-                      decoration: _inputDecoration('Dia chi chi tiet'),
+                      decoration: _inputDecoration('Địa chỉ chi tiết'),
                     ),
                     const SizedBox(height: 14),
                     LayoutBuilder(
@@ -527,9 +527,9 @@ class _EditPostScreenState extends State<EditPostScreen> {
                           return Column(
                             children: [
                               _buildDropdownField(
-                                label: 'Tinh/Thanh pho',
+                                label: 'Tỉnh/Thành phố',
                                 value: _selectedProvince,
-                                hint: 'Chon khu vuc',
+                                hint: 'Chọn khu vực',
                                 options: RoomFilterData.provinces,
                                 onChanged: vm.isLoading
                                     ? (_) {}
@@ -542,9 +542,9 @@ class _EditPostScreenState extends State<EditPostScreen> {
                               ),
                               const SizedBox(height: 14),
                               _buildDropdownField(
-                                label: 'Quan/Huyen',
+                                label: 'Quận/Hủyện',
                                 value: _selectedDistrict,
-                                hint: 'Chon quan/huyen',
+                                hint: 'Chọn quận/huyện',
                                 options: districts,
                                 onChanged: vm.isLoading
                                     ? (_) {}
@@ -562,9 +562,9 @@ class _EditPostScreenState extends State<EditPostScreen> {
                           children: [
                             Expanded(
                               child: _buildDropdownField(
-                                label: 'Tinh/Thanh pho',
+                                label: 'Tỉnh/Thành phố',
                                 value: _selectedProvince,
-                                hint: 'Chon khu vuc',
+                                hint: 'Chọn khu vực',
                                 options: RoomFilterData.provinces,
                                 onChanged: vm.isLoading
                                     ? (_) {}
@@ -579,9 +579,9 @@ class _EditPostScreenState extends State<EditPostScreen> {
                             const SizedBox(width: 12),
                             Expanded(
                               child: _buildDropdownField(
-                                label: 'Quan/Huyen',
+                                label: 'Quận/Hủyện',
                                 value: _selectedDistrict,
-                                hint: 'Chon quan/huyen',
+                                hint: 'Chọn quận/huyện',
                                 options: districts,
                                 onChanged: vm.isLoading
                                     ? (_) {}
@@ -598,9 +598,9 @@ class _EditPostScreenState extends State<EditPostScreen> {
                     ),
                     const SizedBox(height: 14),
                     _buildDropdownField(
-                      label: 'Loai phong',
+                      label: 'Loại phòng',
                       value: _selectedRoomType,
-                      hint: 'Chon loai phong',
+                      hint: 'Chọn loại phòng',
                       options: RoomFilterData.roomTypes,
                       onChanged: vm.isLoading
                           ? (_) {}
@@ -615,7 +615,7 @@ class _EditPostScreenState extends State<EditPostScreen> {
               ),
               const SizedBox(height: 18),
               _buildSection(
-                title: '2. Thong tin phong o ghep',
+                title: '2. Thông tin phòng ở ghép',
                 child: Column(
                   children: [
                     Row(
@@ -625,7 +625,7 @@ class _EditPostScreenState extends State<EditPostScreen> {
                             controller: _capacityController,
                             enabled: !vm.isLoading,
                             keyboardType: TextInputType.number,
-                            decoration: _inputDecoration('So nguoi'),
+                            decoration: _inputDecoration('Số người'),
                           ),
                         ),
                         const SizedBox(width: 12),
@@ -634,7 +634,7 @@ class _EditPostScreenState extends State<EditPostScreen> {
                             controller: _areaController,
                             enabled: !vm.isLoading,
                             keyboardType: TextInputType.number,
-                            decoration: _inputDecoration('Dien tich (m²)'),
+                            decoration: _inputDecoration('Diện tích (m²)'),
                           ),
                         ),
                       ],
@@ -644,35 +644,35 @@ class _EditPostScreenState extends State<EditPostScreen> {
                       controller: _priceController,
                       enabled: !vm.isLoading,
                       keyboardType: TextInputType.number,
-                      decoration: _inputDecoration('Tien thue / thang'),
+                      decoration: _inputDecoration('Tiền thuê / tháng'),
                     ),
                   ],
                 ),
               ),
               const SizedBox(height: 18),
               _buildSection(
-                title: '3. Thoi quen sinh hoat',
+                title: '3. Thói quen sinh hoạt',
                 child: _buildHabitsSection(uid),
               ),
               const SizedBox(height: 18),
               _buildSection(
-                title: '4. Tien ich khac',
+                title: '4. Tiện ích khác',
                 child: _buildAmenitiesSection(vm.isLoading),
               ),
               const SizedBox(height: 18),
               _buildSection(
-                title: '5. Mo ta chi tiet',
+                title: '5. Mô tả chi tiết',
                 child: TextField(
                   controller: _descriptionController,
                   enabled: !vm.isLoading,
                   minLines: 5,
                   maxLines: 7,
-                  decoration: _inputDecoration('Mo ta'),
+                  decoration: _inputDecoration('Mô tả'),
                 ),
               ),
               const SizedBox(height: 18),
               _buildSection(
-                title: '6. Hinh anh',
+                title: '6. Hình ảnh',
                 child: _buildImagePicker(vm),
               ),
               const SizedBox(height: 24),
@@ -690,7 +690,7 @@ class _EditPostScreenState extends State<EditPostScreen> {
                         ),
                       ),
                       child: const Text(
-                        'Huy',
+                        'Hủy',
                         style: TextStyle(
                           color: textPrimary,
                           fontWeight: FontWeight.w700,
@@ -720,7 +720,7 @@ class _EditPostScreenState extends State<EditPostScreen> {
                               ),
                             )
                           : const Text(
-                              'Luu thay doi',
+                              'Lưu thay đổi',
                               style: TextStyle(
                                 fontSize: 16,
                                 fontWeight: FontWeight.w700,

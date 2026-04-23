@@ -992,7 +992,7 @@ List<Widget> _buildPostTags(PostModel post) {
     tags.add('${post.area} m2');
   }
   if (tags.length < 3 && post.capacity > 0) {
-    tags.add('${post.capacity} nguoi');
+    tags.add('${post.capacity} người');
   }
 
   return tags.take(3).map((item) => _TagPill(label: item)).toList();

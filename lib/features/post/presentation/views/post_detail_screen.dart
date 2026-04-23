@@ -43,7 +43,7 @@ class PostDetailScreen extends StatelessWidget {
   }
 
   String _formatDate(DateTime? value) {
-    if (value == null) return 'Chua cap nhat';
+    if (value == null) return 'Chưa cập nhật';
     final day = value.day.toString().padLeft(2, '0');
     final month = value.month.toString().padLeft(2, '0');
     final year = value.year.toString();
@@ -56,7 +56,7 @@ class PostDetailScreen extends StatelessWidget {
       if (post.district.trim().isNotEmpty) post.district.trim(),
       if (post.province.trim().isNotEmpty) post.province.trim(),
     ];
-    if (parts.isEmpty) return 'Chua cap nhat dia chi';
+    if (parts.isEmpty) return 'Chưa cập nhật địa chỉ';
     return parts.join(', ');
   }
 
@@ -149,26 +149,26 @@ class PostDetailScreen extends StatelessWidget {
 
           final ownerName = owner?.fullName.trim().isNotEmpty == true
               ? owner!.fullName
-              : 'Nguoi dang bai';
+              : 'Người đăng bài';
           final ownerSubtitle = owner == null
-              ? 'Chua co thong tin ho so'
+              ? 'Chưa có thông tin hồ sơ'
               : [
                   if (owner.gender.trim().isNotEmpty) owner.gender.trim(),
                   if (owner.address.trim().isNotEmpty) owner.address.trim(),
                 ].isEmpty
-                  ? 'Thanh vien RoomMate'
+                  ? 'Thành viên RoomMate'
                   : [
                       if (owner.gender.trim().isNotEmpty) owner.gender.trim(),
                       if (owner.address.trim().isNotEmpty) owner.address.trim(),
                     ].join(' • ');
 
           final ownerContact = owner == null
-              ? 'Khong co thong tin lien he'
+              ? 'Không có thông tin liên hệ'
               : owner.phone.trim().isNotEmpty
                 ? owner.phone.trim()
                 : owner.email.trim().isNotEmpty
                   ? owner.email.trim()
-                  : 'Chua cap nhat lien he';
+                  : 'Chưa cập nhật lien he';
 
           return Column(
             crossAxisAlignment: CrossAxisAlignment.start,
@@ -234,7 +234,7 @@ class PostDetailScreen extends StatelessWidget {
                     ),
                   ),
                   child: const Text(
-                    'Xem ho so',
+                    'Xem hồ sơ',
                     style: TextStyle(
                       fontSize: 16,
                       fontWeight: FontWeight.w700,
@@ -255,7 +255,7 @@ class PostDetailScreen extends StatelessWidget {
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           Text(
-            post.title.trim().isNotEmpty ? post.title.trim() : 'Bai dang tim ban o ghep',
+            post.title.trim().isNotEmpty ? post.title.trim() : 'Bài đăng tìm bạn ở ghép',
             style: const TextStyle(
               fontSize: 28,
               height: 1.2,
@@ -289,20 +289,20 @@ class PostDetailScreen extends StatelessWidget {
               Expanded(
                 child: _TopMetric(
                   icon: Icons.payments_outlined,
-                  label: 'Gia',
+                  label: 'Giá',
                   value: post.price > 0
                       ? '${_formatMoney(post.price)}d/thang'
-                      : 'Thoa thuan',
+                      : 'Thỏa thuận',
                 ),
               ),
               const SizedBox(width: 12),
               Expanded(
                 child: _TopMetric(
                   icon: Icons.king_bed_outlined,
-                  label: 'Loai phong',
+                  label: 'Loại phòng',
                   value: post.roomType.trim().isNotEmpty
                       ? post.roomType.trim()
-                      : 'Chua cap nhat',
+                      : 'Chưa cập nhật',
                 ),
               ),
             ],
@@ -318,7 +318,7 @@ class PostDetailScreen extends StatelessWidget {
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           const Text(
-            'Thong tin chi tiet',
+            'Thông tin chi tiết',
             style: TextStyle(
               fontSize: 20,
               fontWeight: FontWeight.w800,
@@ -336,36 +336,36 @@ class PostDetailScreen extends StatelessWidget {
             children: [
               _InfoTile(
                 icon: Icons.square_foot_outlined,
-                label: 'Dien tich',
-                value: post.area > 0 ? '${post.area} m2' : 'Chua cap nhat',
+                label: 'Diện tích',
+                value: post.area > 0 ? '${post.area} m2' : 'Chưa cập nhật',
               ),
               _InfoTile(
                 icon: Icons.group_outlined,
-                label: 'Suc chua',
-                value: post.capacity > 0 ? '${post.capacity} nguoi' : 'Chua cap nhat',
+                label: 'Sức chứa',
+                value: post.capacity > 0 ? '${post.capacity} người' : 'Chưa cập nhật',
               ),
               _InfoTile(
                 icon: Icons.map_outlined,
-                label: 'Tinh/Thanh pho',
+                label: 'Tỉnh/Thành phố',
                 value: post.province.trim().isNotEmpty
                     ? post.province.trim()
-                    : 'Chua cap nhat',
+                    : 'Chưa cập nhật',
               ),
               _InfoTile(
                 icon: Icons.location_city_outlined,
-                label: 'Quan/Huyen',
+                label: 'Quận/Huyện',
                 value: post.district.trim().isNotEmpty
                     ? post.district.trim()
-                    : 'Chua chon',
+                    : 'Chưa chọn',
               ),
               _InfoTile(
                 icon: Icons.calendar_today_outlined,
-                label: 'Dang luc',
+                label: 'Đăng lúc',
                 value: _formatDate(post.createdAt),
               ),
               _InfoTile(
                 icon: Icons.update_outlined,
-                label: 'Cap nhat',
+                label: 'Cập nhật',
                 value: _formatDate(post.updatedAt),
               ),
             ],
@@ -381,7 +381,7 @@ class PostDetailScreen extends StatelessWidget {
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           const Text(
-            'Tien ich',
+            'Tiện ích',
             style: TextStyle(
               fontSize: 20,
               fontWeight: FontWeight.w800,
@@ -427,7 +427,7 @@ class PostDetailScreen extends StatelessWidget {
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           const Text(
-            'Mo ta chi tiet',
+            'Mô tả chi tiết',
             style: TextStyle(
               fontSize: 20,
               fontWeight: FontWeight.w800,
@@ -438,7 +438,7 @@ class PostDetailScreen extends StatelessWidget {
           Text(
             post.description.trim().isNotEmpty
                 ? post.description.trim()
-                : 'Nguoi dang bai chua bo sung mo ta.',
+                : 'Người đăng bài chưa bổ sung mô tả.',
             style: const TextStyle(
               fontSize: 15,
               height: 1.6,
@@ -456,7 +456,7 @@ class PostDetailScreen extends StatelessWidget {
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           const Text(
-            'Hinh anh khac',
+            'Hình ảnh khác',
             style: TextStyle(
               fontSize: 20,
               fontWeight: FontWeight.w800,
@@ -518,7 +518,7 @@ class PostDetailScreen extends StatelessWidget {
           ),
           child: const Center(
             child: Text(
-              'Day la bai dang cua ban',
+              'Đây là bài đăng của bạn',
               style: TextStyle(
                 fontSize: 16,
                 fontWeight: FontWeight.w700,
@@ -556,7 +556,7 @@ class PostDetailScreen extends StatelessWidget {
             if (hasRequested) {
               messenger.showSnackBar(
                 const SnackBar(
-                  content: Text('Ban da gui yeu cau cho bai dang nay roi'),
+                  content: Text('Bạn đã gửi yêu cầu cho bài đăng này rồi'),
                 ),
               );
               return;
@@ -578,7 +578,7 @@ class PostDetailScreen extends StatelessWidget {
             ),
           ),
           child: const Text(
-            'Gui yeu cau o ghep',
+            'Gửi yêu cầu ở ghép',
             style: TextStyle(
               fontSize: 16,
               fontWeight: FontWeight.w700,
