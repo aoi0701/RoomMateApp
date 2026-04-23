@@ -73,45 +73,45 @@ class _UserProfileScreenState extends State<UserProfileScreen> {
 
             if (snapshot.hasError) {
               return Center(
-                child: Text('Khong the tai ho so: ${snapshot.error}'),
+                child: Text('Không thể tải hồ sơ: ${snapshot.error}'),
               );
             }
 
             if (!snapshot.hasData || !snapshot.data!.exists) {
               return const Center(
-                child: Text('Khong tim thay thong tin nguoi dung'),
+                child: Text('Không tìm thấy thông tin người dùng'),
               );
             }
 
             final user = UserModel.fromDocument(snapshot.data!);
             final fullName = user.fullName.trim().isNotEmpty
                 ? user.fullName.trim()
-                : 'Chua cap nhat';
+                : 'Chưa cập nhật';
             final email = user.email.trim().isNotEmpty
                 ? user.email.trim()
                 : (isOwnProfile
-                    ? (currentUser.email ?? 'Chua cap nhat')
-                    : 'Chua cap nhat');
+                    ? (currentUser.email ?? 'Chưa cập nhật')
+                    : 'Chưa cập nhật');
             final phone = user.phone.trim().isNotEmpty
                 ? user.phone.trim()
-                : 'Chua cap nhat';
+                : 'Chưa cập nhật';
             final address = user.address.trim().isNotEmpty
                 ? user.address.trim()
-                : 'Chua cap nhat';
+                : 'Chưa cập nhật';
             final gender = user.gender.trim().isNotEmpty
                 ? user.gender.trim()
-                : 'Chua cap nhat';
+                : 'Chưa cập nhật';
             final subtitleParts = <String>[
               if (user.age != null) '${user.age}',
               if (user.occupation.trim().isNotEmpty) user.occupation.trim(),
-              if (user.occupation.trim().isEmpty && gender != 'Chua cap nhat')
+              if (user.occupation.trim().isEmpty && gender != 'Chưa cập nhật')
                 gender,
             ];
             final subtitle = user.role == 'admin'
-                ? 'Quan tri vien'
+                ? 'Quản trị viên'
                 : subtitleParts.isNotEmpty
                     ? subtitleParts.join(', ')
-                    : 'Thanh vien RoomMate';
+                    : 'Thành viên RoomMate';
 
             return StreamBuilder<bool>(
               stream: profileVm.hasUserPostsStream(viewedUserId),
@@ -159,7 +159,7 @@ class _UserProfileScreenState extends State<UserProfileScreen> {
                       if (isOwnProfile) ...[
                         const SizedBox(height: 22),
                         const Text(
-                          'Quan ly',
+                          'Quản lý',
                           style: TextStyle(
                             fontSize: 24,
                             fontWeight: FontWeight.w800,
@@ -172,10 +172,10 @@ class _UserProfileScreenState extends State<UserProfileScreen> {
                           items: [
                             _ManageItem(
                               icon: Icons.article_outlined,
-                              title: 'Bai dang cua toi',
+                              title: 'Bài đăng của tôi',
                               subtitle: hasPosts
-                                  ? 'Xem va quan ly cac bai dang cua ban'
-                                  : 'Hien chua co bai dang nao',
+                                  ? 'Xem và quản lý các bài đăng của bạn'
+                                  : 'Hiện chưa có bài đăng nào',
                               onTap: () {
                                 Navigator.push(
                                   context,
@@ -187,8 +187,8 @@ class _UserProfileScreenState extends State<UserProfileScreen> {
                             ),
                             _ManageItem(
                               icon: Icons.mark_email_unread_outlined,
-                              title: 'Yeu cau o ghep',
-                              subtitle: 'Theo doi cac yeu cau ban da nhan',
+                              title: 'Yêu cầu ở ghép',
+                              subtitle: 'Theo dõi các yêu cầu bạn đã nhận',
                               showBadge: true,
                               onTap: () {
                                 Navigator.push(
@@ -252,7 +252,7 @@ class _UserProfileScreenState extends State<UserProfileScreen> {
                                     ),
                                   )
                                 : const Text(
-                                    'Dang xuat',
+                                    'Đăng xuất',
                                     style: TextStyle(
                                       fontSize: 18,
                                       fontWeight: FontWeight.w700,
@@ -283,27 +283,27 @@ class _UserProfileScreenState extends State<UserProfileScreen> {
                 BottomNavigationBarItem(
                   icon: Icon(Icons.home_outlined),
                   activeIcon: Icon(Icons.home),
-                  label: 'Trang chu',
+                  label: 'Trang chủ',
                 ),
                 BottomNavigationBarItem(
                   icon: Icon(Icons.description_outlined),
                   activeIcon: Icon(Icons.description),
-                  label: 'Yeu cau',
+                  label: 'Yêu cầu',
                 ),
                 BottomNavigationBarItem(
                   icon: Icon(Icons.bookmark_border),
                   activeIcon: Icon(Icons.bookmark),
-                  label: 'Da luu',
+                  label: 'Đã lưu',
                 ),
                 BottomNavigationBarItem(
                   icon: Icon(Icons.chat_bubble_outline),
                   activeIcon: Icon(Icons.chat_bubble),
-                  label: 'Nhan tin',
+                  label: 'Nhắn tin',
                 ),
                 BottomNavigationBarItem(
                   icon: Icon(Icons.person_outline),
                   activeIcon: Icon(Icons.person),
-                  label: 'Ca nhan',
+                  label: 'Cá nhân',
                 ),
               ],
             )
@@ -341,7 +341,7 @@ class _UserProfileScreenState extends State<UserProfileScreen> {
         ),
         Expanded(
           child: Text(
-            isOwnProfile ? 'Ho so Ca nhan Chi tiet' : 'Ho so nguoi dang',
+            isOwnProfile ? 'Hồ sơ Cá nhân' : 'Hồ sơ người đăng',
             textAlign: TextAlign.center,
             style: const TextStyle(
               fontSize: 20,
@@ -373,7 +373,7 @@ class _UserProfileScreenState extends State<UserProfileScreen> {
           const SizedBox(width: 10),
           const Expanded(
             child: Text(
-              'Ti le phu hop',
+              'Tỉ lệ phù hợp',
               style: TextStyle(
                 fontSize: 16,
                 fontWeight: FontWeight.w700,
@@ -500,7 +500,7 @@ class _UserProfileScreenState extends State<UserProfileScreen> {
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           const Text(
-            'Thong tin ho so',
+            'Thông tin hồ sơ',
             style: TextStyle(
               fontSize: 24,
               fontWeight: FontWeight.w800,
@@ -509,7 +509,7 @@ class _UserProfileScreenState extends State<UserProfileScreen> {
           ),
           const SizedBox(height: 18),
           const Text(
-            'Thong tin lien he',
+            'Thông tin liên hệ',
             style: TextStyle(
               fontSize: 17,
               fontWeight: FontWeight.w700,
@@ -542,7 +542,7 @@ class _UserProfileScreenState extends State<UserProfileScreen> {
           const Divider(height: 1),
           const SizedBox(height: 18),
           const Text(
-            'Thong tin co ban',
+            'Thông tin cơ bản',
             style: TextStyle(
               fontSize: 17,
               fontWeight: FontWeight.w700,
@@ -592,7 +592,7 @@ class _UserProfileScreenState extends State<UserProfileScreen> {
           children: [
             const Expanded(
               child: Text(
-                'Thoi quen',
+                'Thói quen',
                 style: TextStyle(
                   fontSize: 24,
                   fontWeight: FontWeight.w800,
@@ -604,7 +604,7 @@ class _UserProfileScreenState extends State<UserProfileScreen> {
               TextButton(
                 onPressed: _openEditHabits,
                 child: const Text(
-                  'Chinh sua',
+                  'Chỉnh sửa',
                   style: TextStyle(
                     color: primaryColor,
                     fontWeight: FontWeight.w700,
@@ -644,7 +644,7 @@ class _UserProfileScreenState extends State<UserProfileScreen> {
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           const Text(
-            'Thoi quen',
+            'Thói quen',
             style: TextStyle(
               fontSize: 24,
               fontWeight: FontWeight.w800,
@@ -653,7 +653,7 @@ class _UserProfileScreenState extends State<UserProfileScreen> {
           ),
           const SizedBox(height: 10),
           const Text(
-            'Cap nhat thoi quen de de xuat tieu chi ban cung phong phu hop hon.',
+            'Cập nhật thói quen để đề xuất tiêu chí bạn cùng phòng phù hợp hơn.',
             style: TextStyle(
               fontSize: 15,
               height: 1.45,
@@ -673,7 +673,7 @@ class _UserProfileScreenState extends State<UserProfileScreen> {
                     const EdgeInsets.symmetric(horizontal: 18, vertical: 14),
               ),
               child: const Text(
-                'Them thoi quen',
+                'Thêm thói quen',
                 style: TextStyle(
                   color: primaryColor,
                   fontWeight: FontWeight.w700,
@@ -705,7 +705,7 @@ class _UserProfileScreenState extends State<UserProfileScreen> {
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           const Text(
-            'Tieu chi ban cung phong',
+            'Tiêu chí bạn cùng phòng',
             style: TextStyle(
               fontSize: 24,
               fontWeight: FontWeight.w800,
@@ -715,7 +715,7 @@ class _UserProfileScreenState extends State<UserProfileScreen> {
           const SizedBox(height: 16),
           if (criteria.isEmpty)
             const Text(
-              'Chua co tieu chi nao. Hay them thoi quen de he thong tu dong dong bo.',
+              'Chưa có tiêu chí nào. Hãy thêm thói quen để hệ thống tự động đồng bộ.',
               style: TextStyle(
                 fontSize: 15,
                 height: 1.5,
@@ -768,7 +768,7 @@ class _UserProfileScreenState extends State<UserProfileScreen> {
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           const Text(
-            'Gioi thieu',
+            'Giới thiệu',
             style: TextStyle(
               fontSize: 22,
               fontWeight: FontWeight.w800,
@@ -779,7 +779,7 @@ class _UserProfileScreenState extends State<UserProfileScreen> {
           Text(
             bio.trim().isNotEmpty
                 ? bio.trim()
-                : 'Chao cac ban! Minh la $fullName, tinh tinh coi mo va thich chia se. Mong tim duoc nguoi ban cung phong vui tinh, sach se va co lich sinh hoat phu hop.',
+                : 'Chào các bạn! Mình là $fullName, tính tình cởi mở và thích chia sẻ. Mong tìm được người bạn cùng phòng vui tính, sạch sẽ và có lịch sinh hoạt phù hợp.',
             style: const TextStyle(
               fontSize: 16,
               height: 1.5,
@@ -819,8 +819,8 @@ class _UserProfileScreenState extends State<UserProfileScreen> {
       SnackBar(
         content: Text(
           success
-              ? 'Da gui loi moi o ghep'
-              : (vm.errorMessage ?? 'Khong the gui loi moi'),
+              ? 'Đã gửi lời mời ở ghép'
+              : (vm.errorMessage ?? 'Không thể gửi lời mời'),
         ),
       ),
     );
@@ -848,7 +848,7 @@ class _UserProfileScreenState extends State<UserProfileScreen> {
               onPressed: () {
                 ScaffoldMessenger.of(context).showSnackBar(
                   const SnackBar(
-                    content: Text('Tinh nang nhan tin se cap nhat sau'),
+                    content: Text('Tính năng nhắn tin sẽ cập nhật sau'),
                   ),
                 );
               },
@@ -861,7 +861,7 @@ class _UserProfileScreenState extends State<UserProfileScreen> {
                 ),
               ),
               child: const Text(
-                'Nhan tin',
+                'Nhắn tin',
                 style: TextStyle(
                   fontSize: 16,
                   fontWeight: FontWeight.w700,
@@ -891,7 +891,7 @@ class _UserProfileScreenState extends State<UserProfileScreen> {
                       ),
                     )
                   : const Text(
-                      'Gui loi moi o ghep',
+                      'Gửi lời mời ở ghép',
                       style: TextStyle(
                         fontSize: 16,
                         fontWeight: FontWeight.w700,
@@ -1007,7 +1007,7 @@ class _UserProfileScreenState extends State<UserProfileScreen> {
         borderRadius: BorderRadius.circular(18),
       ),
       child: const Text(
-        'Ban chua co bai dang nao. Khi dang bai, he thong van se hien thi day du muc Bai dang cua toi va Yeu cau o ghep de ban quan ly thuan tien.',
+        'Bạn chưa có bài đăng nào. Khi đăng bài, hệ thống vẫn sẽ hiển thị đầy đủ mục Bài đăng của tôi và Yêu cầu ở ghép để bạn quản lý thuận tiện.',
         style: TextStyle(
           fontSize: 15,
           color: textPrimary,

@@ -5,7 +5,7 @@ String formatLastTwoWords(String fullName) {
       .where((item) => item.isNotEmpty)
       .toList();
 
-  if (words.isEmpty) return 'Nguoi dung';
+  if (words.isEmpty) return 'Người dùng';
   if (words.length == 1) return words.first;
   return '${words[words.length - 2]} ${words.last}';
 }
@@ -29,6 +29,6 @@ String formatReadableAddress({
     if (province.trim().isNotEmpty) province.trim(),
   ];
 
-  if (parts.isEmpty) return 'Chua cap nhat dia chi';
+  if (parts.isEmpty) return 'Chưa cập nhật địa chỉ';
   return parts.join(', ');
 }

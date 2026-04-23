@@ -164,7 +164,7 @@ class _LoginScreenState extends State<LoginScreen> {
               ),
               const SizedBox(height: 22),
               const Text(
-                'Find Roommate',
+                'RoomMate',
                 style: TextStyle(
                   fontSize: 28,
                   fontWeight: FontWeight.w800,

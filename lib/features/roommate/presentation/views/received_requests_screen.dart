@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 
+import '../../../../core/widgets/app_state_widgets.dart';
 import '../../data/models/roommate_request_model.dart';
 import '../viewmodels/roommate_request_viewmodel.dart';
 
@@ -113,9 +114,24 @@ class _ReceivedRequestsScreenState extends State<ReceivedRequestsScreen> {
             iconTheme: const IconThemeData(color: textPrimary),
           ),
           body: SafeArea(
-            child: requests.isEmpty
-                ? const _EmptyState()
-                : ListView.separated(
+            child: viewModel.isReceivedRequestsLoading
+                ? const AppLoadingState(
+                    message: 'Đang tải danh sách yêu cầu...',
+                  )
+                : viewModel.errorMessage != null
+                    ? AppErrorState(
+                        title: 'Không tải được yêu cầu',
+                        message: viewModel.errorMessage!,
+                        onRetry: viewModel.ensureReceivedRequestsListening,
+                      )
+                    : requests.isEmpty
+                        ? const AppEmptyState(
+                            title: 'Chưa có yêu cầu nào',
+                            message:
+                                'Các yêu cầu ở ghép gửi đến bạn sẽ hiển thị ở đây.',
+                            icon: Icons.inbox_outlined,
+                          )
+                        : ListView.separated(
                     padding: const EdgeInsets.all(20),
                     itemCount: requests.length,
                     separatorBuilder: (context, index) =>
@@ -272,61 +288,6 @@ class _ReceivedRequestsScreenState extends State<ReceivedRequestsScreen> {
           ),
         );
       },
-    );
-  }
-}
-
-class _EmptyState extends StatelessWidget {
-  const _EmptyState();
-
-  static const Color primaryBlue = Color(0xFF3B6EF5);
-  static const Color textPrimary = Color(0xFF111827);
-  static const Color textSecondary = Color(0xFF6B7280);
-  static const Color lightBlue = Color(0xFFEAF2FF);
-
-  @override
-  Widget build(BuildContext context) {
-    return Center(
-      child: Padding(
-        padding: const EdgeInsets.symmetric(horizontal: 32),
-        child: Column(
-          mainAxisAlignment: MainAxisAlignment.center,
-          children: [
-            Container(
-              width: 84,
-              height: 84,
-              decoration: const BoxDecoration(
-                color: lightBlue,
-                shape: BoxShape.circle,
-              ),
-              child: const Icon(
-                Icons.inbox_outlined,
-                color: primaryBlue,
-                size: 40,
-              ),
-            ),
-            const SizedBox(height: 18),
-            const Text(
-              'Chưa có yêu cầu nào',
-              style: TextStyle(
-                fontSize: 20,
-                fontWeight: FontWeight.w800,
-                color: textPrimary,
-              ),
-            ),
-            const SizedBox(height: 10),
-            const Text(
-              'Các yêu cầu ở ghép gửi đến bạn sẽ hiển thị ở đây.',
-              textAlign: TextAlign.center,
-              style: TextStyle(
-                fontSize: 15,
-                height: 1.6,
-                color: textSecondary,
-              ),
-            ),
-          ],
-        ),
-      ),
     );
   }
 }

@@ -20,6 +20,8 @@ import 'features/post/presentation/viewmodels/post_viewmodel.dart';
 import 'features/profile/presentation/viewmodels/user_profile_viewmodel.dart';
 import 'features/roommate/data/repositories/roommate_request_repository.dart';
 import 'features/roommate/presentation/viewmodels/roommate_request_viewmodel.dart';
+import 'features/admin/data/repositories/admin_repository.dart';
+import 'features/admin/presentation/viewmodels/admin_viewmodel.dart';
 import 'firebase_options.dart';
 
 Future<void> main() async {
@@ -38,64 +40,72 @@ class MyApp extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return MultiProvider(
-    providers: [
-      Provider<AuthRepository>(
-        create: (_) => AuthRepository(),
-      ),
-      ChangeNotifierProvider<AuthViewModel>(
-        create: (context) => AuthViewModel(
-          repository: context.read<AuthRepository>(),
+      providers: [
+        Provider<AuthRepository>(
+          create: (_) => AuthRepository(),
         ),
-      ),
-      Provider<PostRepository>(
-        create: (_) => PostRepository(),
-      ),
-      Provider<HomeSearchFilterRepository>(
-        create: (_) => HomeSearchFilterRepository(),
-      ),
-      Provider<RoommateProfileRepository>(
-        create: (_) => RoommateProfileRepository(),
-      ),
-      ChangeNotifierProvider<HomeSearchFilterViewModel>(
-        create: (context) => HomeSearchFilterViewModel(
-          repository: context.read<HomeSearchFilterRepository>(),
+        ChangeNotifierProvider<AuthViewModel>(
+          create: (context) => AuthViewModel(
+            repository: context.read<AuthRepository>(),
+          ),
         ),
-      ),
-      ChangeNotifierProvider<RoommateProfileViewModel>(
-        create: (context) => RoommateProfileViewModel(
-          repository: context.read<RoommateProfileRepository>(),
+        Provider<PostRepository>(
+          create: (_) => PostRepository(),
         ),
-      ),
-      ChangeNotifierProvider<PostViewModel>(
-        create: (context) => PostViewModel(
-          repository: context.read<PostRepository>(),
+        Provider<HomeSearchFilterRepository>(
+          create: (_) => HomeSearchFilterRepository(),
         ),
-      ),
-      ChangeNotifierProvider<PostListViewModel>(
-        create: (context) => PostListViewModel(
-          repository: context.read<PostRepository>(),
+        Provider<RoommateProfileRepository>(
+          create: (_) => RoommateProfileRepository(),
         ),
-      ),
-      Provider<UserProfileRepository>(
-        create: (_) => UserProfileRepository(),
-      ),
-      ChangeNotifierProvider<UserProfileViewModel>(
-        create: (context) => UserProfileViewModel(
-          repository: context.read<UserProfileRepository>(),
+        ChangeNotifierProvider<HomeSearchFilterViewModel>(
+          create: (context) => HomeSearchFilterViewModel(
+            repository: context.read<HomeSearchFilterRepository>(),
+          ),
         ),
-      ),
-      Provider<RoommateRequestRepository>(
-        create: (_) => RoommateRequestRepository(),
-      ),
-      ChangeNotifierProvider<RoommateRequestViewModel>(
-        create: (context) => RoommateRequestViewModel(
-          repository: context.read<RoommateRequestRepository>(),
+        ChangeNotifierProvider<RoommateProfileViewModel>(
+          create: (context) => RoommateProfileViewModel(
+            repository: context.read<RoommateProfileRepository>(),
+          ),
         ),
-      ),
-    ],
+        ChangeNotifierProvider<PostViewModel>(
+          create: (context) => PostViewModel(
+            repository: context.read<PostRepository>(),
+          ),
+        ),
+        ChangeNotifierProvider<PostListViewModel>(
+          create: (context) => PostListViewModel(
+            repository: context.read<PostRepository>(),
+          ),
+        ),
+        Provider<UserProfileRepository>(
+          create: (_) => UserProfileRepository(),
+        ),
+        ChangeNotifierProvider<UserProfileViewModel>(
+          create: (context) => UserProfileViewModel(
+            repository: context.read<UserProfileRepository>(),
+          ),
+        ),
+        Provider<RoommateRequestRepository>(
+          create: (_) => RoommateRequestRepository(),
+        ),
+        ChangeNotifierProvider<RoommateRequestViewModel>(
+          create: (context) => RoommateRequestViewModel(
+            repository: context.read<RoommateRequestRepository>(),
+          ),
+        ),
+        Provider<AdminRepository>(
+          create: (_) => AdminRepository(),
+        ),
+        ChangeNotifierProvider<AdminViewModel>(
+          create: (context) => AdminViewModel(
+            repository: context.read<AdminRepository>(),
+          ),
+        ),
+      ],
       child: MaterialApp(
         debugShowCheckedModeBanner: false,
-        title: 'Find Roommate',
+        title: 'RoomMate',
         theme: ThemeData(
           scaffoldBackgroundColor: AppColors.background,
           colorScheme: ColorScheme.fromSeed(seedColor: AppColors.primary),

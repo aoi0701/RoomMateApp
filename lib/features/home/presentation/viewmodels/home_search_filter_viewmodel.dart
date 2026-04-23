@@ -28,7 +28,7 @@ class HomeSearchFilterViewModel extends ChangeNotifier {
       _currentFilter = await _repository.getSavedFilter();
       _hasLoaded = true;
     } catch (e) {
-      errorMessage = 'Khong tai duoc bo loc: $e';
+      errorMessage = 'Không tải được bộ lọc: $e';
     } finally {
       isLoading = false;
       notifyListeners();
@@ -45,7 +45,7 @@ class HomeSearchFilterViewModel extends ChangeNotifier {
       _currentFilter = filter;
       return true;
     } catch (e) {
-      errorMessage = 'Khong luu duoc bo loc: $e';
+      errorMessage = 'Không lưu được bộ lọc: $e';
       return false;
     } finally {
       isSaving = false;
@@ -69,7 +69,7 @@ class HomeSearchFilterViewModel extends ChangeNotifier {
     try {
       await _repository.clearSavedFilter();
     } catch (e) {
-      errorMessage = 'Khong the xoa bo loc da luu: $e';
+      errorMessage = 'Không thể xóa bộ lọc đã lưu: $e';
       notifyListeners();
     }
   }
