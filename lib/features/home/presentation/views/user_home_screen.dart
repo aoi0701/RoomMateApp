@@ -929,7 +929,7 @@ class _MatchBadge extends StatelessWidget {
       child: Column(
         children: [
           const Text(
-            'Phu hop',
+            'Phù hợp',
             style: TextStyle(
               fontSize: 11,
               color: _UserHomeScreenState.textSecondary,

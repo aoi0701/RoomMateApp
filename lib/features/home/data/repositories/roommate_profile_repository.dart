@@ -45,6 +45,15 @@ class RoommateProfileRepository {
 
       final currentHabits = currentUser?.habits ?? const <String>[];
       final currentCriteria = currentUser?.roommateCriteria ?? const <String>[];
+      final currentPosts = currentUser == null
+          ? const <PostModel>[]
+          : (postsByOwner[currentUser.uid] ?? const <PostModel>[]);
+      final currentResolvedAddress = currentUser == null
+          ? ''
+          : _resolveSuggestedAddress(currentUser, currentPosts);
+      final currentResolvedBudgetRange = currentUser == null
+          ? ''
+          : _resolveBudgetRange(currentUser, currentPosts);
 
       final suggestions = users
           .where((user) => user.uid != currentUserId)
@@ -58,6 +67,10 @@ class RoommateProfileRepository {
               currentCriteria: currentCriteria,
               targetHabits: user.habits,
               targetCriteria: user.roommateCriteria,
+              currentBudgetRange: currentResolvedBudgetRange,
+              targetBudgetRange: resolvedBudgetRange,
+              currentAddress: currentResolvedAddress,
+              targetAddress: resolvedAddress,
             );
 
             return RoommateProfileModel(
