@@ -7,10 +7,11 @@ import 'package:provider/provider.dart';
 
 import '../../../auth/presentation/viewmodels/auth_viewmodel.dart';
 import '../../../home/data/constants/room_filter_data.dart';
-import '../../../profile/data/models/profile_habit_model.dart';
 import '../../../profile/data/models/user_model.dart';
 import '../../../profile/presentation/viewmodels/user_profile_viewmodel.dart';
 import '../../data/models/post_model.dart';
+import '../widgets/amenity_grid.dart';
+import '../widgets/lifestyle_habit_wrap.dart';
 import '../viewmodels/post_viewmodel.dart';
 
 class EditPostScreen extends StatefulWidget {
@@ -101,6 +102,10 @@ class _EditPostScreenState extends State<EditPostScreen> {
   Future<void> _handleUpdatePost() async {
     FocusScope.of(context).unfocus();
 
+    final lifestyleHabits = await _loadLifestyleHabitIds(
+      context.read<AuthViewModel>().user?.uid,
+      fallback: widget.post.lifestyleHabits,
+    );
     final vm = context.read<PostViewModel>();
     final success = await vm.updatePost(
       postId: widget.post.id,
@@ -110,6 +115,7 @@ class _EditPostScreenState extends State<EditPostScreen> {
       district: _selectedDistrict,
       roomType: _selectedRoomType,
       amenities: _selectedAmenities,
+      lifestyleHabits: lifestyleHabits,
       priceText: _priceController.text,
       areaText: _areaController.text,
       capacityText: _capacityController.text,
@@ -132,6 +138,29 @@ class _EditPostScreenState extends State<EditPostScreen> {
     if (success) {
       Navigator.pop(context);
     }
+  }
+
+  Future<List<String>> _loadLifestyleHabitIds(
+    String? uid, {
+    List<String> fallback = const [],
+  }) async {
+    if (uid == null) {
+      return fallback;
+    }
+
+    final profileVm = context.read<UserProfileViewModel>();
+    final user = await profileVm.getUserProfile(uid);
+    final habitIds = user?.habits
+        .map((item) => item.trim())
+        .where((item) => item.isNotEmpty)
+        .toSet()
+        .toList();
+
+    if (habitIds == null || habitIds.isEmpty) {
+      return fallback;
+    }
+
+    return habitIds;
   }
 
   InputDecoration _inputDecoration(String label, {String? hintText}) {
@@ -199,8 +228,15 @@ class _EditPostScreenState extends State<EditPostScreen> {
     required ValueChanged<String?> onChanged,
     String? hint,
   }) {
+    final normalizedOptions = options
+        .map((item) => item.trim())
+        .where((item) => item.isNotEmpty)
+        .toSet()
+        .toList(growable: false);
+    final selectedValue = normalizedOptions.contains(value) ? value : null;
+
     return DropdownButtonFormField<String>(
-      initialValue: value.isEmpty ? null : value,
+      initialValue: selectedValue,
       isExpanded: true,
       decoration: _inputDecoration(label),
       hint: Text(
@@ -209,7 +245,7 @@ class _EditPostScreenState extends State<EditPostScreen> {
         maxLines: 1,
       ),
       selectedItemBuilder: (context) {
-        return options
+        return normalizedOptions
             .map(
               (item) => Align(
                 alignment: Alignment.centerLeft,
@@ -222,7 +258,7 @@ class _EditPostScreenState extends State<EditPostScreen> {
             )
             .toList();
       },
-      items: options
+      items: normalizedOptions
           .map(
             (item) => DropdownMenuItem<String>(
               value: item,
@@ -239,42 +275,19 @@ class _EditPostScreenState extends State<EditPostScreen> {
   }
 
   Widget _buildAmenitiesSection(bool isLoading) {
-    return Wrap(
-      spacing: 10,
-      runSpacing: 10,
-      children: RoomFilterData.amenities.map((item) {
-        final selected = _selectedAmenities.contains(item);
-        return FilterChip(
-          selected: selected,
-          onSelected: isLoading
-              ? null
-              : (value) {
-                  setState(() {
-                    if (value) {
-                      _selectedAmenities.add(item);
-                    } else {
-                      _selectedAmenities.remove(item);
-                    }
-                  });
-                },
-          selectedColor: const Color(0xFFDCE8FF),
-          checkmarkColor: primaryBlue,
-          label: Text(
-            item,
-            style: TextStyle(
-              color: selected ? primaryBlue : textPrimary,
-              fontWeight: FontWeight.w600,
-            ),
-          ),
-          backgroundColor: const Color(0xFFF4F6FA),
-          side: BorderSide(
-            color: selected ? primaryBlue : const Color(0xFFD8DEE9),
-          ),
-          shape: RoundedRectangleBorder(
-            borderRadius: BorderRadius.circular(999),
-          ),
-        );
-      }).toList(),
+    return AmenityGrid(
+      amenities: RoomFilterData.amenities,
+      selectedAmenities: _selectedAmenities.toSet(),
+      enabled: !isLoading,
+      onToggle: (item) {
+        setState(() {
+          if (_selectedAmenities.contains(item)) {
+            _selectedAmenities.remove(item);
+          } else {
+            _selectedAmenities.add(item);
+          }
+        });
+      },
     );
   }
 
@@ -304,9 +317,9 @@ class _EditPostScreenState extends State<EditPostScreen> {
 
         final user = UserModel.fromDocument(snapshot.data!);
         final selectedHabits = user.habits
-            .map(ProfileHabitCatalog.findById)
-            .whereType<ProfileHabitModel>()
-            .toList();
+            .map((item) => item.trim())
+            .where((item) => item.isNotEmpty)
+            .toList(growable: false);
 
         if (selectedHabits.isEmpty) {
           return const Text(
@@ -315,42 +328,7 @@ class _EditPostScreenState extends State<EditPostScreen> {
           );
         }
 
-        return Wrap(
-          spacing: 10,
-          runSpacing: 10,
-          children: selectedHabits
-              .map(
-                (item) => Container(
-                  padding: const EdgeInsets.symmetric(
-                    horizontal: 14,
-                    vertical: 10,
-                  ),
-                  decoration: BoxDecoration(
-                    color: item.backgroundColor,
-                    borderRadius: BorderRadius.circular(999),
-                  ),
-                  child: Row(
-                    mainAxisSize: MainAxisSize.min,
-                    children: [
-                      Icon(
-                        item.icon,
-                        size: 18,
-                        color: item.foregroundColor,
-                      ),
-                      const SizedBox(width: 8),
-                      Text(
-                        item.label,
-                        style: const TextStyle(
-                          fontWeight: FontWeight.w600,
-                          color: textPrimary,
-                        ),
-                      ),
-                    ],
-                  ),
-                ),
-              )
-              .toList(),
-        );
+        return LifestyleHabitWrap(habitIds: selectedHabits);
       },
     );
   }

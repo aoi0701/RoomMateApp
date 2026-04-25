@@ -28,25 +28,57 @@ class RoomFilterData {
       'Quận Phú Nhuận',
       'Thành phố Thủ Đức',
     ],
-    'Thành phố Cần Thơ': ['Ninh Kiều', 'Bình Thủy', 'Cái Răng'],
-    'Tỉnh Bình Dương': ['Dĩ An', 'Thuận An', 'Thủ Dầu Một'],
-    'Thành phố Đà Nẵng': ['Hải Châu', 'Thanh Khê', 'Sơn Trà'],
-    'Thành phố Hà Nội': ['Ba Đình', 'Cầu Giấy', 'Đống Đa', 'Hai Bà Trưng'],
-    'Tỉnh Long An': ['Tân An', 'Bến Lức', 'Đức Hòa'],
-    'Tỉnh Vĩnh Long': ['Thành phố Vĩnh Long', 'Long Hồ'],
-    'Tỉnh Tây Ninh': ['Thành phố Tây Ninh', 'Hòa Thành'],
-    'Tỉnh Thừa Thiên Huế': ['Thành phố Huế', 'Hương Thủy'],
+    'Thành phố Cần Thơ': [
+      'Ninh Kiều',
+      'Bình Thủy',
+      'Cái Răng',
+    ],
+    'Tỉnh Bình Dương': [
+      'Dĩ An',
+      'Thuận An',
+      'Thủ Dầu Một',
+    ],
+    'Thành phố Đà Nẵng': [
+      'Hải Châu',
+      'Thanh Khê',
+      'Sơn Trà',
+    ],
+    'Thành phố Hà Nội': [
+      'Ba Đình',
+      'Cầu Giấy',
+      'Đống Đa',
+      'Hai Bà Trưng',
+    ],
+    'Tỉnh Long An': [
+      'Tân An',
+      'Bến Lức',
+      'Đức Hòa',
+    ],
+    'Tỉnh Vĩnh Long': [
+      'Thành phố Vĩnh Long',
+      'Long Hồ',
+    ],
+    'Tỉnh Tây Ninh': [
+      'Thành phố Tây Ninh',
+      'Hòa Thành',
+    ],
+    'Tỉnh Thừa Thiên Huế': [
+      'Thành phố Huế',
+      'Hương Thủy',
+    ],
   };
 
   static const List<String> roomTypes = [
-    'Giường Nam',
-    'Giường Nữ',
-    'Sleepbox Nữ',
-    'Sleepbox Nam',
+    'Phòng trọ',
+    'Phòng trong nhà nguyên căn',
+    'Căn hộ / Chung cư',
+    'Phòng master',
+    'Phòng thường',
+    'Phòng có gác',
+    'Phòng không gác',
+    'Phòng có nội thất',
+    'Phòng không nội thất',
     'Studio (Phòng có nội thất)',
-    'CHDV 1 Phòng ngủ',
-    'CHDV 2 Phòng ngủ',
-    'CHDV 3 Phòng ngủ',
     'Duplex (Phòng có gác và nội thất)',
   ];
 

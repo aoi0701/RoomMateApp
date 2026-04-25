@@ -1,6 +1,7 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
+import 'package:roommateapp/features/post/presentation/views/create_post_screen.dart';
 import 'package:roommateapp/features/post/presentation/views/my_posts_screen.dart';
 import 'package:roommateapp/features/roommate/presentation/viewmodels/roommate_request_viewmodel.dart';
 import 'package:roommateapp/features/roommate/presentation/views/received_requests_screen.dart';
@@ -35,8 +36,11 @@ class _UserProfileScreenState extends State<UserProfileScreen> {
   static const Color textPrimary = Color(0xFF111827);
   static const Color textSecondary = Color(0xFF6B7280);
   static const Color lightBlue = Color(0xFFEAF1FF);
-  static const Color softMint = Color(0xFFE7F8F3);
   static const Color cardShadow = Color(0x14000000);
+
+  bool _isCurrentUserProfile(String currentUserId) {
+    return widget.userId == null || widget.userId == currentUserId;
+  }
 
   @override
   void initState() {
@@ -58,8 +62,7 @@ class _UserProfileScreenState extends State<UserProfileScreen> {
     }
 
     final viewedUserId = widget.userId ?? currentUser.uid;
-    final isOwnProfile =
-        widget.userId == null || widget.userId == currentUser.uid;
+    final isCurrentUserProfile = _isCurrentUserProfile(currentUser.uid);
 
     return Scaffold(
       backgroundColor: backgroundColor,
@@ -89,7 +92,7 @@ class _UserProfileScreenState extends State<UserProfileScreen> {
                 : 'Chưa cập nhật';
             final email = user.email.trim().isNotEmpty
                 ? user.email.trim()
-                : (isOwnProfile
+                : (isCurrentUserProfile
                     ? (currentUser.email ?? 'Chưa cập nhật')
                     : 'Chưa cập nhật');
             final phone = user.phone.trim().isNotEmpty
@@ -104,14 +107,12 @@ class _UserProfileScreenState extends State<UserProfileScreen> {
             final subtitleParts = <String>[
               if (user.age != null) '${user.age}',
               if (user.occupation.trim().isNotEmpty) user.occupation.trim(),
-              if (user.occupation.trim().isEmpty && gender != 'Chưa cập nhật')
-                gender,
             ];
             final subtitle = user.role == 'admin'
                 ? 'Quản trị viên'
                 : subtitleParts.isNotEmpty
                     ? subtitleParts.join(', ')
-                    : 'Thành viên RoomMate';
+                    : '';
 
             return StreamBuilder<bool>(
               stream: profileVm.hasUserPostsStream(viewedUserId),
@@ -127,13 +128,16 @@ class _UserProfileScreenState extends State<UserProfileScreen> {
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
-                      _buildTopBar(isOwnProfile: isOwnProfile),
+                      _buildTopBar(
+                        isCurrentUserProfile: isCurrentUserProfile,
+                      ),
                       const SizedBox(height: 18),
                       _buildHeroProfile(
                         fullName: fullName,
                         subtitle: subtitle,
                       ),
-                      if (!isOwnProfile && widget.matchPercentage != null) ...[
+                      if (!isCurrentUserProfile &&
+                          widget.matchPercentage != null) ...[
                         const SizedBox(height: 14),
                         _buildMatchBanner(widget.matchPercentage!),
                       ],
@@ -147,16 +151,11 @@ class _UserProfileScreenState extends State<UserProfileScreen> {
                       const SizedBox(height: 18),
                       _buildLifestyleSection(
                         user.habits,
-                        canEdit: isOwnProfile,
+                        canEdit: isCurrentUserProfile,
                       ),
                       const SizedBox(height: 18),
                       _buildRoommateCriteriaSection(user.roommateCriteria),
-                      const SizedBox(height: 18),
-                      _buildIntroductionSection(
-                        fullName,
-                        user.bio,
-                      ),
-                      if (isOwnProfile) ...[
+                      if (isCurrentUserProfile) ...[
                         const SizedBox(height: 22),
                         const Text(
                           'Quản lý',
@@ -202,10 +201,6 @@ class _UserProfileScreenState extends State<UserProfileScreen> {
                             ),
                           ],
                         ),
-                        if (!hasPosts) ...[
-                          const SizedBox(height: 16),
-                          _buildStatusNote(),
-                        ],
                         const SizedBox(height: 26),
                         SizedBox(
                           width: double.infinity,
@@ -269,7 +264,7 @@ class _UserProfileScreenState extends State<UserProfileScreen> {
           },
         ),
       ),
-      bottomNavigationBar: isOwnProfile
+      bottomNavigationBar: isCurrentUserProfile
           ? BottomNavigationBar(
               currentIndex: 4,
               type: BottomNavigationBarType.fixed,
@@ -277,33 +272,42 @@ class _UserProfileScreenState extends State<UserProfileScreen> {
               unselectedItemColor: Colors.grey,
               onTap: (index) {
                 if (index == 4) return;
+                if (index == 2) {
+                  Navigator.push(
+                    context,
+                    MaterialPageRoute(
+                      builder: (_) => const CreatePostScreen(),
+                    ),
+                  );
+                  return;
+                }
                 Navigator.pop(context);
               },
               items: const [
                 BottomNavigationBarItem(
                   icon: Icon(Icons.home_outlined),
                   activeIcon: Icon(Icons.home),
-                  label: 'Trang chủ',
+                  label: 'Trang ch\u1EE7',
                 ),
                 BottomNavigationBarItem(
                   icon: Icon(Icons.description_outlined),
                   activeIcon: Icon(Icons.description),
-                  label: 'Yêu cầu',
+                  label: 'Y\u00EAu c\u1EA7u',
                 ),
                 BottomNavigationBarItem(
-                  icon: Icon(Icons.bookmark_border),
-                  activeIcon: Icon(Icons.bookmark),
-                  label: 'Đã lưu',
+                  icon: Icon(Icons.add_box_outlined),
+                  activeIcon: Icon(Icons.add_box),
+                  label: '\u0110\u0103ng b\u00E0i',
                 ),
                 BottomNavigationBarItem(
                   icon: Icon(Icons.chat_bubble_outline),
                   activeIcon: Icon(Icons.chat_bubble),
-                  label: 'Nhắn tin',
+                  label: 'Nh\u1EAFn tin',
                 ),
                 BottomNavigationBarItem(
                   icon: Icon(Icons.person_outline),
                   activeIcon: Icon(Icons.person),
-                  label: 'Cá nhân',
+                  label: 'C\u00E1 nh\u00E2n',
                 ),
               ],
             )
@@ -313,7 +317,7 @@ class _UserProfileScreenState extends State<UserProfileScreen> {
     );
   }
 
-  Widget _buildTopBar({required bool isOwnProfile}) {
+  Widget _buildTopBar({required bool isCurrentUserProfile}) {
     return Row(
       children: [
         Container(
@@ -341,7 +345,9 @@ class _UserProfileScreenState extends State<UserProfileScreen> {
         ),
         Expanded(
           child: Text(
-            isOwnProfile ? 'Hồ sơ Cá nhân' : 'Hồ sơ người đăng',
+            isCurrentUserProfile
+                ? 'Hồ sơ Cá nhân'
+                : 'Hồ sơ người đăng',
             textAlign: TextAlign.center,
             style: const TextStyle(
               fontSize: 20,
@@ -457,17 +463,19 @@ class _UserProfileScreenState extends State<UserProfileScreen> {
                     ),
                   ],
                 ),
-                const SizedBox(height: 6),
-                Text(
-                  subtitle,
-                  maxLines: 2,
-                  overflow: TextOverflow.ellipsis,
-                  style: const TextStyle(
-                    fontSize: 16,
-                    color: textSecondary,
-                    height: 1.35,
+                if (subtitle.trim().isNotEmpty) ...[
+                  const SizedBox(height: 6),
+                  Text(
+                    subtitle,
+                    maxLines: 2,
+                    overflow: TextOverflow.ellipsis,
+                    style: const TextStyle(
+                      fontSize: 16,
+                      color: textSecondary,
+                      height: 1.35,
+                    ),
                   ),
-                ),
+                ],
               ],
             ),
           ),
@@ -761,36 +769,6 @@ class _UserProfileScreenState extends State<UserProfileScreen> {
     );
   }
 
-  Widget _buildIntroductionSection(String fullName, String bio) {
-    return Padding(
-      padding: const EdgeInsets.symmetric(horizontal: 4),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          const Text(
-            'Giới thiệu',
-            style: TextStyle(
-              fontSize: 22,
-              fontWeight: FontWeight.w800,
-              color: textPrimary,
-            ),
-          ),
-          const SizedBox(height: 10),
-          Text(
-            bio.trim().isNotEmpty
-                ? bio.trim()
-                : 'Chào các bạn! Mình là $fullName, tính tình cởi mở và thích chia sẻ. Mong tìm được người bạn cùng phòng vui tính, sạch sẽ và có lịch sinh hoạt phù hợp.',
-            style: const TextStyle(
-              fontSize: 16,
-              height: 1.5,
-              color: textPrimary,
-            ),
-          ),
-        ],
-      ),
-    );
-  }
-
   Future<void> _openEditHabits() async {
     final authVm = context.read<AuthViewModel>();
     final profileVm = context.read<UserProfileViewModel>();
@@ -998,24 +976,6 @@ class _UserProfileScreenState extends State<UserProfileScreen> {
     );
   }
 
-  Widget _buildStatusNote() {
-    return Container(
-      width: double.infinity,
-      padding: const EdgeInsets.all(16),
-      decoration: BoxDecoration(
-        color: softMint,
-        borderRadius: BorderRadius.circular(18),
-      ),
-      child: const Text(
-        'Bạn chưa có bài đăng nào. Khi đăng bài, hệ thống vẫn sẽ hiển thị đầy đủ mục Bài đăng của tôi và Yêu cầu ở ghép để bạn quản lý thuận tiện.',
-        style: TextStyle(
-          fontSize: 15,
-          color: textPrimary,
-          height: 1.5,
-        ),
-      ),
-    );
-  }
 }
 
 class _ContactLine extends StatelessWidget {
@@ -1172,3 +1132,6 @@ class _ManageItem {
     this.showBadge = false,
   });
 }
+
+
+

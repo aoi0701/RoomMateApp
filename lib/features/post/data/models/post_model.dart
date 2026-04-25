@@ -8,6 +8,7 @@ class PostModel {
   final String district;
   final String roomType;
   final List<String> amenities;
+  final List<String> lifestyleHabits;
   final int price;
   final int area;
   final int capacity;
@@ -26,6 +27,7 @@ class PostModel {
     required this.district,
     required this.roomType,
     required this.amenities,
+    required this.lifestyleHabits,
     required this.price,
     required this.area,
     required this.capacity,
@@ -49,11 +51,12 @@ class PostModel {
       return 0;
     }
 
-    List<String> parseAmenities(dynamic value) {
+    List<String> parseStringList(dynamic value) {
       if (value is Iterable) {
         return value
             .where((item) => item != null)
             .map((item) => item.toString())
+            .where((item) => item.trim().isNotEmpty)
             .toList();
       }
       return const [];
@@ -81,7 +84,8 @@ class PostModel {
       province: data['province'] ?? '',
       district: data['district'] ?? '',
       roomType: data['roomType'] ?? '',
-      amenities: parseAmenities(rawAmenities),
+      amenities: parseStringList(rawAmenities),
+      lifestyleHabits: parseStringList(data['lifestyleHabits']),
       price: parseInt(data['price']),
       area: parseInt(data['area']),
       capacity: parseInt(data['capacity']),
@@ -102,6 +106,7 @@ class PostModel {
       'district': district,
       'roomType': roomType,
       'amenities': amenities,
+      'lifestyleHabits': lifestyleHabits,
       'price': price,
       'area': area,
       'capacity': capacity,
@@ -124,6 +129,7 @@ class PostModel {
     String? district,
     String? roomType,
     List<String>? amenities,
+    List<String>? lifestyleHabits,
     int? price,
     int? area,
     int? capacity,
@@ -142,6 +148,7 @@ class PostModel {
       district: district ?? this.district,
       roomType: roomType ?? this.roomType,
       amenities: amenities ?? this.amenities,
+      lifestyleHabits: lifestyleHabits ?? this.lifestyleHabits,
       price: price ?? this.price,
       area: area ?? this.area,
       capacity: capacity ?? this.capacity,

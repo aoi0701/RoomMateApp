@@ -21,7 +21,6 @@ class _SendRequestScreenState extends State<SendRequestScreen> {
   static const Color primaryBlue = Color(0xFF3B6EF5);
   static const Color bgColor = Color(0xFFF5F7FB);
   static const Color textPrimary = Color(0xFF111827);
-  static const Color textSecondary = Color(0xFF6B7280);
   static const Color lightBlue = Color(0xFFEAF2FF);
 
   @override
@@ -131,36 +130,28 @@ class _SendRequestScreenState extends State<SendRequestScreen> {
                             ),
                           ),
                         ),
-                        const SizedBox(height: 16),
-                        const Text(
-                          'Giới thiệu ngắn gọn về bạn hoặc nhu cầu ở ghép để chủ bài đăng dễ phản hồi hơn.',
-                          style: TextStyle(
-                            fontSize: 15,
-                            height: 1.6,
-                            color: textSecondary,
-                          ),
-                        ),
                         const SizedBox(height: 18),
                         TextField(
                           controller: _messageController,
                           maxLines: 6,
                           textInputAction: TextInputAction.newline,
                           decoration: InputDecoration(
-                            hintText:
-                                'Ví dụ: Mình là sinh viên, gọn gàng, muốn tìm người ở ghép lâu dài...',
-                            hintStyle: const TextStyle(
-                              color: Color(0xFF9CA3AF),
-                            ),
                             filled: true,
                             fillColor: const Color(0xFFF8FAFF),
                             contentPadding: const EdgeInsets.all(16),
                             border: OutlineInputBorder(
                               borderRadius: BorderRadius.circular(18),
-                              borderSide: BorderSide.none,
+                              borderSide: const BorderSide(
+                                color: Color(0xFFD7E3FF),
+                                width: 1.2,
+                              ),
                             ),
                             enabledBorder: OutlineInputBorder(
                               borderRadius: BorderRadius.circular(18),
-                              borderSide: BorderSide.none,
+                              borderSide: const BorderSide(
+                                color: Color(0xFFD7E3FF),
+                                width: 1.2,
+                              ),
                             ),
                             focusedBorder: OutlineInputBorder(
                               borderRadius: BorderRadius.circular(18),
@@ -182,7 +173,8 @@ class _SendRequestScreenState extends State<SendRequestScreen> {
                       onPressed: viewModel.isLoading ? null : _submitRequest,
                       style: ElevatedButton.styleFrom(
                         backgroundColor: primaryBlue,
-                        disabledBackgroundColor: primaryBlue.withValues(alpha: 0.6),
+                        disabledBackgroundColor:
+                            primaryBlue.withValues(alpha: 0.6),
                         elevation: 0,
                         shape: RoundedRectangleBorder(
                           borderRadius: BorderRadius.circular(18),

@@ -7,9 +7,10 @@ import 'package:provider/provider.dart';
 
 import '../../../auth/presentation/viewmodels/auth_viewmodel.dart';
 import '../../../home/data/constants/room_filter_data.dart';
-import '../../../profile/data/models/profile_habit_model.dart';
 import '../../../profile/data/models/user_model.dart';
 import '../../../profile/presentation/viewmodels/user_profile_viewmodel.dart';
+import '../widgets/amenity_grid.dart';
+import '../widgets/lifestyle_habit_wrap.dart';
 import '../viewmodels/post_viewmodel.dart';
 
 class CreatePostScreen extends StatefulWidget {
@@ -84,6 +85,9 @@ class _CreatePostScreenState extends State<CreatePostScreen> {
   Future<void> _handleCreatePost() async {
     FocusScope.of(context).unfocus();
 
+    final lifestyleHabits = await _loadLifestyleHabitIds(
+      context.read<AuthViewModel>().user?.uid,
+    );
     final vm = context.read<PostViewModel>();
     final success = await vm.createPost(
       title: _titleController.text,
@@ -92,6 +96,7 @@ class _CreatePostScreenState extends State<CreatePostScreen> {
       district: _selectedDistrict,
       roomType: _selectedRoomType,
       amenities: _selectedAmenities,
+      lifestyleHabits: lifestyleHabits,
       priceText: _priceController.text,
       areaText: _areaController.text,
       capacityText: _capacityController.text,
@@ -112,6 +117,21 @@ class _CreatePostScreenState extends State<CreatePostScreen> {
     if (success) {
       Navigator.pop(context);
     }
+  }
+
+  Future<List<String>> _loadLifestyleHabitIds(String? uid) async {
+    if (uid == null) {
+      return const [];
+    }
+
+    final profileVm = context.read<UserProfileViewModel>();
+    final user = await profileVm.getUserProfile(uid);
+    return user?.habits
+            .map((item) => item.trim())
+            .where((item) => item.isNotEmpty)
+            .toSet()
+            .toList() ??
+        const [];
   }
 
   InputDecoration _inputDecoration(String label, {String? hintText}) {
@@ -179,8 +199,15 @@ class _CreatePostScreenState extends State<CreatePostScreen> {
     required ValueChanged<String?> onChanged,
     String? hint,
   }) {
+    final normalizedOptions = options
+        .map((item) => item.trim())
+        .where((item) => item.isNotEmpty)
+        .toSet()
+        .toList(growable: false);
+    final selectedValue = normalizedOptions.contains(value) ? value : null;
+
     return DropdownButtonFormField<String>(
-      initialValue: value.isEmpty ? null : value,
+      initialValue: selectedValue,
       isExpanded: true,
       decoration: _inputDecoration(label),
       hint: Text(
@@ -189,7 +216,7 @@ class _CreatePostScreenState extends State<CreatePostScreen> {
         maxLines: 1,
       ),
       selectedItemBuilder: (context) {
-        return options
+        return normalizedOptions
             .map(
               (item) => Align(
                 alignment: Alignment.centerLeft,
@@ -202,7 +229,7 @@ class _CreatePostScreenState extends State<CreatePostScreen> {
             )
             .toList();
       },
-      items: options
+      items: normalizedOptions
           .map(
             (item) => DropdownMenuItem<String>(
               value: item,
@@ -219,42 +246,19 @@ class _CreatePostScreenState extends State<CreatePostScreen> {
   }
 
   Widget _buildAmenitiesSection(bool isLoading) {
-    return Wrap(
-      spacing: 10,
-      runSpacing: 10,
-      children: RoomFilterData.amenities.map((item) {
-        final selected = _selectedAmenities.contains(item);
-        return FilterChip(
-          selected: selected,
-          onSelected: isLoading
-              ? null
-              : (value) {
-                  setState(() {
-                    if (value) {
-                      _selectedAmenities.add(item);
-                    } else {
-                      _selectedAmenities.remove(item);
-                    }
-                  });
-                },
-          selectedColor: const Color(0xFFDCE8FF),
-          checkmarkColor: primaryBlue,
-          label: Text(
-            item,
-            style: TextStyle(
-              color: selected ? primaryBlue : textPrimary,
-              fontWeight: FontWeight.w600,
-            ),
-          ),
-          backgroundColor: const Color(0xFFF4F6FA),
-          side: BorderSide(
-            color: selected ? primaryBlue : const Color(0xFFD8DEE9),
-          ),
-          shape: RoundedRectangleBorder(
-            borderRadius: BorderRadius.circular(999),
-          ),
-        );
-      }).toList(),
+    return AmenityGrid(
+      amenities: RoomFilterData.amenities,
+      selectedAmenities: _selectedAmenities.toSet(),
+      enabled: !isLoading,
+      onToggle: (item) {
+        setState(() {
+          if (_selectedAmenities.contains(item)) {
+            _selectedAmenities.remove(item);
+          } else {
+            _selectedAmenities.add(item);
+          }
+        });
+      },
     );
   }
 
@@ -284,9 +288,9 @@ class _CreatePostScreenState extends State<CreatePostScreen> {
 
         final user = UserModel.fromDocument(snapshot.data!);
         final selectedHabits = user.habits
-            .map(ProfileHabitCatalog.findById)
-            .whereType<ProfileHabitModel>()
-            .toList();
+            .map((item) => item.trim())
+            .where((item) => item.isNotEmpty)
+            .toList(growable: false);
 
         if (selectedHabits.isEmpty) {
           return Container(
@@ -307,52 +311,7 @@ class _CreatePostScreenState extends State<CreatePostScreen> {
           );
         }
 
-        return Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Wrap(
-              spacing: 10,
-              runSpacing: 10,
-              children: selectedHabits
-                  .map(
-                    (item) => Container(
-                      padding: const EdgeInsets.symmetric(
-                        horizontal: 14,
-                        vertical: 10,
-                      ),
-                      decoration: BoxDecoration(
-                        color: item.backgroundColor,
-                        borderRadius: BorderRadius.circular(999),
-                      ),
-                      child: Row(
-                        mainAxisSize: MainAxisSize.min,
-                        children: [
-                          Icon(
-                            item.icon,
-                            size: 18,
-                            color: item.foregroundColor,
-                          ),
-                          const SizedBox(width: 8),
-                          Text(
-                            item.label,
-                            style: const TextStyle(
-                              fontWeight: FontWeight.w600,
-                              color: textPrimary,
-                            ),
-                          ),
-                        ],
-                      ),
-                    ),
-                  )
-                  .toList(),
-            ),
-            const SizedBox(height: 12),
-            const Text(
-              'Thói quen sinh hoạt được lấy tự động từ hồ sơ cá nhân của bạn.',
-              style: TextStyle(fontSize: 13, color: textSecondary),
-            ),
-          ],
-        );
+        return LifestyleHabitWrap(habitIds: selectedHabits);
       },
     );
   }
@@ -485,7 +444,7 @@ class _CreatePostScreenState extends State<CreatePostScreen> {
                       enabled: !vm.isLoading,
                       decoration: _inputDecoration(
                         'Tiêu đề bài đăng',
-                        hintText: 'Ví dụ: Tìm bạn nữ ở ghép quận Cầu Giấy',
+                        // hintText: 'Ví dụ: Tìm bạn nữ ở ghép quận Cầu Giấy',
                       ),
                     ),
                     const SizedBox(height: 14),
@@ -494,7 +453,7 @@ class _CreatePostScreenState extends State<CreatePostScreen> {
                       enabled: !vm.isLoading,
                       decoration: _inputDecoration(
                         'Địa chỉ chi tiết',
-                        hintText: 'Ví dụ: 123 Nguyễn Văn Cừ, gần trường...',
+                        // hintText: 'Ví dụ: 123 Nguyễn Văn Cừ, gần trường...',
                       ),
                     ),
                     const SizedBox(height: 14),

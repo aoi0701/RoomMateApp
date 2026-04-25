@@ -152,33 +152,24 @@ class _UserHomeScreenState extends State<UserHomeScreen> {
     return Scaffold(
       backgroundColor: bgColor,
       body: SafeArea(
-        child: Stack(
+        child: Column(
           children: [
-            Column(
-              children: [
-                Expanded(
-                  child: SingleChildScrollView(
-                    padding: const EdgeInsets.only(bottom: 128),
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        _buildHeader(activeFilter),
-                        const SizedBox(height: 18),
-                        _buildSuggestedProfilesSection(roommateVm),
-                        const SizedBox(height: 28),
-                        _buildFeaturedPostsSection(postVm, activeFilter),
-                      ],
-                    ),
-                  ),
+            Expanded(
+              child: SingleChildScrollView(
+                padding: const EdgeInsets.only(bottom: 104),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    _buildHeader(activeFilter),
+                    const SizedBox(height: 18),
+                    _buildSuggestedProfilesSection(roommateVm),
+                    const SizedBox(height: 28),
+                    _buildFeaturedPostsSection(postVm, activeFilter),
+                  ],
                 ),
-                _buildBottomNav(),
-              ],
+              ),
             ),
-            Positioned(
-              right: 20,
-              bottom: 104,
-              child: _CreatePostFab(onTap: _openCreatePost),
-            ),
+            _buildBottomNav(),
           ],
         ),
       ),
@@ -446,13 +437,32 @@ class _UserHomeScreenState extends State<UserHomeScreen> {
 
   Widget _buildBottomNav() {
     final items = const [
-      {'icon': Icons.home_filled, 'label': 'Trang chủ'},
-      {'icon': Icons.description_outlined, 'label': 'Yêu cầu'},
-      {'icon': Icons.favorite_border, 'label': 'Đã lưu'},
-      {'icon': Icons.chat_bubble_outline, 'label': 'Nhắn tin'},
-      {'icon': Icons.person_outline, 'label': 'Cá nhân'},
+      _HomeNavItemData(
+        icon: Icons.home_outlined,
+        activeIcon: Icons.home,
+        label: 'Trang chủ',
+      ),
+      _HomeNavItemData(
+        icon: Icons.description_outlined,
+        activeIcon: Icons.description,
+        label: 'Yêu cầu',
+      ),
+      _HomeNavItemData(
+        icon: Icons.add_box_outlined,
+        activeIcon: Icons.add_box,
+        label: 'Đăng bài',
+      ),
+      _HomeNavItemData(
+        icon: Icons.chat_bubble_outline,
+        activeIcon: Icons.chat_bubble,
+        label: 'Nhắn tin',
+      ),
+      _HomeNavItemData(
+        icon: Icons.person_outline,
+        activeIcon: Icons.person,
+        label: 'Cá nhân',
+      ),
     ];
-
     return Container(
       height: 86,
       padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 8),
@@ -467,30 +477,35 @@ class _UserHomeScreenState extends State<UserHomeScreen> {
         ],
       ),
       child: Row(
-        mainAxisAlignment: MainAxisAlignment.spaceAround,
         children: List.generate(items.length, (index) {
-          return _BottomNavItem(
-            icon: items[index]['icon'] as IconData,
-            label: items[index]['label'] as String,
-            isActive: _selectedIndex == index,
-            onTap: () {
-              if (index == 0) {
-                context
-                    .read<HomeSearchFilterViewModel>()
-                    .resetFilter(clearSaved: true);
-                _searchController.clear();
-                setState(() => _selectedIndex = index);
-              } else if (index == 4) {
-                Navigator.push(
-                  context,
-                  MaterialPageRoute(
-                    builder: (_) => const UserProfileScreen(),
-                  ),
-                );
-              } else {
-                setState(() => _selectedIndex = index);
-              }
-            },
+          final item = items[index];
+          return Expanded(
+            child: _BottomNavItem(
+              icon: item.icon,
+              activeIcon: item.activeIcon,
+              label: item.label,
+              isActive: _selectedIndex == index,
+              onTap: () {
+                if (index == 0) {
+                  context
+                      .read<HomeSearchFilterViewModel>()
+                      .resetFilter(clearSaved: true);
+                  _searchController.clear();
+                  setState(() => _selectedIndex = index);
+                } else if (index == 2) {
+                  _openCreatePost();
+                } else if (index == 4) {
+                  Navigator.push(
+                    context,
+                    MaterialPageRoute(
+                      builder: (_) => const UserProfileScreen(),
+                    ),
+                  );
+                } else {
+                  setState(() => _selectedIndex = index);
+                }
+              },
+            ),
           );
         }),
       ),
@@ -998,47 +1013,16 @@ List<Widget> _buildPostTags(PostModel post) {
   return tags.take(3).map((item) => _TagPill(label: item)).toList();
 }
 
-class _CreatePostFab extends StatelessWidget {
-  final VoidCallback onTap;
+class _HomeNavItemData {
+  final IconData icon;
+  final IconData activeIcon;
+  final String label;
 
-  const _CreatePostFab({required this.onTap});
-
-  @override
-  Widget build(BuildContext context) {
-    return GestureDetector(
-      onTap: onTap,
-      child: Column(
-        mainAxisSize: MainAxisSize.min,
-        children: [
-          Container(
-            width: 84,
-            height: 84,
-            decoration: const BoxDecoration(
-              shape: BoxShape.circle,
-              color: Color(0xFF8EDBCA),
-              boxShadow: [
-                BoxShadow(
-                  color: Color(0x22000000),
-                  blurRadius: 20,
-                  offset: Offset(0, 10),
-                ),
-              ],
-            ),
-            child: const Icon(Icons.add, size: 42, color: Colors.white),
-          ),
-          const SizedBox(height: 8),
-          const Text(
-            'Tạo bài đăng',
-            style: TextStyle(
-              fontSize: 14,
-              fontWeight: FontWeight.w700,
-              color: _UserHomeScreenState.textPrimary,
-            ),
-          ),
-        ],
-      ),
-    );
-  }
+  const _HomeNavItemData({
+    required this.icon,
+    required this.activeIcon,
+    required this.label,
+  });
 }
 
 class _TagPill extends StatelessWidget {
@@ -1068,12 +1052,14 @@ class _TagPill extends StatelessWidget {
 
 class _BottomNavItem extends StatelessWidget {
   final IconData icon;
+  final IconData activeIcon;
   final String label;
   final bool isActive;
   final VoidCallback onTap;
 
   const _BottomNavItem({
     required this.icon,
+    required this.activeIcon,
     required this.label,
     required this.isActive,
     required this.onTap,
@@ -1090,13 +1076,14 @@ class _BottomNavItem extends StatelessWidget {
       child: Column(
         mainAxisAlignment: MainAxisAlignment.center,
         children: [
-          Icon(icon, color: color, size: 28),
+          Icon(isActive ? activeIcon : icon, color: color, size: 28),
           const SizedBox(height: 4),
           Text(
             label,
+            textAlign: TextAlign.center,
             style: TextStyle(
               color: color,
-              fontSize: 12,
+              fontSize: 10,
               fontWeight: isActive ? FontWeight.w700 : FontWeight.w500,
             ),
           ),
