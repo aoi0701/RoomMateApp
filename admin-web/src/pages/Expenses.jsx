@@ -27,15 +27,15 @@ export default function Expenses() {
   const [activeTab, setActiveTab] = useState('Tất cả chi phí')
 
   return (
-    <div className="space-y-8">
+    <div className="space-y-6">
       <div className="flex items-start justify-between pb-4">
         <div>
-          <h1 className="text-3xl font-extrabold text-gray-900 dark:text-white">Quản lý Chi tiêu</h1>
-          <p className="text-gray-400 dark:text-gray-500 text-sm font-medium mt-2 mb-2">Tổng quan chi tiêu theo thời gian thực cho quản gia hiện đại.</p>
+          <h1 className="text-2xl font-bold text-gray-900 dark:text-white">Quản lý Chi tiêu</h1>
+          <p className="text-gray-400 dark:text-gray-500 text-sm text-gray-400 dark:text-gray-500 mt-1">Tổng quan chi tiêu theo thời gian thực cho quản gia hiện đại.</p>
         </div>
         <div className="flex gap-2">
           <button className="flex items-center gap-2 px-4 py-2.5 border border-gray-200 dark:border-gray-700 rounded-xl
-            text-sm font-semibold text-gray-600 dark:text-gray-400 hover:bg-gray-50 dark:hover:bg-gray-800
+            text-sm font-semibold text-gray-600 dark:text-gray-400 hover:bg-gray-50 dark:hover:bg-gray-700
             active:scale-[0.98] transition-all cursor-pointer">
             <Download size={14} /> Xuất CSV
           </button>
@@ -47,7 +47,7 @@ export default function Expenses() {
       </div>
 
       <div className="grid grid-cols-2 gap-4">
-        <div className="bg-white dark:bg-gray-900 rounded-2xl border border-gray-100 dark:border-gray-800 shadow-sm p-6">
+        <div className="bg-white dark:bg-gray-800 rounded-2xl border border-gray-200 dark:border-gray-700 p-6">
           <p className="text-xs font-extrabold text-gray-400 dark:text-gray-500 uppercase tracking-widest">Tổng thanh toán đã xử lý</p>
           <p className="text-4xl font-extrabold text-gray-900 dark:text-white mt-2 tabular-nums">
             142.850.000<span className="text-2xl">đ</span>
@@ -61,8 +61,8 @@ export default function Expenses() {
         </div>
       </div>
 
-      <div className="bg-white dark:bg-gray-900 rounded-2xl border border-gray-100 dark:border-gray-800 shadow-sm overflow-hidden">
-        <div className="px-5 py-4 border-b border-gray-100 dark:border-gray-800 flex items-center justify-between">
+      <div className="bg-white dark:bg-gray-800 rounded-2xl border border-gray-200 dark:border-gray-700 overflow-hidden">
+        <div className="px-5 py-4 border-b border-gray-100 dark:border-gray-700 flex items-center justify-between">
           <h2 className="text-base font-bold text-gray-800 dark:text-gray-100">Sổ cái Chung Đang hoạt động</h2>
           <div className="flex gap-1 bg-gray-50 dark:bg-gray-800 border border-gray-100 dark:border-gray-700 rounded-xl p-1">
             {tabs.map(t => (
@@ -80,16 +80,16 @@ export default function Expenses() {
 
         <table className="w-full">
           <thead>
-            <tr className="border-b border-gray-100 dark:border-gray-800">
+            <tr className="border-b border-gray-100 dark:border-gray-700">
               {['Tên nhóm', 'Tổng số tiền', 'Cách chia', 'Trạng thái'].map(h => (
                 <th key={h} className="text-left text-xs font-extrabold text-gray-400 dark:text-gray-500
                   uppercase tracking-widest px-5 py-3.5">{h}</th>
               ))}
             </tr>
           </thead>
-          <tbody className="divide-y divide-gray-50 dark:divide-gray-800">
+          <tbody className="divide-y divide-gray-50 dark:divide-gray-700">
             {expenses.map((e, i) => (
-              <tr key={i} className="hover:bg-gray-50 dark:hover:bg-gray-800/60 transition-colors duration-100">
+              <tr key={i} className="hover:bg-gray-50 dark:hover:bg-gray-700/60 transition-colors duration-100">
                 <td className="px-5 py-4">
                   <div className="flex items-center gap-3">
                     <span className="text-xl">{e.icon}</span>
@@ -128,19 +128,19 @@ export default function Expenses() {
           </tbody>
         </table>
 
-        <div className="px-5 py-3 border-t border-gray-100 dark:border-gray-800 flex items-center justify-between">
+        <div className="px-5 py-3 border-t border-gray-100 dark:border-gray-700 flex items-center justify-between">
           <p className="text-sm font-semibold text-gray-400 dark:text-gray-500">Hiển thị 4 trên 128 giao dịch</p>
           <div className="flex items-center gap-1">
-            <button className="p-1.5 border border-gray-200 dark:border-gray-700 rounded-lg text-gray-500 dark:text-gray-400 cursor-pointer hover:bg-gray-50 dark:hover:bg-gray-800"><ChevronLeft size={15} /></button>
+            <button className="p-1.5 border border-gray-200 dark:border-gray-700 rounded-lg text-gray-500 dark:text-gray-400 cursor-pointer hover:bg-gray-50 dark:hover:bg-gray-700"><ChevronLeft size={15} /></button>
             <button className="w-7 h-7 bg-primary text-white text-sm rounded-lg font-bold">1</button>
-            <button className="w-7 h-7 text-sm font-semibold text-gray-600 dark:text-gray-400 hover:bg-gray-100 dark:hover:bg-gray-800 rounded-lg cursor-pointer">2</button>
-            <button className="p-1.5 border border-gray-200 dark:border-gray-700 rounded-lg text-gray-500 dark:text-gray-400 cursor-pointer hover:bg-gray-50 dark:hover:bg-gray-800"><ChevronRight size={15} /></button>
+            <button className="w-7 h-7 text-sm font-semibold text-gray-600 dark:text-gray-400 hover:bg-gray-100 dark:hover:bg-gray-700 rounded-lg cursor-pointer">2</button>
+            <button className="p-1.5 border border-gray-200 dark:border-gray-700 rounded-lg text-gray-500 dark:text-gray-400 cursor-pointer hover:bg-gray-50 dark:hover:bg-gray-700"><ChevronRight size={15} /></button>
           </div>
         </div>
       </div>
 
       <div className="grid grid-cols-2 gap-4">
-        <div className="bg-white dark:bg-gray-900 rounded-2xl border border-gray-100 dark:border-gray-800 shadow-sm p-5">
+        <div className="bg-white dark:bg-gray-800 rounded-2xl border border-gray-200 dark:border-gray-700 p-5">
           <h3 className="text-base font-bold text-gray-800 dark:text-gray-100 mb-3">Lịch sử Thanh toán</h3>
           <div className="space-y-3">
             {activity.map((a, i) => (
@@ -155,7 +155,7 @@ export default function Expenses() {
           </div>
         </div>
 
-        <div className="bg-white dark:bg-gray-900 rounded-2xl border border-gray-100 dark:border-gray-800 shadow-sm p-5">
+        <div className="bg-white dark:bg-gray-800 rounded-2xl border border-gray-200 dark:border-gray-700 p-5">
           <h3 className="text-base font-bold text-gray-800 dark:text-gray-100">Phân bổ cách chia</h3>
           <p className="text-xs font-semibold text-primary mb-2 mt-0.5">Phân tích ưu tiên hệ thống</p>
           <ResponsiveContainer width="100%" height={160}>

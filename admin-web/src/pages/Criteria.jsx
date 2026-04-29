@@ -14,10 +14,10 @@ export default function Criteria() {
   const [enforcement, setEnforcement] = useState('hard')
 
   return (
-    <div className="space-y-8">
+    <div className="space-y-6">
       <div className="pb-4">
-        <h1 className="text-3xl font-extrabold text-gray-900 dark:text-white">Tiêu chí Phù hợp</h1>
-        <p className="text-gray-400 dark:text-gray-500 text-sm font-medium mt-2 mb-2">Tinh chỉnh trọng số và bộ lọc cho thuật toán tìm kiếm người ở ghép.</p>
+        <h1 className="text-2xl font-bold text-gray-900 dark:text-white">Tiêu chí Phù hợp</h1>
+        <p className="text-gray-400 dark:text-gray-500 text-sm text-gray-400 dark:text-gray-500 mt-1">Tinh chỉnh trọng số và bộ lọc cho thuật toán tìm kiếm người ở ghép.</p>
       </div>
 
       <div className="grid grid-cols-3 gap-6">
@@ -30,7 +30,7 @@ export default function Criteria() {
           </div>
           <div className="space-y-3">
             {criteria.map((c, i) => (
-              <div key={i} className="bg-white dark:bg-gray-900 rounded-2xl border border-gray-100 dark:border-gray-800 shadow-sm p-4
+              <div key={i} className="bg-white dark:bg-gray-800 rounded-2xl border border-gray-200 dark:border-gray-700 p-4
                 flex items-center gap-4 hover:border-primary/30 dark:hover:border-primary/40
                 hover:shadow-md cursor-pointer transition-all duration-150">
                 <div className="w-11 h-11 rounded-xl bg-primary-light dark:bg-primary/20 flex items-center justify-center text-xl flex-shrink-0">{c.icon}</div>
@@ -54,7 +54,7 @@ export default function Criteria() {
 
         {/* Config panel */}
         <div className="space-y-4">
-          <div className="bg-white dark:bg-gray-900 rounded-2xl border border-gray-100 dark:border-gray-800 shadow-sm p-5">
+          <div className="bg-white dark:bg-gray-800 rounded-2xl border border-gray-200 dark:border-gray-700 p-5">
             <h3 className="text-base font-bold text-gray-800 dark:text-gray-100 mb-4">Cấu hình Tiêu chí</h3>
 
             <div className="space-y-4">
@@ -124,7 +124,7 @@ export default function Criteria() {
               <button className="flex-1 py-2.5 bg-primary text-white text-sm font-bold rounded-xl
                 hover:bg-primary-dark active:scale-[0.98] transition-all cursor-pointer">Cập nhật Tiêu chí</button>
               <button className="px-4 py-2.5 border border-gray-200 dark:border-gray-700 text-gray-600 dark:text-gray-400
-                text-sm font-semibold rounded-xl hover:bg-gray-50 dark:hover:bg-gray-800 cursor-pointer transition-all">Hủy bỏ</button>
+                text-sm font-semibold rounded-xl hover:bg-gray-50 dark:hover:bg-gray-700 cursor-pointer transition-all">Hủy bỏ</button>
             </div>
           </div>
 

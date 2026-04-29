@@ -50,9 +50,9 @@ export default function Users() {
   }
 
   return (
-    <div className="space-y-8">
+    <div className="space-y-6">
       <div className="pb-4">
-        <h1 className="text-3xl font-extrabold text-gray-900 dark:text-white">Quản lý Người dùng</h1>
+        <h1 className="text-2xl font-bold text-gray-900 dark:text-white">Quản lý Người dùng</h1>
         <p className="text-gray-400 dark:text-gray-500 text-sm font-medium mt-2">Xem và quản lý tài khoản người dùng trong hệ thống.</p>
       </div>
 
@@ -61,7 +61,7 @@ export default function Users() {
         {TABS.map(t => {
           const { icon: Icon, color } = tabMeta[t]
           return (
-            <div key={t} className="bg-white dark:bg-gray-900 rounded-2xl border border-gray-100 dark:border-gray-800 shadow-sm p-5
+            <div key={t} className="bg-white dark:bg-gray-800 rounded-2xl border border-gray-200 dark:border-gray-700 p-5
               hover:shadow-md hover:-translate-y-0.5 transition-all duration-200 cursor-default">
               <div className="flex items-center justify-between mb-3">
                 <p className="text-xs font-extrabold text-gray-400 dark:text-gray-500 uppercase tracking-widest">{t}</p>
@@ -74,8 +74,8 @@ export default function Users() {
       </div>
 
       {/* Table card */}
-      <div className="bg-white dark:bg-gray-900 rounded-2xl border border-gray-100 dark:border-gray-800 shadow-sm overflow-hidden">
-        <div className="px-5 py-4 border-b border-gray-100 dark:border-gray-800 flex items-center justify-between gap-4">
+      <div className="bg-white dark:bg-gray-800 rounded-2xl border border-gray-200 dark:border-gray-700 overflow-hidden">
+        <div className="px-5 py-4 border-b border-gray-100 dark:border-gray-700 flex items-center justify-between gap-4">
           <div className="relative flex-1 max-w-xs">
             <Search size={14} className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400 pointer-events-none" />
             <input
@@ -107,21 +107,21 @@ export default function Users() {
         ) : (
           <table className="w-full">
             <thead>
-              <tr className="border-b border-gray-100 dark:border-gray-800">
+              <tr className="border-b border-gray-100 dark:border-gray-700">
                 {['Người dùng', 'Email', 'Điện thoại', 'Giới tính', 'Trạng thái', 'Thao tác'].map(h => (
                   <th key={h} className="text-left text-xs font-extrabold text-gray-400 dark:text-gray-500
                     uppercase tracking-widest px-5 py-3.5">{h}</th>
                 ))}
               </tr>
             </thead>
-            <tbody className="divide-y divide-gray-50 dark:divide-gray-800">
+            <tbody className="divide-y divide-gray-50 dark:divide-gray-700">
               {filtered.length === 0 && (
                 <tr><td colSpan={6} className="px-5 py-10 text-center text-sm font-semibold text-gray-400 dark:text-gray-500">
                   Không có người dùng nào
                 </td></tr>
               )}
               {filtered.map(u => (
-                <tr key={u.id} className="hover:bg-gray-50 dark:hover:bg-gray-800/60 transition-colors duration-100">
+                <tr key={u.id} className="hover:bg-gray-50 dark:hover:bg-gray-700/60 transition-colors duration-100">
                   <td className="px-5 py-4">
                     <div className="flex items-center gap-3">
                       <div className="w-9 h-9 rounded-full bg-primary-light dark:bg-primary/20
@@ -165,7 +165,7 @@ export default function Users() {
             </tbody>
           </table>
         )}
-        <div className="px-5 py-3 border-t border-gray-100 dark:border-gray-800">
+        <div className="px-5 py-3 border-t border-gray-100 dark:border-gray-700">
           <p className="text-sm font-semibold text-gray-400 dark:text-gray-500">
             Hiển thị <span className="text-gray-700 dark:text-gray-300 font-bold">{filtered.length}</span> / {users.length} người dùng
           </p>

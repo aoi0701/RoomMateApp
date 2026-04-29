@@ -144,13 +144,13 @@ export default function Dashboard() {
       {/* Page header */}
       <div className="flex items-end justify-between">
         <div>
-          <h1 className="text-3xl font-extrabold text-gray-900 dark:text-white leading-tight">Bảng điều khiển</h1>
+          <h1 className="text-2xl font-bold text-gray-900 dark:text-white leading-tight">Bảng điều khiển</h1>
           <p className="text-gray-400 dark:text-gray-500 text-sm font-medium mt-1.5">
             Dữ liệu hệ thống RoomMate cập nhật theo thời gian thực.
           </p>
         </div>
         <div className="flex items-center gap-2 text-sm font-semibold text-gray-500 dark:text-gray-400
-          bg-white dark:bg-gray-900 border border-gray-100 dark:border-gray-800 rounded-2xl px-4 py-2.5 shadow-sm">
+          bg-white dark:bg-gray-800 border border-gray-100 dark:border-gray-700 rounded-2xl px-4 py-2.5 shadow-sm">
           <span className="w-2 h-2 rounded-full bg-emerald-400 animate-pulse" />
           <TrendingUp size={14} className="text-primary" />
           Cập nhật theo thời gian thực
@@ -162,7 +162,7 @@ export default function Dashboard() {
         {statCards.map((s) => (
           <div
             key={s.label}
-            className={`group bg-white dark:bg-gray-900 rounded-2xl border ${s.border} ${s.ring} shadow-sm p-6
+            className={`group bg-white dark:bg-gray-800 rounded-2xl border ${s.border} ${s.ring} shadow-sm p-6
               hover:shadow-lg hover:-translate-y-0.5 transition-all duration-200 ease-in-out cursor-default`}
           >
             <div className="flex items-start justify-between mb-5">
@@ -183,7 +183,7 @@ export default function Dashboard() {
       {/* Chart + Lists */}
       <div className="grid grid-cols-5 gap-5">
         {/* Bar chart */}
-        <div className="col-span-3 bg-white dark:bg-gray-900 rounded-2xl border border-gray-100 dark:border-gray-800 shadow-sm p-6">
+        <div className="col-span-3 bg-white dark:bg-gray-800 rounded-2xl border border-gray-200 dark:border-gray-700 p-6">
           <div className="flex items-center justify-between mb-6">
             <div>
               <h2 className="text-base font-bold text-gray-800 dark:text-gray-100">Thống kê tổng quan</h2>
@@ -199,7 +199,7 @@ export default function Dashboard() {
               <CartesianGrid strokeDasharray="3 3" stroke="#f3f4f6" vertical={false} />
               <XAxis dataKey="name" tick={{ fontSize: 12, fill: '#9ca3af', fontWeight: 600 }} axisLine={false} tickLine={false} />
               <YAxis tick={{ fontSize: 12, fill: '#d1d5db', fontWeight: 600 }} axisLine={false} tickLine={false} width={28} />
-              <Tooltip content={<CustomTooltip />} cursor={{ fill: '#f9fafb', rx: 8 }} />
+              <Tooltip content={<CustomTooltip />} cursor={{ fill: 'rgba(156,163,175,0.1)', rx: 8 }} />
               <Bar dataKey="value" radius={[8, 8, 0, 0]}>
                 {chartData.map((entry, index) => (
                   <Cell key={index} fill={entry.fill} fillOpacity={0.9} />
@@ -207,7 +207,7 @@ export default function Dashboard() {
               </Bar>
             </BarChart>
           </ResponsiveContainer>
-          <div className="flex items-center gap-5 mt-5 pt-4 border-t border-gray-50 dark:border-gray-800">
+          <div className="flex items-center gap-5 mt-5 pt-4 border-t border-gray-50 dark:border-gray-700">
             {chartData.map(d => (
               <div key={d.name} className="flex items-center gap-1.5">
                 <span className="w-2.5 h-2.5 rounded-full flex-shrink-0" style={{ backgroundColor: d.fill }} />
@@ -220,7 +220,7 @@ export default function Dashboard() {
         {/* Side lists */}
         <div className="col-span-2 space-y-5">
           {/* Recent users */}
-          <div className="bg-white dark:bg-gray-900 rounded-2xl border border-gray-100 dark:border-gray-800 shadow-sm p-5">
+          <div className="bg-white dark:bg-gray-800 rounded-2xl border border-gray-200 dark:border-gray-700 p-5">
             <div className="flex items-center justify-between mb-4">
               <div>
                 <h2 className="text-sm font-bold text-gray-800 dark:text-gray-100">Người dùng mới</h2>
@@ -237,7 +237,7 @@ export default function Dashboard() {
                   <div
                     key={u.id}
                     className="flex items-center gap-3 px-2.5 py-2 rounded-xl
-                      hover:bg-gray-50 dark:hover:bg-gray-800 hover:scale-[1.01]
+                      hover:bg-gray-50 dark:hover:bg-gray-700 hover:scale-[1.01]
                       transition-all duration-150 ease-in-out cursor-pointer group/item"
                   >
                     <div className="w-8 h-8 rounded-full bg-primary-light dark:bg-primary/20 flex items-center justify-center
@@ -259,7 +259,7 @@ export default function Dashboard() {
           </div>
 
           {/* Recent posts */}
-          <div className="bg-white dark:bg-gray-900 rounded-2xl border border-gray-100 dark:border-gray-800 shadow-sm p-5">
+          <div className="bg-white dark:bg-gray-800 rounded-2xl border border-gray-200 dark:border-gray-700 p-5">
             <div className="flex items-center justify-between mb-4">
               <div>
                 <h2 className="text-sm font-bold text-gray-800 dark:text-gray-100">Bài đăng mới</h2>
@@ -276,7 +276,7 @@ export default function Dashboard() {
                   <div
                     key={p.id}
                     className="flex items-center gap-3 px-2.5 py-2 rounded-xl
-                      hover:bg-gray-50 dark:hover:bg-gray-800 hover:scale-[1.01]
+                      hover:bg-gray-50 dark:hover:bg-gray-700 hover:scale-[1.01]
                       transition-all duration-150 ease-in-out cursor-pointer"
                   >
                     <div className="w-8 h-8 rounded-xl bg-emerald-50 dark:bg-emerald-950 flex items-center justify-center

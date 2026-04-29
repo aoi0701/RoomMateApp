@@ -1,4 +1,5 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 
@@ -75,6 +76,62 @@ class PostDetailScreen extends StatelessWidget {
     );
   }
 
+  Future<void> _reportPost(BuildContext context) async {
+    final reportTypes = [
+      'Nội dung không phù hợp',
+      'Spam bài đăng',
+      'Thông tin sai lệch',
+      'Khác',
+    ];
+
+    final selected = await showModalBottomSheet<String>(
+      context: context,
+      shape: const RoundedRectangleBorder(
+        borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
+      ),
+      builder: (_) => SafeArea(
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            const Padding(
+              padding: EdgeInsets.fromLTRB(20, 20, 20, 8),
+              child: Text(
+                'Báo cáo bài đăng',
+                style: TextStyle(fontSize: 17, fontWeight: FontWeight.w800),
+              ),
+            ),
+            ...reportTypes.map(
+              (type) => ListTile(
+                title: Text(type),
+                onTap: () => Navigator.pop(context, type),
+              ),
+            ),
+            const SizedBox(height: 8),
+          ],
+        ),
+      ),
+    );
+
+    if (selected == null || !context.mounted) return;
+
+    final reporterId = FirebaseAuth.instance.currentUser?.uid;
+    await FirebaseFirestore.instance.collection('reports').add({
+      'reportedPostId': post.id,
+      'reportedUserId': post.ownerId,
+      'reportedUserName': null,
+      'reporterUserId': reporterId,
+      'type': selected,
+      'status': 'pending',
+      'createdAt': FieldValue.serverTimestamp(),
+    });
+
+    if (!context.mounted) return;
+    ScaffoldMessenger.of(context).showSnackBar(
+      const SnackBar(content: Text('Đã gửi báo cáo. Cảm ơn bạn!')),
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
     final galleryImages = _galleryImages();
@@ -91,6 +148,7 @@ class PostDetailScreen extends StatelessWidget {
                     _HeaderGallery(
                       imageUrls: galleryImages,
                       onBack: () => Navigator.pop(context),
+                      onReport: _isOwner ? null : () => _reportPost(context),
                     ),
                     Transform.translate(
                       offset: const Offset(0, -20),
@@ -593,10 +651,12 @@ class PostDetailScreen extends StatelessWidget {
 class _HeaderGallery extends StatelessWidget {
   final List<String> imageUrls;
   final VoidCallback onBack;
+  final VoidCallback? onReport;
 
   const _HeaderGallery({
     required this.imageUrls,
     required this.onBack,
+    this.onReport,
   });
 
   @override
@@ -643,6 +703,15 @@ class _HeaderGallery extends StatelessWidget {
             onTap: onBack,
           ),
         ),
+        if (onReport != null)
+          Positioned(
+            top: 16,
+            right: 16,
+            child: _CircleButton(
+              icon: Icons.flag_outlined,
+              onTap: onReport!,
+            ),
+          ),
       ],
     );
   }

@@ -18,52 +18,39 @@ const navItems = [
 
 export default function Sidebar() {
   const { user, logout } = useAuth()
-  const initials = user?.displayName?.[0]?.toUpperCase() ?? 'A'
 
   return (
-    <aside className="w-60 min-h-screen bg-white dark:bg-gray-900 border-r border-gray-100 dark:border-gray-800
-      flex flex-col fixed left-0 top-0 bottom-0 shadow-sm">
+    <aside className="w-56 min-h-screen bg-white dark:bg-gray-800 border-r border-gray-200 dark:border-gray-700
+      flex flex-col fixed left-0 top-0 bottom-0">
       {/* Logo */}
-      <div className="px-5 py-5 border-b border-gray-100 dark:border-gray-800">
+      <div className="px-5 h-14 flex items-center border-b border-gray-200 dark:border-gray-700">
         <div className="flex items-center gap-2.5">
-          <div className="w-8 h-8 rounded-xl bg-primary flex items-center justify-center flex-shrink-0">
-            <span className="text-white font-bold text-sm">R</span>
+          <div className="w-7 h-7 rounded-lg bg-primary flex items-center justify-center flex-shrink-0">
+            <span className="text-white font-bold text-xs">R</span>
           </div>
-          <div>
-            <h1 className="text-base font-extrabold text-gray-900 dark:text-white leading-none">RoomMate</h1>
-            <p className="text-[10px] text-gray-400 uppercase tracking-widest mt-0.5">Quản trị viên</p>
-          </div>
+          <span className="text-sm font-bold text-gray-900 dark:text-white">RoomMate</span>
         </div>
       </div>
 
       {/* Nav */}
-      <nav className="flex-1 px-3 py-4 space-y-0.5 overflow-y-auto">
+      <nav className="flex-1 px-3 py-3 space-y-0.5 overflow-y-auto">
         {navItems.map(({ to, icon: Icon, label }) => (
           <NavLink
             key={to}
             to={to}
             end={to === '/'}
             className={({ isActive }) =>
-              `flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm font-semibold transition-all duration-150 ease-in-out ${
+              `flex items-center gap-2.5 px-3 py-2 rounded-lg text-sm transition-all duration-150 ${
                 isActive
-                  ? 'bg-primary-light dark:bg-primary/20 text-primary'
-                  : 'text-gray-500 dark:text-gray-400 hover:bg-gray-50 dark:hover:bg-gray-800 hover:text-gray-800 dark:hover:text-gray-100'
+                  ? 'bg-blue-50 dark:bg-primary/10 text-primary font-semibold'
+                  : 'text-gray-500 dark:text-gray-400 font-medium hover:bg-gray-50 dark:hover:bg-gray-700 hover:text-gray-800 dark:hover:text-gray-200'
               }`
             }
           >
             {({ isActive }) => (
               <>
-                <div className={`w-7 h-7 rounded-lg flex items-center justify-center flex-shrink-0 transition-all ${
-                  isActive
-                    ? 'bg-primary text-white'
-                    : 'bg-transparent text-gray-400 dark:text-gray-500'
-                }`}>
-                  <Icon size={15} />
-                </div>
+                <Icon size={16} className={isActive ? 'text-primary' : 'text-gray-400 dark:text-gray-500'} />
                 {label}
-                {isActive && (
-                  <span className="ml-auto w-1.5 h-1.5 rounded-full bg-primary" />
-                )}
               </>
             )}
           </NavLink>
@@ -71,29 +58,25 @@ export default function Sidebar() {
       </nav>
 
       {/* Bottom */}
-      <div className="px-3 pb-5 space-y-2 border-t border-gray-100 dark:border-gray-800 pt-3">
-        <div className="flex items-center gap-2.5 px-3 py-2.5 bg-gray-50 dark:bg-gray-800
-          hover:bg-gray-100 dark:hover:bg-gray-700 rounded-xl transition-colors cursor-default">
-          <div className="w-8 h-8 rounded-full bg-primary flex items-center justify-center text-white font-bold text-xs flex-shrink-0">
-            {initials}
+      <div className="border-t border-gray-200 dark:border-gray-700 p-3 space-y-1">
+        <div className="flex items-center gap-2.5 px-3 py-2 rounded-lg">
+          <div className="w-7 h-7 rounded-full bg-primary flex items-center justify-center text-white font-semibold text-xs flex-shrink-0">
+            {user?.displayName?.[0]?.toUpperCase() ?? 'A'}
           </div>
           <div className="flex-1 min-w-0">
-            <p className="text-sm font-bold text-gray-800 dark:text-gray-100 truncate leading-tight">
+            <p className="text-xs font-semibold text-gray-800 dark:text-gray-100 truncate">
               {user?.displayName ?? user?.email}
             </p>
-            <p className="text-xs font-medium text-gray-400 mt-0.5">Quản trị viên</p>
+            <p className="text-[11px] text-gray-400 dark:text-gray-500">Quản trị viên</p>
           </div>
         </div>
         <button
           onClick={logout}
-          className="w-full flex items-center justify-center gap-2
-            border border-gray-200 dark:border-gray-700
-            text-gray-500 dark:text-gray-400
-            rounded-xl py-2.5 text-sm font-semibold
-            hover:bg-red-50 dark:hover:bg-red-950 hover:text-red-500 hover:border-red-200 dark:hover:border-red-800
-            active:scale-[0.98] transition-all duration-150 ease-in-out cursor-pointer"
+          className="w-full flex items-center gap-2.5 px-3 py-2 rounded-lg text-sm font-medium
+            text-gray-500 dark:text-gray-400 hover:bg-red-50 dark:hover:bg-red-950/50 hover:text-red-500
+            transition-all duration-150 cursor-pointer"
         >
-          <LogOut size={14} />
+          <LogOut size={15} />
           Đăng xuất
         </button>
       </div>

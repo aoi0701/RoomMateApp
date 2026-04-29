@@ -23,11 +23,11 @@ export default function Media() {
   const [activeTab, setActiveTab] = useState('Tất cả')
 
   return (
-    <div className="space-y-8">
+    <div className="space-y-6">
       <div className="flex items-start justify-between pb-4">
         <div>
-          <h1 className="text-3xl font-extrabold text-gray-900 dark:text-white">Quản lý Nội dung</h1>
-          <p className="text-gray-400 dark:text-gray-500 text-sm font-medium mt-2 mb-2">Xem xét và kiểm duyệt nội dung được tải lên bởi người tìm phòng và chủ nhà.</p>
+          <h1 className="text-2xl font-bold text-gray-900 dark:text-white">Quản lý Nội dung</h1>
+          <p className="text-gray-400 dark:text-gray-500 text-sm text-gray-400 dark:text-gray-500 mt-1">Xem xét và kiểm duyệt nội dung được tải lên bởi người tìm phòng và chủ nhà.</p>
         </div>
         <div className="flex gap-1 bg-gray-50 dark:bg-gray-800 border border-gray-100 dark:border-gray-700 rounded-xl p-1">
           {tabs.map(t => (
@@ -45,12 +45,12 @@ export default function Media() {
 
       <div className="grid grid-cols-4 gap-4">
         {mediaItems.map((item) => (
-          <div key={item.id} className={`bg-white dark:bg-gray-900 rounded-2xl border shadow-sm overflow-hidden
+          <div key={item.id} className={`bg-white dark:bg-gray-800 rounded-2xl border shadow-sm overflow-hidden
             hover:shadow-md hover:-translate-y-0.5 transition-all duration-200
-            ${item.status === 'flagged' ? 'border-red-200 dark:border-red-900' : 'border-gray-100 dark:border-gray-800'}`}>
+            ${item.status === 'flagged' ? 'border-red-200 dark:border-red-900' : 'border-gray-100 dark:border-gray-700'}`}>
             <div className="relative">
               {item.isVideo ? (
-                <div className="w-full h-36 bg-gray-800 dark:bg-gray-950 flex items-center justify-center">
+                <div className="w-full h-36 bg-gray-800 dark:bg-gray-800 flex items-center justify-center">
                   <div className="w-10 h-10 rounded-full bg-white/20 flex items-center justify-center">
                     <Play size={18} className="text-white ml-0.5" />
                   </div>
@@ -72,7 +72,7 @@ export default function Media() {
               {item.flag && <p className="text-xs font-bold text-red-500 mt-1">{item.flag}</p>}
               <div className="flex items-center gap-1.5 mt-3">
                 {item.status === 'approved' ? (
-                  <button className="p-1.5 text-gray-400 dark:text-gray-500 hover:bg-gray-100 dark:hover:bg-gray-800
+                  <button className="p-1.5 text-gray-400 dark:text-gray-500 hover:bg-gray-100 dark:hover:bg-gray-700
                     rounded-lg cursor-pointer transition-all"><RotateCcw size={14} /></button>
                 ) : (
                   <>
@@ -83,7 +83,7 @@ export default function Media() {
                   </>
                 )}
                 {item.status === 'flagged' && (
-                  <button className="p-1.5 text-gray-500 dark:text-gray-400 hover:bg-gray-100 dark:hover:bg-gray-800
+                  <button className="p-1.5 text-gray-500 dark:text-gray-400 hover:bg-gray-100 dark:hover:bg-gray-700
                     rounded-lg border border-gray-200 dark:border-gray-700 cursor-pointer transition-all"><Info size={14} /></button>
                 )}
                 <span className={`text-xs font-bold px-2 py-0.5 rounded-full ml-auto ${statusBadge[item.status]}`}>
@@ -96,7 +96,7 @@ export default function Media() {
       </div>
 
       <div className="grid grid-cols-2 gap-4">
-        <div className="bg-white dark:bg-gray-900 rounded-2xl border border-gray-100 dark:border-gray-800 shadow-sm p-5">
+        <div className="bg-white dark:bg-gray-800 rounded-2xl border border-gray-200 dark:border-gray-700 p-5">
           <h3 className="text-base font-bold text-gray-800 dark:text-gray-100">Nhịp độ kiểm duyệt</h3>
           <p className="text-sm font-medium text-gray-500 dark:text-gray-400 mt-2">
             Hoạt động hệ thống hiện đang <span className="text-emerald-600 dark:text-emerald-400 font-bold">Ổn định</span>.
@@ -120,7 +120,7 @@ export default function Media() {
           </div>
         </div>
 
-        <div className="bg-white dark:bg-gray-900 rounded-2xl border border-gray-100 dark:border-gray-800 shadow-sm p-5">
+        <div className="bg-white dark:bg-gray-800 rounded-2xl border border-gray-200 dark:border-gray-700 p-5">
           <div className="bg-primary rounded-xl p-4 text-white mb-4">
             <div className="flex items-center gap-2 mb-1">
               <Zap size={16} />
