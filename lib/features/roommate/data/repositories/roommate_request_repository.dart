@@ -2,16 +2,20 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 
 import '../models/roommate_request_model.dart';
+import '../../../notification/data/repositories/notification_repository.dart';
 
 class RoommateRequestRepository {
   final FirebaseAuth _auth;
   final FirebaseFirestore _firestore;
+  final NotificationRepository _notificationRepository;
 
   RoommateRequestRepository({
     FirebaseAuth? auth,
     FirebaseFirestore? firestore,
+    NotificationRepository? notificationRepository,
   })  : _auth = auth ?? FirebaseAuth.instance,
-        _firestore = firestore ?? FirebaseFirestore.instance;
+        _firestore = firestore ?? FirebaseFirestore.instance,
+        _notificationRepository = notificationRepository ?? NotificationRepository();
 
   User? get currentUser => _auth.currentUser;
 
@@ -71,6 +75,15 @@ class RoommateRequestRepository {
       'updatedAt': FieldValue.serverTimestamp(),
       'respondedAt': null,
     });
+
+    await _notificationRepository.createNotification(
+      userId: postOwnerId,
+      type: 'roommate_request',
+      title: 'Yêu cầu ghép phòng mới',
+      body: '${user.displayName ?? 'Ai đó'} đã gửi yêu cầu ghép phòng cho bạn.',
+      fromUserId: user.uid,
+      refId: postId,
+    );
   }
 
   Stream<List<RoommateRequestModel>> getReceivedRequests() {
@@ -136,6 +149,15 @@ class RoommateRequestRepository {
       'updatedAt': FieldValue.serverTimestamp(),
       'respondedAt': FieldValue.serverTimestamp(),
     });
+
+    await _notificationRepository.createNotification(
+      userId: data['requesterId'],
+      type: 'request_accepted',
+      title: 'Yêu cầu được chấp nhận',
+      body: 'Yêu cầu ghép phòng của bạn đã được chấp nhận.',
+      fromUserId: user.uid,
+      refId: requestId,
+    );
   }
 
   Future<void> rejectRequest(String requestId) async {
@@ -165,6 +187,15 @@ class RoommateRequestRepository {
       'updatedAt': FieldValue.serverTimestamp(),
       'respondedAt': FieldValue.serverTimestamp(),
     });
+
+    await _notificationRepository.createNotification(
+      userId: data['requesterId'],
+      type: 'request_rejected',
+      title: 'Yêu cầu bị từ chối',
+      body: 'Yêu cầu ghép phòng của bạn đã bị từ chối.',
+      fromUserId: user.uid,
+      refId: requestId,
+    );
   }
 
   Future<bool> hasPendingRequest(String postId) async {

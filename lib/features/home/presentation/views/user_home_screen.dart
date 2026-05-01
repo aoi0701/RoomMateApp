@@ -10,6 +10,8 @@ import '../viewmodels/home_search_filter_viewmodel.dart';
 import '../viewmodels/roommate_profile_viewmodel.dart';
 import 'room_search_filter_screen.dart';
 import '../../../auth/presentation/viewmodels/auth_viewmodel.dart';
+import '../../../notification/presentation/viewmodels/notification_viewmodel.dart';
+import '../../../notification/presentation/views/notification_screen.dart';
 import '../../../post/data/models/post_model.dart';
 import '../../../post/presentation/viewmodels/post_list_viewmodel.dart';
 import '../../../post/presentation/views/create_post_screen.dart';
@@ -43,6 +45,10 @@ class _UserHomeScreenState extends State<UserHomeScreen> {
     WidgetsBinding.instance.addPostFrameCallback((_) {
       if (!mounted) return;
       context.read<HomeSearchFilterViewModel>().resetFilter(clearSaved: true);
+      final userId = context.read<AuthViewModel>().user?.uid;
+      if (userId != null) {
+        context.read<NotificationViewModel>().listenToNotifications(userId);
+      }
     });
   }
 
@@ -205,6 +211,58 @@ class _UserHomeScreenState extends State<UserHomeScreen> {
       ),
       child: Column(
         children: [
+          Row(
+            mainAxisAlignment: MainAxisAlignment.end,
+            children: [
+              Consumer<NotificationViewModel>(
+                builder: (context, notifVm, _) => Stack(
+                  clipBehavior: Clip.none,
+                  children: [
+                    IconButton(
+                      icon: const Icon(
+                        Icons.notifications_outlined,
+                        color: Colors.white,
+                        size: 28,
+                      ),
+                      onPressed: () => Navigator.push(
+                        context,
+                        MaterialPageRoute(
+                          builder: (_) => const NotificationScreen(),
+                        ),
+                      ),
+                    ),
+                    if (notifVm.unreadCount > 0)
+                      Positioned(
+                        top: 6,
+                        right: 6,
+                        child: Container(
+                          padding: const EdgeInsets.all(3),
+                          decoration: const BoxDecoration(
+                            color: Colors.red,
+                            shape: BoxShape.circle,
+                          ),
+                          constraints: const BoxConstraints(
+                            minWidth: 18,
+                            minHeight: 18,
+                          ),
+                          child: Text(
+                            notifVm.unreadCount > 99
+                                ? '99+'
+                                : '${notifVm.unreadCount}',
+                            style: const TextStyle(
+                              color: Colors.white,
+                              fontSize: 10,
+                              fontWeight: FontWeight.w700,
+                            ),
+                            textAlign: TextAlign.center,
+                          ),
+                        ),
+                      ),
+                  ],
+                ),
+              ),
+            ],
+          ),
           Text(
             _greetingText(),
             style: const TextStyle(

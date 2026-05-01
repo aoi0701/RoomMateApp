@@ -20,6 +20,8 @@ import 'features/post/presentation/viewmodels/post_viewmodel.dart';
 import 'features/profile/presentation/viewmodels/user_profile_viewmodel.dart';
 import 'features/roommate/data/repositories/roommate_request_repository.dart';
 import 'features/roommate/presentation/viewmodels/roommate_request_viewmodel.dart';
+import 'features/notification/data/repositories/notification_repository.dart';
+import 'features/notification/presentation/viewmodels/notification_viewmodel.dart';
 import 'firebase_options.dart';
 
 Future<void> main() async {
@@ -90,6 +92,14 @@ class MyApp extends StatelessWidget {
       ChangeNotifierProvider<RoommateRequestViewModel>(
         create: (context) => RoommateRequestViewModel(
           repository: context.read<RoommateRequestRepository>(),
+        ),
+      ),
+      Provider<NotificationRepository>(
+        create: (_) => NotificationRepository(),
+      ),
+      ChangeNotifierProvider<NotificationViewModel>(
+        create: (context) => NotificationViewModel(
+          repository: context.read<NotificationRepository>(),
         ),
       ),
     ],
