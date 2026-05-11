@@ -17,6 +17,7 @@ import '../../../post/presentation/views/post_detail_screen.dart';
 import '../../../profile/data/models/user_model.dart';
 import '../../../profile/presentation/viewmodels/user_profile_viewmodel.dart';
 import '../../../profile/presentation/views/user_profile_screen.dart';
+import '../../../room_group/presentation/views/room_group_screen.dart';
 
 class UserHomeScreen extends StatefulWidget {
   const UserHomeScreen({super.key});
@@ -448,14 +449,14 @@ class _UserHomeScreenState extends State<UserHomeScreen> {
         label: 'Yêu cầu',
       ),
       _HomeNavItemData(
+        icon: Icons.wallet_outlined,
+        activeIcon: Icons.wallet,
+        label: 'Chi tiêu',
+      ),
+      _HomeNavItemData(
         icon: Icons.add_box_outlined,
         activeIcon: Icons.add_box,
         label: 'Đăng bài',
-      ),
-      _HomeNavItemData(
-        icon: Icons.chat_bubble_outline,
-        activeIcon: Icons.chat_bubble,
-        label: 'Nhắn tin',
       ),
       _HomeNavItemData(
         icon: Icons.person_outline,
@@ -493,6 +494,13 @@ class _UserHomeScreenState extends State<UserHomeScreen> {
                   _searchController.clear();
                   setState(() => _selectedIndex = index);
                 } else if (index == 2) {
+                  Navigator.push(
+                    context,
+                    MaterialPageRoute(
+                      builder: (_) => const RoomGroupScreen(),
+                    ),
+                  );
+                } else if (index == 3) {
                   _openCreatePost();
                 } else if (index == 4) {
                   Navigator.push(

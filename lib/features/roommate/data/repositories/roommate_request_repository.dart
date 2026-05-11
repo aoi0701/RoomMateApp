@@ -109,7 +109,7 @@ class RoommateRequestRepository {
         );
   }
 
-  Future<void> acceptRequest(String requestId) async {
+  Future<RoommateRequestModel> acceptRequest(String requestId) async {
     final user = currentUser;
 
     if (user == null) {
@@ -136,6 +136,18 @@ class RoommateRequestRepository {
       'updatedAt': FieldValue.serverTimestamp(),
       'respondedAt': FieldValue.serverTimestamp(),
     });
+
+    return RoommateRequestModel(
+      id: requestId,
+      postId: data['postId'] ?? '',
+      postOwnerId: data['postOwnerId'] ?? '',
+      requesterId: data['requesterId'] ?? '',
+      requesterName: data['requesterName'] ?? '',
+      requesterAvatar: data['requesterAvatar'] ?? '',
+      message: data['message'] ?? '',
+      status: RoommateRequestStatus.accepted,
+      createdAt: (data['createdAt'] as Timestamp?)?.toDate(),
+    );
   }
 
   Future<void> rejectRequest(String requestId) async {

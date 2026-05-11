@@ -2,15 +2,19 @@ import 'dart:async';
 
 import 'package:flutter/foundation.dart';
 
+import '../../../room_group/data/repositories/room_group_repository.dart';
 import '../../data/models/roommate_request_model.dart';
 import '../../data/repositories/roommate_request_repository.dart';
 
 class RoommateRequestViewModel extends ChangeNotifier {
   final RoommateRequestRepository _repository;
+  final RoomGroupRepository _roomGroupRepository;
 
   RoommateRequestViewModel({
     RoommateRequestRepository? repository,
-  }) : _repository = repository ?? RoommateRequestRepository();
+    RoomGroupRepository? roomGroupRepository,
+  })  : _repository = repository ?? RoommateRequestRepository(),
+        _roomGroupRepository = roomGroupRepository ?? RoomGroupRepository();
 
   bool _isLoading = false;
   String? _errorMessage;
@@ -168,7 +172,15 @@ class RoommateRequestViewModel extends ChangeNotifier {
       _setLoading(true);
       _errorMessage = null;
 
-      await _repository.acceptRequest(requestId);
+      final request = await _repository.acceptRequest(requestId);
+
+      await _roomGroupRepository.createGroupAfterAcceptRequest(
+        ownerId: request.postOwnerId,
+        requesterId: request.requesterId,
+        postId: request.postId,
+        groupName: 'Nhóm phòng',
+      );
+
       return true;
     } catch (e) {
       _errorMessage = e.toString().replaceFirst('Exception: ', '');

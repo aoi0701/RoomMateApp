@@ -20,6 +20,10 @@ import 'features/post/presentation/viewmodels/post_viewmodel.dart';
 import 'features/profile/presentation/viewmodels/user_profile_viewmodel.dart';
 import 'features/roommate/data/repositories/roommate_request_repository.dart';
 import 'features/roommate/presentation/viewmodels/roommate_request_viewmodel.dart';
+import 'features/room_group/data/repositories/room_group_repository.dart';
+import 'features/room_group/presentation/viewmodels/room_group_viewmodel.dart';
+import 'features/expense/data/repositories/expense_repository.dart';
+import 'features/expense/presentation/viewmodels/expense_viewmodel.dart';
 import 'features/admin/data/repositories/admin_repository.dart';
 import 'features/admin/presentation/viewmodels/admin_viewmodel.dart';
 import 'firebase_options.dart';
@@ -89,9 +93,26 @@ class MyApp extends StatelessWidget {
         Provider<RoommateRequestRepository>(
           create: (_) => RoommateRequestRepository(),
         ),
+        Provider<RoomGroupRepository>(
+          create: (_) => RoomGroupRepository(),
+        ),
         ChangeNotifierProvider<RoommateRequestViewModel>(
           create: (context) => RoommateRequestViewModel(
             repository: context.read<RoommateRequestRepository>(),
+            roomGroupRepository: context.read<RoomGroupRepository>(),
+          ),
+        ),
+        ChangeNotifierProvider<RoomGroupViewModel>(
+          create: (context) => RoomGroupViewModel(
+            repository: context.read<RoomGroupRepository>(),
+          ),
+        ),
+        Provider<ExpenseRepository>(
+          create: (_) => ExpenseRepository(),
+        ),
+        ChangeNotifierProvider<ExpenseViewModel>(
+          create: (context) => ExpenseViewModel(
+            repository: context.read<ExpenseRepository>(),
           ),
         ),
         Provider<AdminRepository>(
