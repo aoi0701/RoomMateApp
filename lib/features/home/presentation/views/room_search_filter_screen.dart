@@ -1,6 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 
+import '../../../../core/theme/app_colors.dart';
+import '../../../../core/theme/app_text_styles.dart';
+import '../../../../core/widgets/app_button.dart';
 import '../viewmodels/home_search_filter_viewmodel.dart';
 import '../../data/models/room_search_filter_model.dart';
 
@@ -17,8 +20,6 @@ class RoomSearchFilterScreen extends StatefulWidget {
 }
 
 class _RoomSearchFilterScreenState extends State<RoomSearchFilterScreen> {
-  static const Color primaryBlue = Color(0xFF1E66F5);
-
   late RoomSearchFilterModel _draft;
 
   @override
@@ -36,7 +37,7 @@ class _RoomSearchFilterScreenState extends State<RoomSearchFilterScreen> {
     final result = await showModalBottomSheet<String>(
       context: context,
       isScrollControlled: true,
-      backgroundColor: Colors.white,
+      backgroundColor: AppColors.surface,
       shape: const RoundedRectangleBorder(
         borderRadius: BorderRadius.vertical(top: Radius.circular(28)),
       ),
@@ -75,18 +76,16 @@ class _RoomSearchFilterScreenState extends State<RoomSearchFilterScreen> {
   @override
   Widget build(BuildContext context) {
     final vm = context.watch<HomeSearchFilterViewModel>();
-    final districts = RoomSearchFilterModel.districtsByProvince[_draft.province] ?? [];
+    final districts =
+        RoomSearchFilterModel.districtsByProvince[_draft.province] ?? [];
 
     return Scaffold(
-      backgroundColor: const Color(0xFFF7F7F8),
+      backgroundColor: AppColors.background,
       appBar: AppBar(
-        elevation: 0,
-        backgroundColor: primaryBlue,
-        foregroundColor: Colors.white,
-        centerTitle: true,
-        title: const Text(
-          'LỌC TÌM PHÒNG',
-          style: TextStyle(fontWeight: FontWeight.w800),
+        title: const Text('Lọc tìm phòng'),
+        leading: IconButton(
+          icon: const Icon(Icons.arrow_back_ios_new_rounded, size: 18),
+          onPressed: () => Navigator.pop(context),
         ),
       ),
       body: SafeArea(
@@ -100,7 +99,9 @@ class _RoomSearchFilterScreenState extends State<RoomSearchFilterScreen> {
                   children: [
                     _FilterField(
                       label: 'Tỉnh/Thành phố',
-                      value: _draft.province.isEmpty ? 'Chọn tỉnh/thành phố' : _draft.province,
+                      value: _draft.province.isEmpty
+                          ? 'Chọn tỉnh/thành phố'
+                          : _draft.province,
                       onTap: () => _pickSingleOption(
                         title: 'Chọn khu vực',
                         options: RoomSearchFilterModel.provinces,
@@ -115,10 +116,12 @@ class _RoomSearchFilterScreenState extends State<RoomSearchFilterScreen> {
                         },
                       ),
                     ),
-                    const SizedBox(height: 18),
+                    const SizedBox(height: 20),
                     _FilterField(
                       label: 'Quận/huyện',
-                      value: _draft.district.isEmpty ? 'Chọn quận/huyện' : _draft.district,
+                      value: _draft.district.isEmpty
+                          ? 'Chọn quận/huyện'
+                          : _draft.district,
                       onTap: _draft.province.isEmpty
                           ? null
                           : () => _pickSingleOption(
@@ -132,10 +135,12 @@ class _RoomSearchFilterScreenState extends State<RoomSearchFilterScreen> {
                                 },
                               ),
                     ),
-                    const SizedBox(height: 18),
+                    const SizedBox(height: 20),
                     _FilterField(
                       label: 'Loại phòng',
-                      value: _draft.roomType.isEmpty ? 'Chọn loại phòng' : _draft.roomType,
+                      value: _draft.roomType.isEmpty
+                          ? 'Chọn loại phòng'
+                          : _draft.roomType,
                       onTap: () => _pickSingleOption(
                         title: 'Chọn loại phòng',
                         options: RoomSearchFilterModel.roomTypes,
@@ -148,10 +153,7 @@ class _RoomSearchFilterScreenState extends State<RoomSearchFilterScreen> {
                       ),
                     ),
                     const SizedBox(height: 28),
-                    _SectionTitle(
-                      title: 'Giá',
-                      helper: '(bỏ chọn để xem tất cả)',
-                    ),
+                    _SectionTitle(title: 'Giá', helper: '(bỏ chọn để xem tất cả)'),
                     const SizedBox(height: 14),
                     Wrap(
                       spacing: 12,
@@ -180,7 +182,8 @@ class _RoomSearchFilterScreenState extends State<RoomSearchFilterScreen> {
                     Wrap(
                       spacing: 12,
                       runSpacing: 12,
-                      children: RoomSearchFilterModel.amenitiesCatalog.map((item) {
+                      children:
+                          RoomSearchFilterModel.amenitiesCatalog.map((item) {
                         final selected = _draft.amenities.contains(item);
                         return _SelectableChipBox(
                           label: item,
@@ -205,36 +208,10 @@ class _RoomSearchFilterScreenState extends State<RoomSearchFilterScreen> {
             ),
             Padding(
               padding: const EdgeInsets.fromLTRB(20, 8, 20, 20),
-              child: SizedBox(
-                width: double.infinity,
-                height: 56,
-                child: ElevatedButton(
-                  onPressed: vm.isSaving ? null : _save,
-                  style: ElevatedButton.styleFrom(
-                    backgroundColor: primaryBlue,
-                    foregroundColor: Colors.white,
-                    elevation: 0,
-                    shape: RoundedRectangleBorder(
-                      borderRadius: BorderRadius.circular(28),
-                    ),
-                  ),
-                  child: vm.isSaving
-                      ? const SizedBox(
-                          width: 22,
-                          height: 22,
-                          child: CircularProgressIndicator(
-                            strokeWidth: 2,
-                            color: Colors.white,
-                          ),
-                        )
-                      : const Text(
-                          'Áp dụng',
-                          style: TextStyle(
-                            fontSize: 17,
-                            fontWeight: FontWeight.w700,
-                          ),
-                        ),
-                ),
+              child: AppPrimaryButton(
+                label: 'Áp dụng',
+                isLoading: vm.isSaving,
+                onTap: vm.isSaving ? null : _save,
               ),
             ),
           ],
@@ -257,58 +234,57 @@ class _FilterField extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final isDisabled = onTap == null;
+
     return Stack(
       clipBehavior: Clip.none,
       children: [
         InkWell(
-          borderRadius: BorderRadius.circular(22),
+          borderRadius: BorderRadius.circular(20),
           onTap: onTap,
           child: Ink(
             width: double.infinity,
-            padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 24),
+            padding: const EdgeInsets.symmetric(horizontal: 18, vertical: 22),
             decoration: BoxDecoration(
-              color: Colors.white,
-              borderRadius: BorderRadius.circular(22),
-              border: Border.all(color: const Color(0xFF9CA3AF)),
+              color: AppColors.surface,
+              borderRadius: BorderRadius.circular(20),
+              border: Border.all(
+                color: isDisabled ? AppColors.inputBorder : AppColors.border,
+              ),
             ),
             child: Row(
               children: [
                 Expanded(
                   child: Text(
                     value,
-                    style: TextStyle(
-                      fontSize: 17,
-                      color: onTap == null
-                          ? const Color(0xFFB0B7C3)
-                          : const Color(0xFF111827),
+                    style: AppTextStyles.body.copyWith(
+                      color: isDisabled
+                          ? AppColors.textHint
+                          : AppColors.textPrimary,
                     ),
                   ),
                 ),
                 const Icon(
                   Icons.expand_more_rounded,
-                  color: RoomSearchFilterScreenStateColors.primaryBlue,
-                  size: 28,
+                  color: AppColors.primary,
+                  size: 24,
                 ),
               ],
             ),
           ),
         ),
         Positioned(
-          left: 20,
-          top: -12,
+          left: 16,
+          top: -11,
           child: Container(
-            padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
+            padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
             decoration: BoxDecoration(
-              color: RoomSearchFilterScreenStateColors.primaryBlue,
+              color: AppColors.primary,
               borderRadius: BorderRadius.circular(999),
             ),
             child: Text(
               label,
-              style: const TextStyle(
-                fontSize: 14,
-                color: Colors.white,
-                fontWeight: FontWeight.w600,
-              ),
+              style: AppTextStyles.labelSm.copyWith(color: Colors.white),
             ),
           ),
         ),
@@ -321,10 +297,7 @@ class _SectionTitle extends StatelessWidget {
   final String title;
   final String helper;
 
-  const _SectionTitle({
-    required this.title,
-    required this.helper,
-  });
+  const _SectionTitle({required this.title, required this.helper});
 
   @override
   Widget build(BuildContext context) {
@@ -333,19 +306,11 @@ class _SectionTitle extends StatelessWidget {
         children: [
           TextSpan(
             text: title,
-            style: const TextStyle(
-              fontSize: 22,
-              fontWeight: FontWeight.w800,
-              color: Color(0xFF111827),
-            ),
+            style: AppTextStyles.h2,
           ),
           TextSpan(
             text: ' $helper',
-            style: const TextStyle(
-              fontSize: 16,
-              fontWeight: FontWeight.w700,
-              color: Colors.red,
-            ),
+            style: AppTextStyles.body.copyWith(color: AppColors.danger),
           ),
         ],
       ),
@@ -370,20 +335,22 @@ class _SelectableChipBox extends StatelessWidget {
 
     return GestureDetector(
       onTap: onTap,
-      child: Container(
+      child: AnimatedContainer(
+        duration: const Duration(milliseconds: 150),
         width: width,
-        padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 18),
+        padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 16),
         decoration: BoxDecoration(
-          color: selected ? const Color(0xFFEAF2FF) : Colors.white,
-          borderRadius: BorderRadius.circular(18),
+          color: selected ? AppColors.accent : AppColors.surface,
+          borderRadius: BorderRadius.circular(16),
           border: Border.all(
-            color: selected ? const Color(0xFF1E66F5) : const Color(0xFFE5E7EB),
+            color: selected ? AppColors.primary : AppColors.border,
+            width: selected ? 1.5 : 1,
           ),
           boxShadow: const [
             BoxShadow(
-              color: Color(0x12000000),
-              blurRadius: 12,
-              offset: Offset(0, 4),
+              color: Color(0x08000000),
+              blurRadius: 8,
+              offset: Offset(0, 2),
             ),
           ],
         ),
@@ -391,10 +358,9 @@ class _SelectableChipBox extends StatelessWidget {
           child: Text(
             label,
             textAlign: TextAlign.center,
-            style: TextStyle(
-              fontSize: 15,
+            style: AppTextStyles.labelSm.copyWith(
+              color: selected ? AppColors.primary : AppColors.textSecondary,
               fontWeight: selected ? FontWeight.w700 : FontWeight.w500,
-              color: selected ? const Color(0xFF1E66F5) : const Color(0xFF4B5563),
             ),
           ),
         ),
@@ -448,11 +414,11 @@ class _SelectionSheetState extends State<_SelectionSheet> {
           child: Column(
             children: [
               Container(
-                width: 64,
-                height: 6,
+                width: 40,
+                height: 4,
                 decoration: BoxDecoration(
-                  color: const Color(0xFF4B5563),
-                  borderRadius: BorderRadius.circular(999),
+                  color: AppColors.border,
+                  borderRadius: BorderRadius.circular(2),
                 ),
               ),
               const SizedBox(height: 18),
@@ -460,60 +426,97 @@ class _SelectionSheetState extends State<_SelectionSheet> {
                 children: [
                   IconButton(
                     onPressed: () => Navigator.pop(context),
-                    icon: const Icon(Icons.arrow_back, size: 30),
+                    icon: const Icon(
+                      Icons.arrow_back_ios_new_rounded,
+                      size: 18,
+                    ),
                   ),
                   Expanded(
                     child: Text(
                       widget.title,
                       textAlign: TextAlign.center,
-                      style: const TextStyle(
-                        fontSize: 22,
-                        fontWeight: FontWeight.w800,
-                      ),
+                      style: AppTextStyles.h2,
                     ),
                   ),
                   const SizedBox(width: 48),
                 ],
               ),
-              const SizedBox(height: 18),
+              const SizedBox(height: 16),
               TextField(
                 controller: _searchController,
                 onChanged: (value) {
                   setState(() {
                     _filtered = widget.options
-                        .where((item) => item.toLowerCase().contains(value.toLowerCase()))
+                        .where((item) =>
+                            item.toLowerCase().contains(value.toLowerCase()))
                         .toList();
                   });
                 },
+                style: AppTextStyles.body,
                 decoration: InputDecoration(
                   hintText: 'Nhập nội dung tìm kiếm',
-                  contentPadding: const EdgeInsets.symmetric(horizontal: 18, vertical: 18),
+                  hintStyle: AppTextStyles.body.copyWith(
+                    color: AppColors.textHint,
+                  ),
+                  prefixIcon: const Icon(
+                    Icons.search_rounded,
+                    color: AppColors.textSecondary,
+                    size: 20,
+                  ),
+                  filled: true,
+                  fillColor: AppColors.inputFill,
+                  contentPadding:
+                      const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
                   border: OutlineInputBorder(
-                    borderRadius: BorderRadius.circular(20),
+                    borderRadius: BorderRadius.circular(16),
+                    borderSide: const BorderSide(color: AppColors.inputBorder),
+                  ),
+                  enabledBorder: OutlineInputBorder(
+                    borderRadius: BorderRadius.circular(16),
+                    borderSide: const BorderSide(color: AppColors.inputBorder),
+                  ),
+                  focusedBorder: OutlineInputBorder(
+                    borderRadius: BorderRadius.circular(16),
+                    borderSide: const BorderSide(
+                      color: AppColors.primary,
+                      width: 1.5,
+                    ),
                   ),
                 ),
               ),
-              const SizedBox(height: 18),
+              const SizedBox(height: 16),
               Expanded(
                 child: ListView.separated(
                   itemCount: _filtered.length,
                   separatorBuilder: (context, index) =>
-                      const Divider(height: 1),
+                      const Divider(height: 1, color: AppColors.border),
                   itemBuilder: (context, index) {
                     final option = _filtered[index];
                     final selected = _selected.contains(option);
                     return ListTile(
-                      contentPadding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+                      contentPadding:
+                          const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
                       leading: widget.multiSelect
                           ? Icon(
                               selected
-                                  ? Icons.check_box_outlined
-                                  : Icons.check_box_outline_blank,
+                                  ? Icons.check_box_rounded
+                                  : Icons.check_box_outline_blank_rounded,
+                              color: selected
+                                  ? AppColors.primary
+                                  : AppColors.textSecondary,
                             )
                           : null,
-                      tileColor: selected ? const Color(0xFF1E66F5) : null,
-                      textColor: selected ? Colors.white : const Color(0xFF111827),
-                      title: Text(option),
+                      tileColor: selected
+                          ? AppColors.primary.withValues(alpha: 0.08)
+                          : null,
+                      textColor: selected
+                          ? AppColors.primary
+                          : AppColors.textPrimary,
+                      title: Text(option, style: AppTextStyles.body),
+                      trailing: selected && !widget.multiSelect
+                          ? const Icon(Icons.check_rounded,
+                              color: AppColors.primary)
+                          : null,
                       onTap: () {
                         if (!widget.multiSelect) {
                           Navigator.pop(context, option);
@@ -532,25 +535,11 @@ class _SelectionSheetState extends State<_SelectionSheet> {
                 ),
               ),
               const SizedBox(height: 12),
-              SizedBox(
-                width: double.infinity,
-                height: 56,
-                child: ElevatedButton(
-                  onPressed: widget.multiSelect
-                      ? () => Navigator.pop(context, _selected.toList())
-                      : () => Navigator.pop(context),
-                  style: ElevatedButton.styleFrom(
-                    backgroundColor: const Color(0xFF1E66F5),
-                    foregroundColor: Colors.white,
-                    shape: RoundedRectangleBorder(
-                      borderRadius: BorderRadius.circular(28),
-                    ),
-                  ),
-                  child: const Text(
-                    'Xác nhận',
-                    style: TextStyle(fontSize: 17, fontWeight: FontWeight.w700),
-                  ),
-                ),
+              AppPrimaryButton(
+                label: 'Xác nhận',
+                onTap: widget.multiSelect
+                    ? () => Navigator.pop(context, _selected.toList())
+                    : () => Navigator.pop(context),
               ),
             ],
           ),
@@ -558,8 +547,4 @@ class _SelectionSheetState extends State<_SelectionSheet> {
       ),
     );
   }
-}
-
-class RoomSearchFilterScreenStateColors {
-  static const Color primaryBlue = Color(0xFF1E66F5);
 }

@@ -1,6 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 
+import '../../../../core/theme/app_colors.dart';
+import '../../../../core/theme/app_text_styles.dart';
+import '../../../../core/widgets/app_button.dart';
 import '../viewmodels/roommate_request_viewmodel.dart';
 
 class SendRequestScreen extends StatefulWidget {
@@ -18,11 +21,6 @@ class SendRequestScreen extends StatefulWidget {
 class _SendRequestScreenState extends State<SendRequestScreen> {
   final TextEditingController _messageController = TextEditingController();
 
-  static const Color primaryBlue = Color(0xFF3B6EF5);
-  static const Color bgColor = Color(0xFFF5F7FB);
-  static const Color textPrimary = Color(0xFF111827);
-  static const Color lightBlue = Color(0xFFEAF2FF);
-
   @override
   void dispose() {
     _messageController.dispose();
@@ -38,9 +36,7 @@ class _SendRequestScreenState extends State<SendRequestScreen> {
 
     if (message.isEmpty) {
       messenger.showSnackBar(
-        const SnackBar(
-          content: Text('Vui lòng nhập lời nhắn'),
-        ),
+        const SnackBar(content: Text('Vui lòng nhập lời nhắn')),
       );
       return;
     }
@@ -54,17 +50,13 @@ class _SendRequestScreenState extends State<SendRequestScreen> {
 
     if (success) {
       messenger.showSnackBar(
-        const SnackBar(
-          content: Text('Gửi yêu cầu ở ghép thành công'),
-        ),
+        const SnackBar(content: Text('Gửi yêu cầu ở ghép thành công')),
       );
       navigator.pop();
     } else {
       messenger.showSnackBar(
         SnackBar(
-          content: Text(
-            viewModel.errorMessage ?? 'Gửi yêu cầu thất bại',
-          ),
+          content: Text(viewModel.errorMessage ?? 'Gửi yêu cầu thất bại'),
         ),
       );
     }
@@ -75,20 +67,13 @@ class _SendRequestScreenState extends State<SendRequestScreen> {
     return Consumer<RoommateRequestViewModel>(
       builder: (context, viewModel, _) {
         return Scaffold(
-          backgroundColor: bgColor,
+          backgroundColor: AppColors.background,
           appBar: AppBar(
-            elevation: 0,
-            backgroundColor: Colors.white,
-            surfaceTintColor: Colors.white,
-            centerTitle: true,
-            title: const Text(
-              'Gửi yêu cầu ở ghép',
-              style: TextStyle(
-                color: textPrimary,
-                fontWeight: FontWeight.w700,
-              ),
+            title: const Text('Gửi yêu cầu ở ghép'),
+            leading: IconButton(
+              icon: const Icon(Icons.arrow_back_ios_new_rounded, size: 18),
+              onPressed: () => Navigator.pop(context),
             ),
-            iconTheme: const IconThemeData(color: textPrimary),
           ),
           body: SafeArea(
             child: Padding(
@@ -99,13 +84,14 @@ class _SendRequestScreenState extends State<SendRequestScreen> {
                     width: double.infinity,
                     padding: const EdgeInsets.all(20),
                     decoration: BoxDecoration(
-                      color: Colors.white,
+                      color: AppColors.surface,
                       borderRadius: BorderRadius.circular(24),
+                      border: Border.all(color: AppColors.border),
                       boxShadow: const [
                         BoxShadow(
-                          color: Color(0x12000000),
-                          blurRadius: 16,
-                          offset: Offset(0, 6),
+                          color: Color(0x08000000),
+                          blurRadius: 12,
+                          offset: Offset(0, 2),
                         ),
                       ],
                     ),
@@ -114,50 +100,49 @@ class _SendRequestScreenState extends State<SendRequestScreen> {
                       children: [
                         Container(
                           padding: const EdgeInsets.symmetric(
-                            horizontal: 14,
-                            vertical: 8,
+                            horizontal: 12,
+                            vertical: 6,
                           ),
                           decoration: BoxDecoration(
-                            color: lightBlue,
+                            color: AppColors.accent,
                             borderRadius: BorderRadius.circular(999),
                           ),
-                          child: const Text(
+                          child: Text(
                             'Lời nhắn đến chủ bài đăng',
-                            style: TextStyle(
-                              color: primaryBlue,
-                              fontSize: 13,
-                              fontWeight: FontWeight.w700,
+                            style: AppTextStyles.labelSm.copyWith(
+                              color: AppColors.primary,
                             ),
                           ),
                         ),
-                        const SizedBox(height: 18),
+                        const SizedBox(height: 16),
                         TextField(
                           controller: _messageController,
                           maxLines: 6,
                           textInputAction: TextInputAction.newline,
+                          style: AppTextStyles.body,
                           decoration: InputDecoration(
+                            hintText: 'Nhập lời nhắn của bạn...',
+                            hintStyle: AppTextStyles.body.copyWith(
+                              color: AppColors.textHint,
+                            ),
                             filled: true,
-                            fillColor: const Color(0xFFF8FAFF),
+                            fillColor: AppColors.inputFill,
                             contentPadding: const EdgeInsets.all(16),
                             border: OutlineInputBorder(
-                              borderRadius: BorderRadius.circular(18),
-                              borderSide: const BorderSide(
-                                color: Color(0xFFD7E3FF),
-                                width: 1.2,
-                              ),
+                              borderRadius: BorderRadius.circular(16),
+                              borderSide:
+                                  const BorderSide(color: AppColors.inputBorder),
                             ),
                             enabledBorder: OutlineInputBorder(
-                              borderRadius: BorderRadius.circular(18),
-                              borderSide: const BorderSide(
-                                color: Color(0xFFD7E3FF),
-                                width: 1.2,
-                              ),
+                              borderRadius: BorderRadius.circular(16),
+                              borderSide:
+                                  const BorderSide(color: AppColors.inputBorder),
                             ),
                             focusedBorder: OutlineInputBorder(
-                              borderRadius: BorderRadius.circular(18),
+                              borderRadius: BorderRadius.circular(16),
                               borderSide: const BorderSide(
-                                color: primaryBlue,
-                                width: 1.2,
+                                color: AppColors.primary,
+                                width: 1.5,
                               ),
                             ),
                           ),
@@ -166,40 +151,10 @@ class _SendRequestScreenState extends State<SendRequestScreen> {
                     ),
                   ),
                   const Spacer(),
-                  SizedBox(
-                    width: double.infinity,
-                    height: 56,
-                    child: ElevatedButton(
-                      onPressed: viewModel.isLoading ? null : _submitRequest,
-                      style: ElevatedButton.styleFrom(
-                        backgroundColor: primaryBlue,
-                        disabledBackgroundColor:
-                            primaryBlue.withValues(alpha: 0.6),
-                        elevation: 0,
-                        shape: RoundedRectangleBorder(
-                          borderRadius: BorderRadius.circular(18),
-                        ),
-                      ),
-                      child: viewModel.isLoading
-                          ? const SizedBox(
-                              width: 22,
-                              height: 22,
-                              child: CircularProgressIndicator(
-                                strokeWidth: 2.4,
-                                valueColor: AlwaysStoppedAnimation<Color>(
-                                  Colors.white,
-                                ),
-                              ),
-                            )
-                          : const Text(
-                              'Gửi yêu cầu',
-                              style: TextStyle(
-                                color: Colors.white,
-                                fontSize: 17,
-                                fontWeight: FontWeight.w700,
-                              ),
-                            ),
-                    ),
+                  AppPrimaryButton(
+                    label: 'Gửi yêu cầu',
+                    isLoading: viewModel.isLoading,
+                    onTap: viewModel.isLoading ? null : _submitRequest,
                   ),
                 ],
               ),

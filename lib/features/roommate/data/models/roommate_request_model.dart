@@ -1,10 +1,8 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
 
-enum RoommateRequestStatus {
-  pending,
-  accepted,
-  rejected,
-}
+enum RoommateRequestStatus { pending, accepted, rejected }
+
+enum RoommateInviteType { postRequest, profileInvite }
 
 class RoommateRequestModel {
   final String id;
@@ -15,6 +13,9 @@ class RoommateRequestModel {
   final String requesterAvatar;
   final String message;
   final RoommateRequestStatus status;
+  final RoommateInviteType inviteType;
+  final String targetName;
+  final String targetAvatar;
   final DateTime? createdAt;
   final DateTime? updatedAt;
   final DateTime? respondedAt;
@@ -28,6 +29,9 @@ class RoommateRequestModel {
     required this.requesterAvatar,
     required this.message,
     required this.status,
+    this.inviteType = RoommateInviteType.postRequest,
+    this.targetName = '',
+    this.targetAvatar = '',
     this.createdAt,
     this.updatedAt,
     this.respondedAt,
@@ -47,6 +51,9 @@ class RoommateRequestModel {
       requesterAvatar: data['requesterAvatar'] ?? '',
       message: data['message'] ?? '',
       status: _parseStatus(data['status']),
+      inviteType: _parseInviteType(data['inviteType']),
+      targetName: data['targetName'] ?? '',
+      targetAvatar: data['targetAvatar'] ?? '',
       createdAt: (data['createdAt'] as Timestamp?)?.toDate(),
       updatedAt: (data['updatedAt'] as Timestamp?)?.toDate(),
       respondedAt: (data['respondedAt'] as Timestamp?)?.toDate(),
@@ -62,13 +69,15 @@ class RoommateRequestModel {
       'requesterAvatar': requesterAvatar,
       'message': message,
       'status': status.name,
+      'inviteType':
+          inviteType == RoommateInviteType.profileInvite ? 'profile_invite' : 'post_request',
+      'targetName': targetName,
+      'targetAvatar': targetAvatar,
       'createdAt': createdAt != null
           ? Timestamp.fromDate(createdAt!)
           : FieldValue.serverTimestamp(),
       'updatedAt': FieldValue.serverTimestamp(),
-      'respondedAt': respondedAt != null
-          ? Timestamp.fromDate(respondedAt!)
-          : null,
+      'respondedAt': respondedAt != null ? Timestamp.fromDate(respondedAt!) : null,
     };
   }
 
@@ -81,6 +90,9 @@ class RoommateRequestModel {
     String? requesterAvatar,
     String? message,
     RoommateRequestStatus? status,
+    RoommateInviteType? inviteType,
+    String? targetName,
+    String? targetAvatar,
     DateTime? createdAt,
     DateTime? updatedAt,
     DateTime? respondedAt,
@@ -94,6 +106,9 @@ class RoommateRequestModel {
       requesterAvatar: requesterAvatar ?? this.requesterAvatar,
       message: message ?? this.message,
       status: status ?? this.status,
+      inviteType: inviteType ?? this.inviteType,
+      targetName: targetName ?? this.targetName,
+      targetAvatar: targetAvatar ?? this.targetAvatar,
       createdAt: createdAt ?? this.createdAt,
       updatedAt: updatedAt ?? this.updatedAt,
       respondedAt: respondedAt ?? this.respondedAt,
@@ -106,9 +121,13 @@ class RoommateRequestModel {
         return RoommateRequestStatus.accepted;
       case 'rejected':
         return RoommateRequestStatus.rejected;
-      case 'pending':
       default:
         return RoommateRequestStatus.pending;
     }
+  }
+
+  static RoommateInviteType _parseInviteType(dynamic value) {
+    if (value == 'profile_invite') return RoommateInviteType.profileInvite;
+    return RoommateInviteType.postRequest;
   }
 }

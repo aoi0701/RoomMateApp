@@ -1,6 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 
+import '../../../../core/theme/app_colors.dart';
+import '../../../../core/theme/app_text_styles.dart';
+import '../../../../core/widgets/app_button.dart';
 import '../../../auth/presentation/viewmodels/auth_viewmodel.dart';
 import '../../data/models/profile_habit_model.dart';
 import '../viewmodels/user_profile_viewmodel.dart';
@@ -66,18 +69,12 @@ class _EditHabitsScreenState extends State<EditHabitsScreen> {
     final vm = context.watch<UserProfileViewModel>();
 
     return Scaffold(
-      backgroundColor: const Color(0xFFF5F6FA),
+      backgroundColor: AppColors.background,
       appBar: AppBar(
-        elevation: 0,
-        backgroundColor: const Color(0xFFF5F6FA),
-        surfaceTintColor: const Color(0xFFF5F6FA),
-        centerTitle: true,
-        title: const Text(
-          'Chỉnh sửa thói quen',
-          style: TextStyle(
-            fontWeight: FontWeight.w800,
-            color: Color(0xFF111827),
-          ),
+        title: const Text('Chỉnh sửa thói quen'),
+        leading: IconButton(
+          icon: const Icon(Icons.arrow_back_ios_new_rounded, size: 18),
+          onPressed: () => Navigator.pop(context),
         ),
       ),
       body: SafeArea(
@@ -86,12 +83,11 @@ class _EditHabitsScreenState extends State<EditHabitsScreen> {
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              const Text(
+              Text(
                 'Chọn những thói quen phù hợp với bạn. Sau khi lưu, hệ thống sẽ tự đồng bộ sang Tiêu chí bạn cùng phòng.',
-                style: TextStyle(
-                  fontSize: 15,
+                style: AppTextStyles.body.copyWith(
+                  color: AppColors.textSecondary,
                   height: 1.5,
-                  color: Color(0xFF6B7280),
                 ),
               ),
               const SizedBox(height: 18),
@@ -112,36 +108,10 @@ class _EditHabitsScreenState extends State<EditHabitsScreen> {
                 ),
               ),
               const SizedBox(height: 18),
-              SizedBox(
-                width: double.infinity,
-                height: 54,
-                child: ElevatedButton(
-                  onPressed: vm.isSavingHabits ? null : _save,
-                  style: ElevatedButton.styleFrom(
-                    backgroundColor: const Color(0xFF2F6BFF),
-                    foregroundColor: Colors.white,
-                    elevation: 0,
-                    shape: RoundedRectangleBorder(
-                      borderRadius: BorderRadius.circular(18),
-                    ),
-                  ),
-                  child: vm.isSavingHabits
-                      ? const SizedBox(
-                          width: 22,
-                          height: 22,
-                          child: CircularProgressIndicator(
-                            strokeWidth: 2,
-                            color: Colors.white,
-                          ),
-                        )
-                      : const Text(
-                          'Lưu thói quen',
-                          style: TextStyle(
-                            fontSize: 16,
-                            fontWeight: FontWeight.w700,
-                          ),
-                        ),
-                ),
+              AppPrimaryButton(
+                label: 'Lưu thói quen',
+                isLoading: vm.isSavingHabits,
+                onTap: vm.isSavingHabits ? null : _save,
               ),
             ],
           ),
@@ -171,45 +141,32 @@ class _EditableHabitChip extends StatelessWidget {
         width: (MediaQuery.of(context).size.width - 48) / 2,
         padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 14),
         decoration: BoxDecoration(
-          color: selected ? habit.backgroundColor : Colors.white,
+          color: selected ? habit.backgroundColor : AppColors.surface,
           borderRadius: BorderRadius.circular(16),
           border: Border.all(
-            color: selected ? habit.foregroundColor : const Color(0xFFD9DFEA),
-            width: selected ? 1.4 : 1,
+            color: selected ? habit.foregroundColor : AppColors.border,
+            width: selected ? 1.5 : 1,
           ),
           boxShadow: const [
             BoxShadow(
-              color: Color(0x12000000),
-              blurRadius: 12,
-              offset: Offset(0, 4),
+              color: Color(0x08000000),
+              blurRadius: 8,
+              offset: Offset(0, 2),
             ),
           ],
         ),
         child: Row(
           children: [
-            Icon(
-              habit.icon,
-              color: habit.foregroundColor,
-              size: 28,
-            ),
+            Icon(habit.icon, color: habit.foregroundColor, size: 26),
             const SizedBox(width: 10),
             Expanded(
               child: Text(
                 habit.label,
-                style: const TextStyle(
-                  fontSize: 15,
-                  fontWeight: FontWeight.w600,
-                  color: Color(0xFF111827),
-                  height: 1.25,
-                ),
+                style: AppTextStyles.label.copyWith(height: 1.25),
               ),
             ),
             if (selected)
-              Icon(
-                Icons.check_circle,
-                size: 20,
-                color: habit.foregroundColor,
-              ),
+              Icon(Icons.check_circle, size: 18, color: habit.foregroundColor),
           ],
         ),
       ),

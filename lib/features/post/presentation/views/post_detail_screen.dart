@@ -2,6 +2,10 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 
+import '../../../../core/theme/app_colors.dart';
+import '../../../../core/theme/app_text_styles.dart';
+import '../../../../core/widgets/app_avatar.dart';
+import '../../../../core/widgets/app_button.dart';
 import '../../../profile/data/models/user_model.dart';
 import '../../../profile/presentation/viewmodels/user_profile_viewmodel.dart';
 import '../../../roommate/presentation/viewmodels/roommate_request_viewmodel.dart';
@@ -19,12 +23,6 @@ class PostDetailScreen extends StatelessWidget {
     required this.post,
     required this.currentUserId,
   });
-
-  static const Color primaryBlue = Color(0xFF3B6EF5);
-  static const Color bgColor = Color(0xFFF5F7FB);
-  static const Color textPrimary = Color(0xFF111827);
-  static const Color textSecondary = Color(0xFF6B7280);
-  static const Color lightBlue = Color(0xFFEAF2FF);
 
   bool get _isOwner => currentUserId != null && currentUserId == post.ownerId;
 
@@ -44,7 +42,7 @@ class PostDetailScreen extends StatelessWidget {
   }
 
   String _formatDate(DateTime? value) {
-    if (value == null) return 'Ch\u01B0a c\u1EADp nh\u1EADt';
+    if (value == null) return 'Chưa cập nhật';
     final day = value.day.toString().padLeft(2, '0');
     final month = value.month.toString().padLeft(2, '0');
     final year = value.year.toString();
@@ -57,7 +55,7 @@ class PostDetailScreen extends StatelessWidget {
       if (post.district.trim().isNotEmpty) post.district.trim(),
       if (post.province.trim().isNotEmpty) post.province.trim(),
     ];
-    if (parts.isEmpty) return 'Ch\u01B0a c\u1EADp nh\u1EADt \u0111\u1ECBa ch\u1EC9';
+    if (parts.isEmpty) return 'Chưa cập nhật địa chỉ';
     return parts.join(', ');
   }
 
@@ -87,7 +85,7 @@ class PostDetailScreen extends StatelessWidget {
     final galleryImages = _galleryImages();
 
     return Scaffold(
-      backgroundColor: bgColor,
+      backgroundColor: AppColors.background,
       body: SafeArea(
         child: Column(
           children: [
@@ -147,7 +145,9 @@ class PostDetailScreen extends StatelessWidget {
           if (snapshot.connectionState == ConnectionState.waiting) {
             return const SizedBox(
               height: 92,
-              child: Center(child: CircularProgressIndicator()),
+              child: Center(
+                child: CircularProgressIndicator(color: AppColors.primary),
+              ),
             );
           }
 
@@ -157,30 +157,32 @@ class PostDetailScreen extends StatelessWidget {
 
           final ownerName = owner?.fullName.trim().isNotEmpty == true
               ? owner!.fullName
-              : 'Ng\u01B0\u1EDDi \u0111\u0103ng b\u00E0i';
+              : 'Người đăng bài';
           final subtitleParts = <String>[
             if (owner?.gender.trim().isNotEmpty == true) owner!.gender.trim(),
             if (owner?.address.trim().isNotEmpty == true) owner!.address.trim(),
           ];
           final ownerSubtitle = owner == null
-              ? 'Ch\u01B0a c\u00F3 th\u00F4ng tin h\u1ED3 s\u01A1'
+              ? 'Chưa có thông tin hồ sơ'
               : subtitleParts.isEmpty
-                  ? 'Th\u00E0nh vi\u00EAn RoomMate'
+                  ? 'Thành viên RoomMate'
                   : subtitleParts.join(' - ');
           final ownerContact = owner == null
-              ? 'Kh\u00F4ng c\u00F3 th\u00F4ng tin li\u00EAn h\u1EC7'
+              ? 'Không có thông tin liên hệ'
               : owner.phone.trim().isNotEmpty
                   ? owner.phone.trim()
                   : owner.email.trim().isNotEmpty
                       ? owner.email.trim()
-                      : 'Ch\u01B0a c\u1EADp nh\u1EADt li\u00EAn h\u1EC7';
+                      : 'Chưa cập nhật liên hệ';
 
           return Row(
             children: [
-              const CircleAvatar(
-                radius: 28,
-                backgroundColor: lightBlue,
-                child: Icon(Icons.person, color: primaryBlue, size: 30),
+              AppAvatar(
+                name: ownerName,
+                avatarUrl: owner?.avatarUrl.isNotEmpty == true
+                    ? owner!.avatarUrl
+                    : null,
+                size: 56,
               ),
               const SizedBox(width: 14),
               Expanded(
@@ -191,20 +193,15 @@ class PostDetailScreen extends StatelessWidget {
                       ownerName,
                       maxLines: 2,
                       overflow: TextOverflow.ellipsis,
-                      style: const TextStyle(
-                        fontSize: 20,
-                        fontWeight: FontWeight.w800,
-                        color: textPrimary,
-                      ),
+                      style: AppTextStyles.h3,
                     ),
                     const SizedBox(height: 4),
                     Text(
                       ownerSubtitle,
                       maxLines: 2,
                       overflow: TextOverflow.ellipsis,
-                      style: const TextStyle(
-                        fontSize: 14,
-                        color: textSecondary,
+                      style: AppTextStyles.caption.copyWith(
+                        color: AppColors.textSecondary,
                       ),
                     ),
                     const SizedBox(height: 4),
@@ -212,9 +209,8 @@ class PostDetailScreen extends StatelessWidget {
                       ownerContact,
                       maxLines: 1,
                       overflow: TextOverflow.ellipsis,
-                      style: const TextStyle(
-                        fontSize: 14,
-                        color: textSecondary,
+                      style: AppTextStyles.caption.copyWith(
+                        color: AppColors.textSecondary,
                       ),
                     ),
                   ],
@@ -235,29 +231,23 @@ class PostDetailScreen extends StatelessWidget {
           Text(
             post.title.trim().isNotEmpty
                 ? post.title.trim()
-                : 'B\u00E0i \u0111\u0103ng t\u00ECm b\u1EA1n \u1EDF gh\u00E9p',
-            style: const TextStyle(
-              fontSize: 28,
-              height: 1.2,
-              fontWeight: FontWeight.w800,
-              color: textPrimary,
-            ),
+                : 'Bài đăng tìm bạn ở ghép',
+            style: AppTextStyles.h1.copyWith(fontSize: 24, height: 1.2),
           ),
           const SizedBox(height: 14),
           Row(
             children: [
               const Icon(
                 Icons.location_on_outlined,
-                size: 20,
-                color: textSecondary,
+                size: 18,
+                color: AppColors.textSecondary,
               ),
-              const SizedBox(width: 8),
+              const SizedBox(width: 6),
               Expanded(
                 child: Text(
                   _buildAddress(),
-                  style: const TextStyle(
-                    fontSize: 15,
-                    color: textSecondary,
+                  style: AppTextStyles.body.copyWith(
+                    color: AppColors.textSecondary,
                   ),
                 ),
               ),
@@ -269,20 +259,20 @@ class PostDetailScreen extends StatelessWidget {
               Expanded(
                 child: _TopMetric(
                   icon: Icons.payments_outlined,
-                  label: 'Gi\u00E1',
+                  label: 'Giá',
                   value: post.price > 0
-                      ? '${_formatMoney(post.price)}d/thang'
-                      : 'Th\u1ECFa thu\u1EADn',
+                      ? '${_formatMoney(post.price)}đ/tháng'
+                      : 'Thỏa thuận',
                 ),
               ),
               const SizedBox(width: 12),
               Expanded(
                 child: _TopMetric(
                   icon: Icons.king_bed_outlined,
-                  label: 'Lo\u1EA1i ph\u00F2ng',
+                  label: 'Loại phòng',
                   value: post.roomType.trim().isNotEmpty
                       ? post.roomType.trim()
-                      : 'Ch\u01B0a c\u1EADp nh\u1EADt',
+                      : 'Chưa cập nhật',
                 ),
               ),
             ],
@@ -297,14 +287,7 @@ class PostDetailScreen extends StatelessWidget {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          const Text(
-            'Th\u00F4ng tin chi ti\u1EBFt',
-            style: TextStyle(
-              fontSize: 20,
-              fontWeight: FontWeight.w800,
-              color: textPrimary,
-            ),
-          ),
+          Text('Thông tin chi tiết', style: AppTextStyles.h3),
           const SizedBox(height: 16),
           LayoutBuilder(
             builder: (context, constraints) {
@@ -319,40 +302,40 @@ class PostDetailScreen extends StatelessWidget {
                 children: [
                   _InfoTile(
                     icon: Icons.square_foot_outlined,
-                    label: 'Di\u1EC7n t\u00EDch',
+                    label: 'Diện tích',
                     value: post.area > 0
-                        ? '${post.area} m2'
-                        : 'Ch\u01B0a c\u1EADp nh\u1EADt',
+                        ? '${post.area} m²'
+                        : 'Chưa cập nhật',
                   ),
                   _InfoTile(
                     icon: Icons.group_outlined,
-                    label: 'S\u1EE9c ch\u1EE9a',
+                    label: 'Sức chứa',
                     value: post.capacity > 0
-                        ? '${post.capacity} ng\u01B0\u1EDDi'
-                        : 'Ch\u01B0a c\u1EADp nh\u1EADt',
+                        ? '${post.capacity} người'
+                        : 'Chưa cập nhật',
                   ),
                   _InfoTile(
                     icon: Icons.map_outlined,
-                    label: 'T\u1EC9nh/Th\u00E0nh ph\u1ED1',
+                    label: 'Tỉnh/Thành phố',
                     value: post.province.trim().isNotEmpty
                         ? post.province.trim()
-                        : 'Ch\u01B0a c\u1EADp nh\u1EADt',
+                        : 'Chưa cập nhật',
                   ),
                   _InfoTile(
                     icon: Icons.location_city_outlined,
-                    label: 'Qu\u1EADn/Huy\u1EC7n',
+                    label: 'Quận/Huyện',
                     value: post.district.trim().isNotEmpty
                         ? post.district.trim()
-                        : 'Ch\u01B0a ch\u1ECDn',
+                        : 'Chưa chọn',
                   ),
                   _InfoTile(
                     icon: Icons.calendar_today_outlined,
-                    label: '\u0110\u0103ng l\u00FAc',
+                    label: 'Đăng lúc',
                     value: _formatDate(post.createdAt),
                   ),
                   _InfoTile(
                     icon: Icons.update_outlined,
-                    label: 'C\u1EADp nh\u1EADt',
+                    label: 'Cập nhật',
                     value: _formatDate(post.updatedAt),
                   ),
                 ],
@@ -373,14 +356,7 @@ class PostDetailScreen extends StatelessWidget {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          const Text(
-            'Ti\u1EC7n \u00EDch',
-            style: TextStyle(
-              fontSize: 20,
-              fontWeight: FontWeight.w800,
-              color: textPrimary,
-            ),
-          ),
+          Text('Tiện ích', style: AppTextStyles.h3),
           const SizedBox(height: 16),
           if (amenities.isNotEmpty)
             _AmenityEqualRow(amenities: amenities),
@@ -410,14 +386,7 @@ class PostDetailScreen extends StatelessWidget {
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  const Text(
-                    'Th\u00F3i quen sinh ho\u1EA1t',
-                    style: TextStyle(
-                      fontSize: 20,
-                      fontWeight: FontWeight.w800,
-                      color: textPrimary,
-                    ),
-                  ),
+                  Text('Thói quen sinh hoạt', style: AppTextStyles.h3),
                   const SizedBox(height: 16),
                   LifestyleHabitWrap(
                     habitIds: habits,
@@ -439,23 +408,15 @@ class PostDetailScreen extends StatelessWidget {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          const Text(
-            'M\u00F4 t\u1EA3 chi ti\u1EBFt',
-            style: TextStyle(
-              fontSize: 20,
-              fontWeight: FontWeight.w800,
-              color: textPrimary,
-            ),
-          ),
+          Text('Mô tả chi tiết', style: AppTextStyles.h3),
           const SizedBox(height: 12),
           Text(
             post.description.trim().isNotEmpty
                 ? post.description.trim()
-                : 'Ng\u01B0\u1EDDi \u0111\u0103ng b\u00E0i ch\u01B0a b\u1ED5 sung m\u00F4 t\u1EA3.',
-            style: const TextStyle(
-              fontSize: 15,
+                : 'Người đăng bài chưa bổ sung mô tả.',
+            style: AppTextStyles.body.copyWith(
+              color: AppColors.textSecondary,
               height: 1.6,
-              color: textSecondary,
             ),
           ),
         ],
@@ -468,14 +429,7 @@ class PostDetailScreen extends StatelessWidget {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          const Text(
-            'H\u00ECnh \u1EA3nh kh\u00E1c',
-            style: TextStyle(
-              fontSize: 20,
-              fontWeight: FontWeight.w800,
-              color: textPrimary,
-            ),
-          ),
+          Text('Hình ảnh khác', style: AppTextStyles.h3),
           const SizedBox(height: 16),
           SizedBox(
             height: 108,
@@ -486,7 +440,7 @@ class PostDetailScreen extends StatelessWidget {
               itemBuilder: (context, index) {
                 final imageUrl = imageUrls[index];
                 return ClipRRect(
-                  borderRadius: BorderRadius.circular(18),
+                  borderRadius: BorderRadius.circular(16),
                   child: Image.network(
                     imageUrl,
                     width: 140,
@@ -495,8 +449,11 @@ class PostDetailScreen extends StatelessWidget {
                     errorBuilder: (context, error, stackTrace) => Container(
                       width: 140,
                       height: 108,
-                      color: Colors.grey.shade200,
-                      child: const Icon(Icons.image_not_supported_outlined),
+                      color: AppColors.inputFill,
+                      child: const Icon(
+                        Icons.image_not_supported_outlined,
+                        color: AppColors.textHint,
+                      ),
                     ),
                   ),
                 );
@@ -516,60 +473,42 @@ class PostDetailScreen extends StatelessWidget {
     return Container(
       padding: const EdgeInsets.fromLTRB(16, 14, 16, 20),
       decoration: const BoxDecoration(
-        color: Colors.white,
+        color: AppColors.surface,
+        border: Border(top: BorderSide(color: AppColors.border)),
         boxShadow: [
           BoxShadow(
-            color: Color(0x12000000),
+            color: Color(0x0A000000),
             blurRadius: 12,
             offset: Offset(0, -2),
           ),
         ],
       ),
-      child: SizedBox(
-        width: double.infinity,
-        height: 56,
-        child: ElevatedButton(
-          onPressed: () async {
-            final viewModel = context.read<RoommateRequestViewModel>();
-            final messenger = ScaffoldMessenger.of(context);
-            final navigator = Navigator.of(context);
+      child: AppPrimaryButton(
+        label: 'Gửi yêu cầu ở ghép',
+        onTap: () async {
+          final viewModel = context.read<RoommateRequestViewModel>();
+          final messenger = ScaffoldMessenger.of(context);
+          final navigator = Navigator.of(context);
 
-            final hasRequested = await viewModel.hasPendingRequest(post.id);
+          final hasRequested = await viewModel.hasPendingRequest(post.id);
 
-            if (hasRequested) {
-              messenger.showSnackBar(
-                const SnackBar(
-                  content: Text(
-                    'B\u1EA1n \u0111\u00E3 g\u1EEDi y\u00EAu c\u1EA7u cho b\u00E0i \u0111\u0103ng n\u00E0y r\u1ED3i',
-                  ),
-                ),
-              );
-              return;
-            }
-
-            if (!context.mounted) return;
-
-            navigator.push(
-              MaterialPageRoute(
-                builder: (_) => SendRequestScreen(postId: post.id),
+          if (hasRequested) {
+            messenger.showSnackBar(
+              const SnackBar(
+                content: Text('Bạn đã gửi yêu cầu cho bài đăng này rồi'),
               ),
             );
-          },
-          style: ElevatedButton.styleFrom(
-            backgroundColor: primaryBlue,
-            foregroundColor: Colors.white,
-            shape: RoundedRectangleBorder(
-              borderRadius: BorderRadius.circular(18),
+            return;
+          }
+
+          if (!context.mounted) return;
+
+          navigator.push(
+            MaterialPageRoute(
+              builder: (_) => SendRequestScreen(postId: post.id),
             ),
-          ),
-          child: const Text(
-            'G\u1EEDi y\u00EAu c\u1EA7u \u1EDF gh\u00E9p',
-            style: TextStyle(
-              fontSize: 16,
-              fontWeight: FontWeight.w700,
-            ),
-          ),
-        ),
+          );
+        },
       ),
     );
   }
@@ -593,11 +532,11 @@ class _HeaderGallery extends StatelessWidget {
           child: imageUrls.isEmpty
               ? Container(
                   width: double.infinity,
-                  color: Colors.grey.shade200,
+                  color: AppColors.inputFill,
                   child: const Icon(
                     Icons.image_outlined,
                     size: 56,
-                    color: Colors.grey,
+                    color: AppColors.textHint,
                   ),
                 )
               : PageView.builder(
@@ -609,11 +548,11 @@ class _HeaderGallery extends StatelessWidget {
                       width: double.infinity,
                       fit: BoxFit.cover,
                       errorBuilder: (context, error, stackTrace) => Container(
-                        color: Colors.grey.shade200,
+                        color: AppColors.inputFill,
                         child: const Icon(
                           Icons.image_not_supported_outlined,
                           size: 56,
-                          color: Colors.grey,
+                          color: AppColors.textHint,
                         ),
                       ),
                     );
@@ -644,13 +583,14 @@ class _CardShell extends StatelessWidget {
       width: double.infinity,
       padding: const EdgeInsets.all(18),
       decoration: BoxDecoration(
-        color: Colors.white,
+        color: AppColors.surface,
         borderRadius: BorderRadius.circular(24),
+        border: Border.all(color: AppColors.border),
         boxShadow: const [
           BoxShadow(
-            color: Color(0x14000000),
-            blurRadius: 16,
-            offset: Offset(0, 8),
+            color: Color(0x08000000),
+            blurRadius: 12,
+            offset: Offset(0, 2),
           ),
         ],
       ),
@@ -675,14 +615,13 @@ class _TopMetric extends StatelessWidget {
     return Container(
       padding: const EdgeInsets.all(14),
       decoration: BoxDecoration(
-        color: const Color(0xFFF8FAFF),
-        borderRadius: BorderRadius.circular(18),
+        color: AppColors.accent,
+        borderRadius: BorderRadius.circular(16),
       ),
       child: Row(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          const SizedBox(width: 2),
-          Icon(icon, color: PostDetailScreen.primaryBlue, size: 22),
+          Icon(icon, color: AppColors.primary, size: 20),
           const SizedBox(width: 10),
           Expanded(
             child: Column(
@@ -690,10 +629,8 @@ class _TopMetric extends StatelessWidget {
               children: [
                 Text(
                   label,
-                  style: const TextStyle(
-                    fontSize: 13,
-                    color: PostDetailScreen.textSecondary,
-                    fontWeight: FontWeight.w600,
+                  style: AppTextStyles.caption.copyWith(
+                    color: AppColors.textSecondary,
                   ),
                 ),
                 const SizedBox(height: 4),
@@ -701,11 +638,7 @@ class _TopMetric extends StatelessWidget {
                   value,
                   maxLines: 2,
                   overflow: TextOverflow.ellipsis,
-                  style: const TextStyle(
-                    fontSize: 15,
-                    color: PostDetailScreen.textPrimary,
-                    fontWeight: FontWeight.w700,
-                  ),
+                  style: AppTextStyles.label,
                 ),
               ],
             ),
@@ -732,15 +665,15 @@ class _InfoTile extends StatelessWidget {
     return Container(
       padding: const EdgeInsets.all(14),
       decoration: BoxDecoration(
-        color: const Color(0xFFF8FAFF),
-        borderRadius: BorderRadius.circular(18),
+        color: AppColors.accent,
+        borderRadius: BorderRadius.circular(16),
       ),
       child: Row(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           Padding(
             padding: const EdgeInsets.only(top: 2),
-            child: Icon(icon, color: PostDetailScreen.primaryBlue, size: 22),
+            child: Icon(icon, color: AppColors.primary, size: 20),
           ),
           const SizedBox(width: 10),
           Expanded(
@@ -752,10 +685,8 @@ class _InfoTile extends StatelessWidget {
                   label,
                   maxLines: 2,
                   overflow: TextOverflow.ellipsis,
-                  style: const TextStyle(
-                    fontSize: 13,
-                    color: PostDetailScreen.textSecondary,
-                    fontWeight: FontWeight.w600,
+                  style: AppTextStyles.caption.copyWith(
+                    color: AppColors.textSecondary,
                   ),
                 ),
                 const SizedBox(height: 4),
@@ -763,12 +694,7 @@ class _InfoTile extends StatelessWidget {
                   value,
                   maxLines: 3,
                   overflow: TextOverflow.ellipsis,
-                  style: const TextStyle(
-                    fontSize: 14,
-                    color: PostDetailScreen.textPrimary,
-                    fontWeight: FontWeight.w700,
-                    height: 1.25,
-                  ),
+                  style: AppTextStyles.label.copyWith(height: 1.25),
                 ),
               ],
             ),
@@ -792,9 +718,7 @@ class _AmenityEqualRow extends StatelessWidget {
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         for (var i = 0; i < visibleAmenities.length; i++) ...[
-          Expanded(
-            child: _AmenityBox(label: visibleAmenities[i]),
-          ),
+          Expanded(child: _AmenityBox(label: visibleAmenities[i])),
           if (i != visibleAmenities.length - 1) const SizedBox(width: 10),
         ],
       ],
@@ -815,25 +739,23 @@ class _AmenityBox extends StatelessWidget {
       constraints: const BoxConstraints(minHeight: 74),
       padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 10),
       decoration: BoxDecoration(
-        color: const Color(0xFFF8FAFF),
-        borderRadius: BorderRadius.circular(18),
-        border: Border.all(color: const Color(0xFF8CADFF)),
+        color: AppColors.accent,
+        borderRadius: BorderRadius.circular(16),
+        border: Border.all(color: AppColors.primary.withValues(alpha: 0.3)),
       ),
       child: Column(
         mainAxisAlignment: MainAxisAlignment.center,
         children: [
-          Icon(data.icon, size: 19, color: PostDetailScreen.primaryBlue),
+          Icon(data.icon, size: 20, color: AppColors.primary),
           const SizedBox(height: 8),
           Text(
             label,
             textAlign: TextAlign.center,
             maxLines: 2,
             overflow: TextOverflow.ellipsis,
-            style: const TextStyle(
-              fontSize: 11.5,
+            style: AppTextStyles.labelSm.copyWith(
+              color: AppColors.textSecondary,
               height: 1.2,
-              fontWeight: FontWeight.w700,
-              color: Color(0xFF6D86B5),
             ),
           ),
         ],
@@ -846,10 +768,7 @@ class _CircleButton extends StatelessWidget {
   final IconData icon;
   final VoidCallback? onTap;
 
-  const _CircleButton({
-    required this.icon,
-    this.onTap,
-  });
+  const _CircleButton({required this.icon, this.onTap});
 
   @override
   Widget build(BuildContext context) {
@@ -862,7 +781,7 @@ class _CircleButton extends StatelessWidget {
         child: SizedBox(
           width: 44,
           height: 44,
-          child: Icon(icon, color: Colors.black87, size: 20),
+          child: Icon(icon, color: AppColors.textPrimary, size: 20),
         ),
       ),
     );

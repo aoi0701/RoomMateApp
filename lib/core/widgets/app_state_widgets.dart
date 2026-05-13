@@ -1,12 +1,13 @@
 import 'package:flutter/material.dart';
-
 import '../theme/app_colors.dart';
+import '../theme/app_text_styles.dart';
+import 'app_button.dart';
 
 class AppLoadingState extends StatelessWidget {
   const AppLoadingState({
     super.key,
     this.message = 'Đang tải dữ liệu...',
-    this.padding = const EdgeInsets.all(24),
+    this.padding = const EdgeInsets.all(32),
   });
 
   final String message;
@@ -21,18 +22,18 @@ class AppLoadingState extends StatelessWidget {
           mainAxisSize: MainAxisSize.min,
           children: [
             const SizedBox(
-              width: 28,
-              height: 28,
-              child: CircularProgressIndicator(strokeWidth: 2.4),
+              width: 36,
+              height: 36,
+              child: CircularProgressIndicator(
+                strokeWidth: 2.5,
+                color: AppColors.primary,
+              ),
             ),
-            const SizedBox(height: 14),
+            const SizedBox(height: 16),
             Text(
               message,
               textAlign: TextAlign.center,
-              style: const TextStyle(
-                color: AppColors.textSecondary,
-                fontWeight: FontWeight.w600,
-              ),
+              style: AppTextStyles.body.copyWith(color: AppColors.textSecondary),
             ),
           ],
         ),
@@ -48,57 +49,60 @@ class AppEmptyState extends StatelessWidget {
     required this.message,
     this.icon = Icons.inbox_outlined,
     this.compact = false,
+    this.actionLabel,
+    this.onAction,
   });
 
   final String title;
   final String message;
   final IconData icon;
   final bool compact;
+  final String? actionLabel;
+  final VoidCallback? onAction;
 
   @override
   Widget build(BuildContext context) {
-    final iconSize = compact ? 36.0 : 44.0;
-    final boxSize = compact ? 72.0 : 84.0;
+    final iconBoxSize = compact ? 64.0 : 80.0;
+    final iconSize = compact ? 30.0 : 38.0;
 
     return Center(
       child: Padding(
-        padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 12),
+        padding: const EdgeInsets.symmetric(horizontal: 32, vertical: 16),
         child: Column(
           mainAxisSize: MainAxisSize.min,
           children: [
             Container(
-              width: boxSize,
-              height: boxSize,
-              decoration: BoxDecoration(
-                color: const Color(0xFFEAF2FF),
+              width: iconBoxSize,
+              height: iconBoxSize,
+              decoration: const BoxDecoration(
+                color: AppColors.accent,
                 shape: BoxShape.circle,
               ),
-              child: Icon(
-                icon,
-                color: AppColors.primary,
-                size: iconSize,
-              ),
+              child: Icon(icon, color: AppColors.primary, size: iconSize),
             ),
-            const SizedBox(height: 16),
+            SizedBox(height: compact ? 12 : 20),
             Text(
               title,
               textAlign: TextAlign.center,
-              style: const TextStyle(
-                fontSize: 20,
-                fontWeight: FontWeight.w800,
-                color: AppColors.textPrimary,
-              ),
+              style: AppTextStyles.h2,
             ),
             const SizedBox(height: 8),
             Text(
               message,
               textAlign: TextAlign.center,
-              style: const TextStyle(
-                fontSize: 14,
-                height: 1.55,
-                color: AppColors.textSecondary,
-              ),
+              style: AppTextStyles.body.copyWith(color: AppColors.textSecondary),
             ),
+            if (actionLabel != null && onAction != null) ...[
+              const SizedBox(height: 24),
+              SizedBox(
+                width: 160,
+                child: AppPrimaryButton(
+                  label: actionLabel!,
+                  onTap: onAction,
+                  height: 44,
+                ),
+              ),
+            ],
           ],
         ),
       ),
@@ -124,54 +128,45 @@ class AppErrorState extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final iconBoxSize = compact ? 64.0 : 80.0;
+    final iconSize = compact ? 28.0 : 36.0;
+
     return Center(
       child: Padding(
-        padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 12),
+        padding: const EdgeInsets.symmetric(horizontal: 32, vertical: 16),
         child: Column(
           mainAxisSize: MainAxisSize.min,
           children: [
             Container(
-              width: compact ? 72 : 84,
-              height: compact ? 72 : 84,
-              decoration: BoxDecoration(
-                color: const Color(0xFFFEE2E2),
+              width: iconBoxSize,
+              height: iconBoxSize,
+              decoration: const BoxDecoration(
+                color: AppColors.dangerSurface,
                 shape: BoxShape.circle,
               ),
-              child: const Icon(
+              child: Icon(
                 Icons.error_outline_rounded,
-                color: Color(0xFFDC2626),
-                size: 40,
+                color: AppColors.danger,
+                size: iconSize,
               ),
             ),
-            const SizedBox(height: 16),
-            Text(
-              title,
-              textAlign: TextAlign.center,
-              style: const TextStyle(
-                fontSize: 20,
-                fontWeight: FontWeight.w800,
-                color: AppColors.textPrimary,
-              ),
-            ),
+            SizedBox(height: compact ? 12 : 20),
+            Text(title, textAlign: TextAlign.center, style: AppTextStyles.h2),
             const SizedBox(height: 8),
             Text(
               message,
               textAlign: TextAlign.center,
-              style: const TextStyle(
-                fontSize: 14,
-                height: 1.55,
-                color: AppColors.textSecondary,
-              ),
+              style: AppTextStyles.body.copyWith(color: AppColors.textSecondary),
             ),
             if (onRetry != null) ...[
-              const SizedBox(height: 16),
-              FilledButton(
-                onPressed: onRetry,
-                style: FilledButton.styleFrom(
-                  backgroundColor: AppColors.primary,
-                  foregroundColor: Colors.white,
+              const SizedBox(height: 24),
+              SizedBox(
+                width: 140,
+                child: AppPrimaryButton(
+                  label: retryLabel,
+                  onTap: onRetry,
+                  height: 44,
                 ),
-                child: Text(retryLabel),
               ),
             ],
           ],

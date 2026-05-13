@@ -1,14 +1,18 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
+import 'package:google_fonts/google_fonts.dart';
 import 'package:provider/provider.dart';
 
 import '../../../../core/theme/app_colors.dart';
+import '../../../../core/theme/app_text_styles.dart';
+import '../../../../core/widgets/app_avatar.dart';
 import '../../data/helpers/home_formatters.dart';
 import '../../data/models/room_search_filter_model.dart';
 import '../../data/models/roommate_profile_model.dart';
 import '../viewmodels/home_search_filter_viewmodel.dart';
 import '../viewmodels/roommate_profile_viewmodel.dart';
 import 'room_search_filter_screen.dart';
+import 'sent_invites_screen.dart';
 import '../../../auth/presentation/viewmodels/auth_viewmodel.dart';
 import '../../../post/data/models/post_model.dart';
 import '../../../post/presentation/viewmodels/post_list_viewmodel.dart';
@@ -27,14 +31,6 @@ class UserHomeScreen extends StatefulWidget {
 }
 
 class _UserHomeScreenState extends State<UserHomeScreen> {
-  static const Color primaryBlue = AppColors.primary;
-  static const Color headerBlue = AppColors.primary;
-  static const Color bgColor = AppColors.background;
-  static const Color textPrimary = AppColors.textPrimary;
-  static const Color textSecondary = AppColors.textSecondary;
-  static const Color lightBlue = Color(0xFFEAF2FF);
-  static const Color softMint = Color(0xFFE7F8F3);
-
   final TextEditingController _searchController = TextEditingController();
   int _selectedIndex = 0;
 
@@ -77,9 +73,9 @@ class _UserHomeScreenState extends State<UserHomeScreen> {
 
   String _greetingText() {
     final hour = DateTime.now().hour;
-    if (hour < 12) return 'Chào buổi sáng';
-    if (hour < 18) return 'Chào buổi chiều';
-    return 'Chào buổi tối';
+    if (hour < 12) return 'Chào buổi sáng ☀️';
+    if (hour < 18) return 'Chào buổi chiều 🌤';
+    return 'Chào buổi tối 🌙';
   }
 
   Future<void> _openFilterScreen(RoomSearchFilterModel filter) async {
@@ -89,7 +85,6 @@ class _UserHomeScreenState extends State<UserHomeScreen> {
         builder: (_) => RoomSearchFilterScreen(initialFilter: filter),
       ),
     );
-
     if (result != null && mounted) {
       context.read<HomeSearchFilterViewModel>().updateFilterLocally(result);
     }
@@ -127,18 +122,15 @@ class _UserHomeScreenState extends State<UserHomeScreen> {
     );
   }
 
-  Future<void> _sendInvite(RoommateProfileModel profile) async {
+  void _showInviteBottomSheet(RoommateProfileModel profile) {
     final vm = context.read<RoommateProfileViewModel>();
-    final success = await vm.sendInvite(targetUserId: profile.userId);
-    if (!mounted) return;
-
-    ScaffoldMessenger.of(context).showSnackBar(
-      SnackBar(
-        content: Text(
-          success
-              ? 'Đã gửi lời mời ở ghép'
-              : (vm.errorMessage ?? 'Không thể gửi lời mời'),
-        ),
+    showModalBottomSheet<void>(
+      context: context,
+      isScrollControlled: true,
+      backgroundColor: Colors.transparent,
+      builder: (_) => ChangeNotifierProvider.value(
+        value: vm,
+        child: _InviteSheet(profile: profile),
       ),
     );
   }
@@ -147,25 +139,26 @@ class _UserHomeScreenState extends State<UserHomeScreen> {
   Widget build(BuildContext context) {
     final postVm = context.read<PostListViewModel>();
     final filterVm = context.watch<HomeSearchFilterViewModel>();
-    final roommateVm = context.read<RoommateProfileViewModel>();
+    final roommateVm = context.watch<RoommateProfileViewModel>();
     final activeFilter = filterVm.currentFilter;
 
     return Scaffold(
-      backgroundColor: bgColor,
+      backgroundColor: AppColors.background,
       body: SafeArea(
         child: Column(
           children: [
             Expanded(
               child: SingleChildScrollView(
-                padding: const EdgeInsets.only(bottom: 104),
+                padding: const EdgeInsets.only(bottom: 100),
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
                     _buildHeader(activeFilter),
-                    const SizedBox(height: 18),
+                    const SizedBox(height: 24),
                     _buildSuggestedProfilesSection(roommateVm),
-                    const SizedBox(height: 28),
+                    const SizedBox(height: 32),
                     _buildFeaturedPostsSection(postVm, activeFilter),
+                    const SizedBox(height: 16),
                   ],
                 ),
               ),
@@ -187,70 +180,96 @@ class _UserHomeScreenState extends State<UserHomeScreen> {
 
     return Container(
       width: double.infinity,
-      padding: const EdgeInsets.fromLTRB(24, 20, 24, 28),
+      padding: const EdgeInsets.fromLTRB(20, 24, 20, 32),
       decoration: const BoxDecoration(
-        color: headerBlue,
+        gradient: LinearGradient(
+          colors: [AppColors.primary, Color(0xFF4756D0)],
+          begin: Alignment.topLeft,
+          end: Alignment.bottomRight,
+        ),
         borderRadius: BorderRadius.only(
-          bottomLeft: Radius.circular(36),
-          bottomRight: Radius.circular(36),
+          bottomLeft: Radius.circular(32),
+          bottomRight: Radius.circular(32),
         ),
       ),
       child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           Text(
             _greetingText(),
-            style: const TextStyle(
-              color: Colors.white70,
-              fontSize: 15,
+            style: GoogleFonts.plusJakartaSans(
+              color: Colors.white.withValues(alpha: 0.8),
+              fontSize: 14,
               fontWeight: FontWeight.w500,
             ),
           ),
-          const SizedBox(height: 10),
-          const Text(
+          const SizedBox(height: 4),
+          Text(
             'Tìm bạn ở ghép',
-            textAlign: TextAlign.center,
-            style: TextStyle(
+            style: GoogleFonts.plusJakartaSans(
               color: Colors.white,
-              fontSize: 30,
+              fontSize: 26,
               fontWeight: FontWeight.w800,
+              height: 1.2,
             ),
           ),
-          const SizedBox(height: 22),
-          Container(
-            height: 60,
-            padding: const EdgeInsets.symmetric(horizontal: 18),
-            decoration: BoxDecoration(
-              color: Colors.white,
-              borderRadius: BorderRadius.circular(20),
-              boxShadow: const [
-                BoxShadow(
-                  color: Color(0x14000000),
-                  blurRadius: 18,
-                  offset: Offset(0, 10),
-                ),
-              ],
-            ),
-            child: Row(
-              children: [
-                const Icon(Icons.search, color: textSecondary, size: 30),
-                const SizedBox(width: 12),
-                Expanded(
-                  child: TextField(
-                    controller: _searchController,
-                    readOnly: true,
-                    onTap: () => _openFilterScreen(filter),
-                    decoration: const InputDecoration(
-                      hintText: 'Vị trí, ngân sách',
-                      hintStyle: TextStyle(
-                        color: textSecondary,
-                        fontSize: 18,
+          const SizedBox(height: 20),
+          GestureDetector(
+            onTap: () => _openFilterScreen(filter),
+            child: Container(
+              height: 52,
+              padding: const EdgeInsets.symmetric(horizontal: 16),
+              decoration: BoxDecoration(
+                color: Colors.white,
+                borderRadius: BorderRadius.circular(16),
+                boxShadow: const [
+                  BoxShadow(
+                    color: Color(0x18000000),
+                    blurRadius: 16,
+                    offset: Offset(0, 6),
+                  ),
+                ],
+              ),
+              child: Row(
+                children: [
+                  const Icon(
+                    Icons.search_rounded,
+                    color: AppColors.textSecondary,
+                    size: 22,
+                  ),
+                  const SizedBox(width: 10),
+                  Expanded(
+                    child: Text(
+                      filter.hasActiveFilters
+                          ? filter.summaryText
+                          : 'Vị trí, ngân sách...',
+                      style: GoogleFonts.plusJakartaSans(
+                        color: filter.hasActiveFilters
+                            ? AppColors.textPrimary
+                            : AppColors.textHint,
+                        fontSize: 14,
+                        fontWeight: filter.hasActiveFilters
+                            ? FontWeight.w600
+                            : FontWeight.w400,
                       ),
-                      border: InputBorder.none,
+                      maxLines: 1,
+                      overflow: TextOverflow.ellipsis,
                     ),
                   ),
-                ),
-                const Icon(Icons.tune_rounded, color: primaryBlue),
-              ],
+                  Container(
+                    padding: const EdgeInsets.all(6),
+                    decoration: BoxDecoration(
+                      color: AppColors.accent,
+                      borderRadius: BorderRadius.circular(8),
+                    ),
+                    child: const Icon(
+                      Icons.tune_rounded,
+                      color: AppColors.primary,
+                      size: 16,
+                    ),
+                  ),
+                ],
+              ),
             ),
           ),
         ],
@@ -258,72 +277,79 @@ class _UserHomeScreenState extends State<UserHomeScreen> {
     );
   }
 
-  Widget _buildSuggestedProfilesSection(RoommateProfileViewModel roommateVm) {
+  Widget _buildSectionHeader(String title) {
     return Padding(
       padding: const EdgeInsets.symmetric(horizontal: 20),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          const Text(
-            'Gợi ý bạn ở ghép phù hợp',
-            style: TextStyle(
-              fontSize: 18,
-              fontWeight: FontWeight.w800,
-              color: textPrimary,
-            ),
-          ),
-          const SizedBox(height: 14),
-          StreamBuilder<List<RoommateProfileModel>>(
-            stream: roommateVm.suggestedProfilesStream,
-            builder: (context, snapshot) {
-              final profiles = snapshot.data ?? const <RoommateProfileModel>[];
+      child: Text(title, style: AppTextStyles.h2),
+    );
+  }
 
-              if (snapshot.connectionState == ConnectionState.waiting) {
-                return const Center(
-                  child: Padding(
-                    padding: EdgeInsets.all(20),
-                    child: CircularProgressIndicator(),
-                  ),
-                );
-              }
+  Widget _buildSuggestedProfilesSection(RoommateProfileViewModel roommateVm) {
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        _buildSectionHeader('Gợi ý bạn ở ghép'),
+        const SizedBox(height: 16),
+        StreamBuilder<List<RoommateProfileModel>>(
+          stream: roommateVm.suggestedProfilesStream,
+          builder: (context, snapshot) {
+            if (snapshot.connectionState == ConnectionState.waiting) {
+              return const Padding(
+                padding: EdgeInsets.symmetric(horizontal: 20),
+                child: _ProfileCardShimmer(),
+              );
+            }
 
-              if (snapshot.hasError) {
-                return _buildMessageCard(
-                  Icons.error_outline,
+            if (snapshot.hasError) {
+              return Padding(
+                padding: const EdgeInsets.symmetric(horizontal: 20),
+                child: _buildInlineMessage(
+                  Icons.error_outline_rounded,
                   'Không tải được gợi ý',
                   '${snapshot.error}',
-                );
-              }
-
-              if (profiles.isEmpty) {
-                return _buildMessageCard(
-                  Icons.person_search_outlined,
-                  'Chưa có hồ sơ phù hợp',
-                  'Hãy cập nhật thói quen và tiêu chí trong hồ sơ để nhận gợi ý tốt hơn.',
-                );
-              }
-
-              return SizedBox(
-                height: 320,
-                child: ListView.separated(
-                  scrollDirection: Axis.horizontal,
-                  itemCount: profiles.take(6).length,
-                  separatorBuilder: (context, index) =>
-                      const SizedBox(width: 16),
-                  itemBuilder: (context, index) {
-                    final profile = profiles[index];
-                    return _SuggestedProfileCard(
-                      profile: profile,
-                      onViewDetail: () => _openSuggestedProfile(profile),
-                      onInviteTap: () => _sendInvite(profile),
-                    );
-                  },
                 ),
               );
-            },
-          ),
-        ],
-      ),
+            }
+
+            final profiles = snapshot.data ?? const <RoommateProfileModel>[];
+            if (profiles.isEmpty) {
+              return Padding(
+                padding: const EdgeInsets.symmetric(horizontal: 20),
+                child: _buildInlineMessage(
+                  Icons.person_search_outlined,
+                  'Chưa có hồ sơ phù hợp',
+                  'Cập nhật thói quen và tiêu chí trong hồ sơ để nhận gợi ý.',
+                ),
+              );
+            }
+
+            return SizedBox(
+              height: 300,
+              child: ListView.builder(
+                scrollDirection: Axis.horizontal,
+                padding: const EdgeInsets.symmetric(horizontal: 20),
+                itemCount: profiles.take(6).length,
+                itemBuilder: (context, index) {
+                  final profile = profiles[index];
+                  final invited = roommateVm.isInvited(profile.userId);
+                  return Padding(
+                    padding: EdgeInsets.only(
+                      right: index < profiles.take(6).length - 1 ? 16 : 0,
+                    ),
+                    child: _SuggestedProfileCard(
+                      profile: profile,
+                      onViewDetail: () => _openSuggestedProfile(profile),
+                      isInvited: invited,
+                      onInviteTap:
+                          invited ? null : () => _showInviteBottomSheet(profile),
+                    ),
+                  );
+                },
+              ),
+            );
+          },
+        ),
+      ],
     );
   }
 
@@ -331,105 +357,100 @@ class _UserHomeScreenState extends State<UserHomeScreen> {
     PostListViewModel postVm,
     RoomSearchFilterModel activeFilter,
   ) {
-    return Padding(
-      padding: const EdgeInsets.symmetric(horizontal: 20),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          const Text(
-            'Bài đăng nổi bật',
-            style: TextStyle(
-              fontSize: 18,
-              fontWeight: FontWeight.w800,
-              color: textPrimary,
-            ),
-          ),
-          const SizedBox(height: 14),
-          StreamBuilder<List<PostModel>>(
-            stream: postVm.postsStream,
-            builder: (context, snapshot) {
-              final allPosts = snapshot.data ?? const <PostModel>[];
-              final posts = _applyFilters(allPosts, activeFilter);
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        _buildSectionHeader('Bài đăng nổi bật'),
+        const SizedBox(height: 16),
+        StreamBuilder<List<PostModel>>(
+          stream: postVm.postsStream,
+          builder: (context, snapshot) {
+            if (snapshot.connectionState == ConnectionState.waiting) {
+              return const Padding(
+                padding: EdgeInsets.symmetric(horizontal: 20),
+                child: _PostCardShimmer(),
+              );
+            }
 
-              if (snapshot.connectionState == ConnectionState.waiting) {
-                return const Center(
-                  child: Padding(
-                    padding: EdgeInsets.all(30),
-                    child: CircularProgressIndicator(),
-                  ),
-                );
-              }
-
-              if (snapshot.hasError) {
-                return _buildMessageCard(
-                  Icons.error_outline,
+            if (snapshot.hasError) {
+              return Padding(
+                padding: const EdgeInsets.symmetric(horizontal: 20),
+                child: _buildInlineMessage(
+                  Icons.error_outline_rounded,
                   'Không tải được bài đăng',
                   '${snapshot.error}',
-                );
-              }
+                ),
+              );
+            }
 
-              if (posts.isEmpty) {
-                return _buildMessageCard(
+            final allPosts = snapshot.data ?? const <PostModel>[];
+            final posts = _applyFilters(allPosts, activeFilter);
+
+            if (posts.isEmpty) {
+              return Padding(
+                padding: const EdgeInsets.symmetric(horizontal: 20),
+                child: _buildInlineMessage(
                   Icons.home_work_outlined,
                   'Chưa có bài đăng nào',
                   'Khi có người đăng bài, nội dung sẽ hiển thị tại đây.',
-                );
-              }
-
-              return ListView.separated(
-                itemCount: posts.length,
-                shrinkWrap: true,
-                physics: const NeverScrollableScrollPhysics(),
-                separatorBuilder: (context, index) =>
-                    const SizedBox(height: 18),
-                itemBuilder: (context, index) {
-                  final post = posts[index];
-                  return _FeaturedPostCard(
-                    post: post,
-                    onViewDetail: () => _openPostDetail(post),
-                  );
-                },
+                ),
               );
-            },
-          ),
-        ],
-      ),
+            }
+
+            return ListView.separated(
+              shrinkWrap: true,
+              physics: const NeverScrollableScrollPhysics(),
+              padding: const EdgeInsets.symmetric(horizontal: 20),
+              itemCount: posts.length,
+              separatorBuilder: (_, _) => const SizedBox(height: 16),
+              itemBuilder: (context, index) {
+                final post = posts[index];
+                return _FeaturedPostCard(
+                  post: post,
+                  onViewDetail: () => _openPostDetail(post),
+                );
+              },
+            );
+          },
+        ),
+      ],
     );
   }
 
-  Widget _buildMessageCard(IconData icon, String title, String subtitle) {
+  Widget _buildInlineMessage(IconData icon, String title, String subtitle) {
     return Container(
-      width: double.infinity,
       padding: const EdgeInsets.all(24),
       decoration: BoxDecoration(
-        color: Colors.white,
-        borderRadius: BorderRadius.circular(24),
-        boxShadow: const [
-          BoxShadow(
-            color: Color(0x14000000),
-            blurRadius: 18,
-            offset: Offset(0, 8),
-          ),
-        ],
+        color: AppColors.surface,
+        borderRadius: BorderRadius.circular(20),
+        border: Border.all(color: AppColors.border),
       ),
-      child: Column(
+      child: Row(
         children: [
-          Icon(icon, size: 54, color: textSecondary),
-          const SizedBox(height: 12),
-          Text(
-            title,
-            textAlign: TextAlign.center,
-            style: const TextStyle(
-              fontSize: 18,
-              fontWeight: FontWeight.w700,
-              color: textPrimary,
+          Container(
+            width: 44,
+            height: 44,
+            decoration: const BoxDecoration(
+              color: AppColors.accent,
+              shape: BoxShape.circle,
             ),
+            child: Icon(icon, color: AppColors.primary, size: 22),
           ),
-          const SizedBox(height: 6),
-          Text(
-            subtitle,
-            textAlign: TextAlign.center,
-            style: const TextStyle(fontSize: 14, color: textSecondary),
+          const SizedBox(width: 16),
+          Expanded(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(title, style: AppTextStyles.label),
+                const SizedBox(height: 2),
+                Text(
+                  subtitle,
+                  style: AppTextStyles.caption,
+                  maxLines: 2,
+                  overflow: TextOverflow.ellipsis,
+                ),
+              ],
+            ),
           ),
         ],
       ),
@@ -438,113 +459,167 @@ class _UserHomeScreenState extends State<UserHomeScreen> {
 
   Widget _buildBottomNav() {
     final items = const [
-      _HomeNavItemData(
+      _NavItemData(
         icon: Icons.home_outlined,
-        activeIcon: Icons.home,
+        activeIcon: Icons.home_rounded,
         label: 'Trang chủ',
       ),
-      _HomeNavItemData(
+      _NavItemData(
         icon: Icons.description_outlined,
-        activeIcon: Icons.description,
+        activeIcon: Icons.description_rounded,
         label: 'Yêu cầu',
       ),
-      _HomeNavItemData(
+      _NavItemData(
         icon: Icons.wallet_outlined,
-        activeIcon: Icons.wallet,
+        activeIcon: Icons.wallet_rounded,
         label: 'Chi tiêu',
       ),
-      _HomeNavItemData(
+      _NavItemData(
         icon: Icons.add_box_outlined,
-        activeIcon: Icons.add_box,
+        activeIcon: Icons.add_box_rounded,
         label: 'Đăng bài',
       ),
-      _HomeNavItemData(
-        icon: Icons.person_outline,
-        activeIcon: Icons.person,
+      _NavItemData(
+        icon: Icons.person_outline_rounded,
+        activeIcon: Icons.person_rounded,
         label: 'Cá nhân',
       ),
     ];
+
     return Container(
-      height: 86,
-      padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 8),
       decoration: const BoxDecoration(
-        color: Colors.white,
+        color: AppColors.surface,
+        border: Border(top: BorderSide(color: AppColors.border)),
         boxShadow: [
           BoxShadow(
-            color: Color(0x0F000000),
-            blurRadius: 10,
-            offset: Offset(0, -2),
+            color: Color(0x08000000),
+            blurRadius: 20,
+            offset: Offset(0, -4),
           ),
         ],
       ),
-      child: Row(
-        children: List.generate(items.length, (index) {
-          final item = items[index];
-          return Expanded(
-            child: _BottomNavItem(
-              icon: item.icon,
-              activeIcon: item.activeIcon,
-              label: item.label,
-              isActive: _selectedIndex == index,
-              onTap: () {
-                if (index == 0) {
-                  context
-                      .read<HomeSearchFilterViewModel>()
-                      .resetFilter(clearSaved: true);
-                  _searchController.clear();
-                  setState(() => _selectedIndex = index);
-                } else if (index == 2) {
-                  Navigator.push(
-                    context,
-                    MaterialPageRoute(
-                      builder: (_) => const RoomGroupScreen(),
-                    ),
-                  );
-                } else if (index == 3) {
-                  _openCreatePost();
-                } else if (index == 4) {
-                  Navigator.push(
-                    context,
-                    MaterialPageRoute(
-                      builder: (_) => const UserProfileScreen(),
-                    ),
-                  );
-                } else {
-                  setState(() => _selectedIndex = index);
-                }
-              },
-            ),
-          );
-        }),
+      child: SafeArea(
+        top: false,
+        child: Padding(
+          padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 8),
+          child: Row(
+            children: List.generate(items.length, (index) {
+              final item = items[index];
+              final isActive = _selectedIndex == index;
+              return Expanded(
+                child: GestureDetector(
+                  behavior: HitTestBehavior.opaque,
+                  onTap: () {
+                    if (index == 0) {
+                      context
+                          .read<HomeSearchFilterViewModel>()
+                          .resetFilter(clearSaved: true);
+                      _searchController.clear();
+                      setState(() => _selectedIndex = index);
+                    } else if (index == 2) {
+                      Navigator.push(
+                        context,
+                        MaterialPageRoute(
+                          builder: (_) => const RoomGroupScreen(),
+                        ),
+                      );
+                    } else if (index == 3) {
+                      _openCreatePost();
+                    } else if (index == 4) {
+                      Navigator.push(
+                        context,
+                        MaterialPageRoute(
+                          builder: (_) => const UserProfileScreen(),
+                        ),
+                      );
+                    } else if (index == 1) {
+                      Navigator.push(
+                        context,
+                        MaterialPageRoute(
+                          builder: (_) => const SentInvitesScreen(),
+                        ),
+                      );
+                    } else {
+                      setState(() => _selectedIndex = index);
+                    }
+                  },
+                  child: Column(
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      AnimatedContainer(
+                        duration: const Duration(milliseconds: 200),
+                        padding: const EdgeInsets.symmetric(
+                          horizontal: 14,
+                          vertical: 6,
+                        ),
+                        decoration: BoxDecoration(
+                          color: isActive
+                              ? AppColors.accent
+                              : Colors.transparent,
+                          borderRadius: BorderRadius.circular(12),
+                        ),
+                        child: Icon(
+                          isActive ? item.activeIcon : item.icon,
+                          color: isActive
+                              ? AppColors.primary
+                              : AppColors.textSecondary,
+                          size: 22,
+                        ),
+                      ),
+                      const SizedBox(height: 2),
+                      Text(
+                        item.label,
+                        style: GoogleFonts.plusJakartaSans(
+                          fontSize: 10,
+                          fontWeight: isActive
+                              ? FontWeight.w700
+                              : FontWeight.w500,
+                          color: isActive
+                              ? AppColors.primary
+                              : AppColors.textSecondary,
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+              );
+            }),
+          ),
+        ),
       ),
     );
   }
 }
 
+// ── Profile card ──────────────────────────────────────────────────────────────
+
 class _SuggestedProfileCard extends StatelessWidget {
   final RoommateProfileModel profile;
   final VoidCallback onViewDetail;
-  final VoidCallback onInviteTap;
+  final VoidCallback? onInviteTap;
+  final bool isInvited;
 
   const _SuggestedProfileCard({
     required this.profile,
     required this.onViewDetail,
-    required this.onInviteTap,
+    required this.isInvited,
+    this.onInviteTap,
   });
 
   @override
   Widget build(BuildContext context) {
     return Container(
-      width: 300,
+      width: 260,
       padding: const EdgeInsets.all(16),
       decoration: BoxDecoration(
-        color: Colors.white,
-        borderRadius: BorderRadius.circular(24),
+        color: AppColors.surface,
+        borderRadius: BorderRadius.circular(20),
+        border: Border.all(color: AppColors.border),
         boxShadow: const [
           BoxShadow(
-            color: Color(0x12000000),
-            blurRadius: 18,
-            offset: Offset(0, 8),
+            color: Color(0x08000000),
+            blurRadius: 16,
+            offset: Offset(0, 4),
           ),
         ],
       ),
@@ -554,9 +629,10 @@ class _SuggestedProfileCard extends StatelessWidget {
           Row(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              _ProfileAvatar(
+              AppAvatar(
                 name: profile.displayName,
                 avatarUrl: profile.avatarUrl,
+                size: 52,
               ),
               const SizedBox(width: 12),
               Expanded(
@@ -567,25 +643,19 @@ class _SuggestedProfileCard extends StatelessWidget {
                       profile.displayName,
                       maxLines: 1,
                       overflow: TextOverflow.ellipsis,
-                      style: const TextStyle(
-                        fontSize: 18,
-                        fontWeight: FontWeight.w800,
-                        color: _UserHomeScreenState.textPrimary,
-                      ),
+                      style: AppTextStyles.labelLg,
                     ),
-                    const SizedBox(height: 4),
+                    const SizedBox(height: 3),
                     Text(
                       profile.address,
-                      maxLines: 2,
+                      maxLines: 1,
                       overflow: TextOverflow.ellipsis,
-                      style: const TextStyle(
-                        fontSize: 13,
-                        color: _UserHomeScreenState.textSecondary,
-                      ),
+                      style: AppTextStyles.caption,
                     ),
                   ],
                 ),
               ),
+              const SizedBox(width: 8),
               _MatchBadge(percentage: profile.matchPercentage),
             ],
           ),
@@ -596,68 +666,72 @@ class _SuggestedProfileCard extends StatelessWidget {
                 : 'Đang tìm bạn ở ghép phù hợp.',
             maxLines: 2,
             overflow: TextOverflow.ellipsis,
-            style: const TextStyle(
-              fontSize: 14,
-              height: 1.45,
-              color: _UserHomeScreenState.textPrimary,
-            ),
+            style: AppTextStyles.body.copyWith(color: AppColors.textSecondary),
           ),
           const SizedBox(height: 12),
           Wrap(
-            spacing: 8,
-            runSpacing: 8,
+            spacing: 6,
+            runSpacing: 6,
             children: profile.habits
                 .take(3)
-                .map((item) => _TagPill(label: item))
+                .map((item) => _TagChip(label: item))
                 .toList(),
           ),
-          const SizedBox(height: 16),
+          const Spacer(),
+          const SizedBox(height: 12),
           Row(
             children: [
               Expanded(
-                child: ElevatedButton(
-                  onPressed: onViewDetail,
-                  style: ElevatedButton.styleFrom(
-                    backgroundColor: _UserHomeScreenState.primaryBlue,
-                    foregroundColor: Colors.white,
-                    elevation: 0,
-                    padding: const EdgeInsets.symmetric(vertical: 14),
-                    shape: RoundedRectangleBorder(
-                      borderRadius: BorderRadius.circular(16),
+                child: SizedBox(
+                  height: 44,
+                  child: FilledButton(
+                    onPressed: onViewDetail,
+                    style: FilledButton.styleFrom(
+                      backgroundColor: AppColors.primary,
+                      foregroundColor: Colors.white,
+                      elevation: 0,
+                      padding: const EdgeInsets.symmetric(horizontal: 16),
+                      textStyle: AppTextStyles.buttonSm.copyWith(height: 1.2),
+                      minimumSize: const Size(0, 44),
+                      tapTargetSize: MaterialTapTargetSize.shrinkWrap,
+                      shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(12),
+                      ),
                     ),
-                  ),
-                  child: const Text(
-                    'Xem chi tiết',
-                    style: TextStyle(fontWeight: FontWeight.w700),
+                    child: const Text('Xem chi tiết'),
                   ),
                 ),
               ),
-              const SizedBox(width: 10),
-              OutlinedButton(
-                onPressed: onInviteTap,
-                style: OutlinedButton.styleFrom(
-                  foregroundColor: _UserHomeScreenState.primaryBlue,
-                  side: const BorderSide(
-                    color: _UserHomeScreenState.primaryBlue,
-                  ),
-                  padding: const EdgeInsets.symmetric(
-                    horizontal: 14,
-                    vertical: 14,
-                  ),
-                  shape: RoundedRectangleBorder(
-                    borderRadius: BorderRadius.circular(16),
-                  ),
-                ),
-                child: const Row(
-                  mainAxisSize: MainAxisSize.min,
-                  children: [
-                    Icon(Icons.person_add_alt_1_outlined, size: 18),
-                    SizedBox(width: 6),
-                    Text(
-                      'Mời',
-                      style: TextStyle(fontWeight: FontWeight.w700),
+              const SizedBox(width: 8),
+              SizedBox(
+                height: 44,
+                child: OutlinedButton(
+                  onPressed: onInviteTap,
+                  style: OutlinedButton.styleFrom(
+                    foregroundColor: isInvited
+                        ? AppColors.successText
+                        : AppColors.primary,
+                    side: BorderSide(
+                      color: isInvited
+                          ? AppColors.success
+                          : AppColors.primary,
                     ),
-                  ],
+                    backgroundColor: isInvited
+                        ? AppColors.successSurface
+                        : null,
+                    padding: const EdgeInsets.symmetric(horizontal: 12),
+                    minimumSize: const Size(44, 44),
+                    tapTargetSize: MaterialTapTargetSize.shrinkWrap,
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(12),
+                    ),
+                  ),
+                  child: Icon(
+                    isInvited
+                        ? Icons.check_rounded
+                        : Icons.person_add_alt_1_outlined,
+                    size: 18,
+                  ),
                 ),
               ),
             ],
@@ -668,129 +742,107 @@ class _SuggestedProfileCard extends StatelessWidget {
   }
 }
 
+// ── Featured post card ────────────────────────────────────────────────────────
+
 class _FeaturedPostCard extends StatelessWidget {
   final PostModel post;
   final VoidCallback onViewDetail;
 
-  const _FeaturedPostCard({
-    required this.post,
-    required this.onViewDetail,
-  });
+  const _FeaturedPostCard({required this.post, required this.onViewDetail});
 
   @override
   Widget build(BuildContext context) {
-    return Container(
-      decoration: BoxDecoration(
-        color: Colors.white,
-        borderRadius: BorderRadius.circular(28),
-        boxShadow: const [
-          BoxShadow(
-            color: Color(0x14000000),
-            blurRadius: 20,
-            offset: Offset(0, 10),
-          ),
-        ],
-      ),
-      child: Padding(
-        padding: const EdgeInsets.all(16),
+    return GestureDetector(
+      onTap: onViewDetail,
+      child: Container(
+        decoration: BoxDecoration(
+          color: AppColors.surface,
+          borderRadius: BorderRadius.circular(20),
+          border: Border.all(color: AppColors.border),
+          boxShadow: const [
+            BoxShadow(
+              color: Color(0x08000000),
+              blurRadius: 16,
+              offset: Offset(0, 4),
+            ),
+          ],
+        ),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
+            // Image
             ClipRRect(
-              borderRadius: BorderRadius.circular(22),
+              borderRadius: const BorderRadius.vertical(
+                top: Radius.circular(20),
+              ),
               child: AspectRatio(
-                aspectRatio: 16 / 9,
+                aspectRatio: 16 / 8,
                 child: post.imageUrl.trim().isNotEmpty
                     ? Image.network(
                         post.imageUrl,
                         fit: BoxFit.cover,
-                        errorBuilder: (context, error, stackTrace) =>
+                        errorBuilder: (ctx, err, _) =>
                             _PostImageFallback(title: post.title),
                       )
                     : _PostImageFallback(title: post.title),
               ),
             ),
-            const SizedBox(height: 14),
-            _PostOwnerHeader(post: post),
-            const SizedBox(height: 12),
-            Text(
-              post.title.isNotEmpty ? post.title : 'Bài đăng tìm bạn ở ghép',
-              maxLines: 2,
-              overflow: TextOverflow.ellipsis,
-              style: const TextStyle(
-                fontSize: 20,
-                fontWeight: FontWeight.w800,
-                color: _UserHomeScreenState.textPrimary,
-                height: 1.25,
-              ),
-            ),
-            const SizedBox(height: 8),
-            Text(
-              post.description.isNotEmpty ? post.description : post.location,
-              maxLines: 2,
-              overflow: TextOverflow.ellipsis,
-              style: const TextStyle(
-                fontSize: 14,
-                height: 1.45,
-                color: _UserHomeScreenState.textPrimary,
-              ),
-            ),
-            const SizedBox(height: 14),
-            Wrap(
-              spacing: 8,
-              runSpacing: 8,
-              children: _buildPostTags(post),
-            ),
-            const SizedBox(height: 16),
-            Row(
-              children: [
-                Expanded(
-                  child: ElevatedButton(
-                    onPressed: onViewDetail,
-                    style: ElevatedButton.styleFrom(
-                      backgroundColor: _UserHomeScreenState.primaryBlue,
-                      foregroundColor: Colors.white,
-                      elevation: 0,
-                      padding: const EdgeInsets.symmetric(vertical: 14),
-                      shape: RoundedRectangleBorder(
-                        borderRadius: BorderRadius.circular(16),
+
+            Padding(
+              padding: const EdgeInsets.all(16),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  _PostOwnerHeader(post: post),
+                  const SizedBox(height: 12),
+                  Text(
+                    post.title.isNotEmpty
+                        ? post.title
+                        : 'Bài đăng tìm bạn ở ghép',
+                    maxLines: 2,
+                    overflow: TextOverflow.ellipsis,
+                    style: AppTextStyles.h3,
+                  ),
+                  if (post.description.isNotEmpty) ...[
+                    const SizedBox(height: 6),
+                    Text(
+                      post.description,
+                      maxLines: 2,
+                      overflow: TextOverflow.ellipsis,
+                      style: AppTextStyles.body.copyWith(
+                        color: AppColors.textSecondary,
                       ),
                     ),
-                    child: const Text(
-                      'Xem chi tiết',
-                      style: TextStyle(fontWeight: FontWeight.w700),
-                    ),
+                  ],
+                  const SizedBox(height: 12),
+                  Wrap(
+                    spacing: 6,
+                    runSpacing: 6,
+                    children: _buildPostTags(post),
                   ),
-                ),
-                const SizedBox(width: 10),
-                OutlinedButton(
-                  onPressed: onViewDetail,
-                  style: OutlinedButton.styleFrom(
-                    foregroundColor: _UserHomeScreenState.primaryBlue,
-                    side: const BorderSide(
-                      color: _UserHomeScreenState.primaryBlue,
-                    ),
-                    padding: const EdgeInsets.symmetric(
-                      horizontal: 14,
-                      vertical: 14,
-                    ),
-                    shape: RoundedRectangleBorder(
-                      borderRadius: BorderRadius.circular(16),
-                    ),
-                  ),
-                  child: const Row(
-                    mainAxisSize: MainAxisSize.min,
-                    children: [
-                      Icon(Icons.chat_bubble_outline_rounded, size: 18),
-                      SizedBox(width: 6),
-                      Text(
-                        'Nhắn tin',
-                        style: TextStyle(fontWeight: FontWeight.w700),
+                  const SizedBox(height: 14),
+                  SizedBox(
+                    width: double.infinity,
+                    height: 44,
+                    child: FilledButton(
+                      onPressed: onViewDetail,
+                      style: FilledButton.styleFrom(
+                        backgroundColor: AppColors.primary,
+                        foregroundColor: Colors.white,
+                        elevation: 0,
+                        padding: const EdgeInsets.symmetric(horizontal: 16),
+                        textStyle: AppTextStyles.buttonSm.copyWith(height: 1.2),
+                        minimumSize: const Size(0, 44),
+                        tapTargetSize: MaterialTapTargetSize.shrinkWrap,
+                        shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(12),
+                        ),
                       ),
-                    ],
+                      child: const Text('Xem chi tiết'),
+                    ),
                   ),
-                ),
-              ],
+                ],
+              ),
             ),
           ],
         ),
@@ -801,7 +853,6 @@ class _FeaturedPostCard extends StatelessWidget {
 
 class _PostOwnerHeader extends StatelessWidget {
   final PostModel post;
-
   const _PostOwnerHeader({required this.post});
 
   @override
@@ -814,7 +865,6 @@ class _PostOwnerHeader extends StatelessWidget {
         final user = snapshot.hasData && snapshot.data!.exists
             ? UserModel.fromDocument(snapshot.data!)
             : null;
-
         final displayName = formatLastTwoWords(user?.fullName ?? '');
         final displayAddress = formatReadableAddress(
           fullAddress: user?.address ?? '',
@@ -824,14 +874,14 @@ class _PostOwnerHeader extends StatelessWidget {
         );
 
         return Row(
-          crossAxisAlignment: CrossAxisAlignment.start,
+          crossAxisAlignment: CrossAxisAlignment.center,
           children: [
-            _ProfileAvatar(
+            AppAvatar(
               name: displayName,
               avatarUrl: user?.avatarUrl ?? '',
-              size: 56,
+              size: 40,
             ),
-            const SizedBox(width: 12),
+            const SizedBox(width: 10),
             Expanded(
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
@@ -840,40 +890,32 @@ class _PostOwnerHeader extends StatelessWidget {
                     displayName,
                     maxLines: 1,
                     overflow: TextOverflow.ellipsis,
-                    style: const TextStyle(
-                      fontSize: 18,
-                      fontWeight: FontWeight.w800,
-                      color: _UserHomeScreenState.textPrimary,
-                    ),
+                    style: AppTextStyles.label,
                   ),
-                  const SizedBox(height: 4),
                   Text(
                     displayAddress,
-                    maxLines: 2,
+                    maxLines: 1,
                     overflow: TextOverflow.ellipsis,
-                    style: const TextStyle(
-                      fontSize: 13,
-                      color: _UserHomeScreenState.textSecondary,
-                    ),
+                    style: AppTextStyles.caption,
                   ),
                 ],
               ),
             ),
-            const SizedBox(width: 10),
+            const SizedBox(width: 8),
             Container(
-              padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+              padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
               decoration: BoxDecoration(
-                color: _UserHomeScreenState.lightBlue,
-                borderRadius: BorderRadius.circular(14),
+                color: AppColors.accent,
+                borderRadius: BorderRadius.circular(10),
               ),
               child: Text(
                 post.price > 0
-                    ? '${_UserHomeScreenState.formatMoney(post.price)}d'
-                    : 'Thoa thuan',
-                style: const TextStyle(
-                  fontSize: 14,
-                  fontWeight: FontWeight.w800,
-                  color: _UserHomeScreenState.primaryBlue,
+                    ? '${_UserHomeScreenState.formatMoney(post.price)}đ'
+                    : 'Thỏa thuận',
+                style: GoogleFonts.plusJakartaSans(
+                  fontSize: 12,
+                  fontWeight: FontWeight.w700,
+                  color: AppColors.primary,
                 ),
               ),
             ),
@@ -884,51 +926,111 @@ class _PostOwnerHeader extends StatelessWidget {
   }
 }
 
-class _ProfileAvatar extends StatelessWidget {
-  final String name;
-  final String avatarUrl;
-  final double size;
+// ── Shimmer placeholders ──────────────────────────────────────────────────────
 
-  const _ProfileAvatar({
-    required this.name,
-    required this.avatarUrl,
-    this.size = 68,
+class _ShimmerBox extends StatefulWidget {
+  final double width;
+  final double height;
+  final BorderRadius? borderRadius;
+
+  const _ShimmerBox({
+    required this.width,
+    required this.height,
+    this.borderRadius,
   });
 
   @override
-  Widget build(BuildContext context) {
-    if (avatarUrl.trim().isNotEmpty) {
-      return ClipRRect(
-        borderRadius: BorderRadius.circular(size / 2),
-        child: Image.network(
-          avatarUrl,
-          width: size,
-          height: size,
-          fit: BoxFit.cover,
-          errorBuilder: (context, error, stackTrace) => _buildFallback(),
-        ),
-      );
-    }
+  State<_ShimmerBox> createState() => _ShimmerBoxState();
+}
 
-    return _buildFallback();
+class _ShimmerBoxState extends State<_ShimmerBox>
+    with SingleTickerProviderStateMixin {
+  late AnimationController _controller;
+  late Animation<double> _animation;
+
+  @override
+  void initState() {
+    super.initState();
+    _controller = AnimationController(
+      vsync: this,
+      duration: const Duration(milliseconds: 1200),
+    )..repeat(reverse: true);
+    _animation = Tween<double>(begin: 0.4, end: 0.9).animate(
+      CurvedAnimation(parent: _controller, curve: Curves.easeInOut),
+    );
   }
 
-  Widget _buildFallback() {
-    final trimmedName = name.trim();
-    return Container(
-      width: size,
-      height: size,
-      decoration: const BoxDecoration(
-        color: Color(0xFFDDEBFF),
-        shape: BoxShape.circle,
+  @override
+  void dispose() {
+    _controller.dispose();
+    super.dispose();
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return AnimatedBuilder(
+      animation: _animation,
+      builder: (ctx, val) => Container(
+        width: widget.width,
+        height: widget.height,
+        decoration: BoxDecoration(
+          color: Color.lerp(
+            const Color(0xFFE2E8F0),
+            const Color(0xFFF1F5F9),
+            _animation.value,
+          ),
+          borderRadius: widget.borderRadius ?? BorderRadius.circular(8),
+        ),
       ),
-      child: Center(
-        child: Text(
-          trimmedName.isNotEmpty ? trimmedName.substring(0, 1) : 'U',
-          style: TextStyle(
-            fontSize: size * 0.36,
-            fontWeight: FontWeight.w800,
-            color: _UserHomeScreenState.primaryBlue,
+    );
+  }
+}
+
+class _ProfileCardShimmer extends StatelessWidget {
+  const _ProfileCardShimmer();
+
+  @override
+  Widget build(BuildContext context) {
+    return SizedBox(
+      height: 300,
+      child: ListView.builder(
+        scrollDirection: Axis.horizontal,
+        itemCount: 3,
+        itemBuilder: (ctx, idx) => Container(
+          width: 260,
+          margin: const EdgeInsets.only(right: 16),
+          padding: const EdgeInsets.all(16),
+          decoration: BoxDecoration(
+            color: AppColors.surface,
+            borderRadius: BorderRadius.circular(20),
+            border: Border.all(color: AppColors.border),
+          ),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Row(
+                children: [
+                  const _ShimmerBox(
+                    width: 52,
+                    height: 52,
+                    borderRadius: BorderRadius.all(Radius.circular(26)),
+                  ),
+                  const SizedBox(width: 12),
+                  Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      _ShimmerBox(width: 120, height: 14),
+                      const SizedBox(height: 8),
+                      _ShimmerBox(width: 80, height: 12),
+                    ],
+                  ),
+                ],
+              ),
+              const SizedBox(height: 16),
+              _ShimmerBox(width: double.infinity, height: 12),
+              const SizedBox(height: 8),
+              _ShimmerBox(width: 180, height: 12),
+            ],
           ),
         ),
       ),
@@ -936,36 +1038,55 @@ class _ProfileAvatar extends StatelessWidget {
   }
 }
 
-class _MatchBadge extends StatelessWidget {
-  final int percentage;
-
-  const _MatchBadge({required this.percentage});
+class _PostCardShimmer extends StatelessWidget {
+  const _PostCardShimmer();
 
   @override
   Widget build(BuildContext context) {
     return Container(
-      padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 8),
       decoration: BoxDecoration(
-        color: _UserHomeScreenState.lightBlue,
-        borderRadius: BorderRadius.circular(14),
+        color: AppColors.surface,
+        borderRadius: BorderRadius.circular(20),
+        border: Border.all(color: AppColors.border),
       ),
       child: Column(
         children: [
-          const Text(
-            'Phù hợp',
-            style: TextStyle(
-              fontSize: 11,
-              color: _UserHomeScreenState.textSecondary,
-              fontWeight: FontWeight.w600,
+          ClipRRect(
+            borderRadius: const BorderRadius.vertical(top: Radius.circular(20)),
+            child: _ShimmerBox(
+              width: double.infinity,
+              height: 180,
+              borderRadius: BorderRadius.zero,
             ),
           ),
-          const SizedBox(height: 2),
-          Text(
-            '$percentage%',
-            style: const TextStyle(
-              fontSize: 16,
-              fontWeight: FontWeight.w800,
-              color: _UserHomeScreenState.primaryBlue,
+          Padding(
+            padding: const EdgeInsets.all(16),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Row(
+                  children: [
+                    const _ShimmerBox(
+                      width: 40,
+                      height: 40,
+                      borderRadius: BorderRadius.all(Radius.circular(20)),
+                    ),
+                    const SizedBox(width: 10),
+                    Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        _ShimmerBox(width: 120, height: 13),
+                        const SizedBox(height: 6),
+                        _ShimmerBox(width: 80, height: 11),
+                      ],
+                    ),
+                  ],
+                ),
+                const SizedBox(height: 14),
+                _ShimmerBox(width: double.infinity, height: 16),
+                const SizedBox(height: 8),
+                _ShimmerBox(width: 200, height: 13),
+              ],
             ),
           ),
         ],
@@ -974,29 +1095,102 @@ class _MatchBadge extends StatelessWidget {
   }
 }
 
+// ── Small helpers ─────────────────────────────────────────────────────────────
+
+class _MatchBadge extends StatelessWidget {
+  final int percentage;
+  const _MatchBadge({required this.percentage});
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 6),
+      decoration: BoxDecoration(
+        gradient: const LinearGradient(
+          colors: [AppColors.primary, AppColors.primaryDark],
+          begin: Alignment.topLeft,
+          end: Alignment.bottomRight,
+        ),
+        borderRadius: BorderRadius.circular(12),
+      ),
+      child: Column(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          Text(
+            '$percentage%',
+            style: GoogleFonts.plusJakartaSans(
+              fontSize: 14,
+              fontWeight: FontWeight.w800,
+              color: Colors.white,
+            ),
+          ),
+          Text(
+            'phù hợp',
+            style: GoogleFonts.plusJakartaSans(
+              fontSize: 9,
+              fontWeight: FontWeight.w600,
+              color: Colors.white70,
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+}
+
+class _TagChip extends StatelessWidget {
+  final String label;
+  const _TagChip({required this.label});
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 5),
+      decoration: BoxDecoration(
+        color: AppColors.accent,
+        borderRadius: BorderRadius.circular(999),
+      ),
+      child: Text(
+        label,
+        style: GoogleFonts.plusJakartaSans(
+          fontSize: 11,
+          fontWeight: FontWeight.w600,
+          color: AppColors.primary,
+        ),
+      ),
+    );
+  }
+}
+
 class _PostImageFallback extends StatelessWidget {
   final String title;
-
   const _PostImageFallback({required this.title});
 
   @override
   Widget build(BuildContext context) {
     return Container(
-      color: const Color(0xFFE8EEF9),
+      color: AppColors.accent,
       child: Center(
-        child: Padding(
-          padding: const EdgeInsets.symmetric(horizontal: 24),
-          child: Text(
-            title,
-            textAlign: TextAlign.center,
-            maxLines: 2,
-            overflow: TextOverflow.ellipsis,
-            style: const TextStyle(
-              fontSize: 18,
-              fontWeight: FontWeight.w700,
-              color: _UserHomeScreenState.textPrimary,
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            const Icon(
+              Icons.home_work_outlined,
+              color: AppColors.primary,
+              size: 36,
             ),
-          ),
+            const SizedBox(height: 8),
+            Padding(
+              padding: const EdgeInsets.symmetric(horizontal: 24),
+              child: Text(
+                title,
+                textAlign: TextAlign.center,
+                maxLines: 2,
+                overflow: TextOverflow.ellipsis,
+                style: AppTextStyles.label.copyWith(color: AppColors.primary),
+              ),
+            ),
+          ],
         ),
       ),
     );
@@ -1005,98 +1199,239 @@ class _PostImageFallback extends StatelessWidget {
 
 List<Widget> _buildPostTags(PostModel post) {
   final tags = <String>[];
-  if (post.amenities.isNotEmpty) {
-    tags.addAll(post.amenities.take(3));
-  }
-  if (tags.isEmpty && post.roomType.trim().isNotEmpty) {
-    tags.add(post.roomType.trim());
-  }
-  if (tags.length < 3 && post.area > 0) {
-    tags.add('${post.area} m2');
-  }
-  if (tags.length < 3 && post.capacity > 0) {
-    tags.add('${post.capacity} người');
-  }
-
-  return tags.take(3).map((item) => _TagPill(label: item)).toList();
+  if (post.amenities.isNotEmpty) tags.addAll(post.amenities.take(2));
+  if (tags.isEmpty && post.roomType.trim().isNotEmpty) tags.add(post.roomType.trim());
+  if (tags.length < 3 && post.area > 0) tags.add('${post.area} m²');
+  if (tags.length < 3 && post.capacity > 0) tags.add('${post.capacity} người');
+  return tags.take(3).map((item) => _TagChip(label: item)).toList();
 }
 
-class _HomeNavItemData {
+class _NavItemData {
   final IconData icon;
   final IconData activeIcon;
   final String label;
-
-  const _HomeNavItemData({
+  const _NavItemData({
     required this.icon,
     required this.activeIcon,
     required this.label,
   });
 }
 
-class _TagPill extends StatelessWidget {
-  final String label;
+// ── Invite bottom sheet ───────────────────────────────────────────────────────
 
-  const _TagPill({required this.label});
+class _InviteSheet extends StatefulWidget {
+  final RoommateProfileModel profile;
+  const _InviteSheet({required this.profile});
 
   @override
-  Widget build(BuildContext context) {
-    return Container(
-      padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
-      decoration: BoxDecoration(
-        color: _UserHomeScreenState.softMint,
-        borderRadius: BorderRadius.circular(999),
-      ),
-      child: Text(
-        label,
-        style: const TextStyle(
-          fontSize: 12,
-          fontWeight: FontWeight.w600,
-          color: _UserHomeScreenState.textPrimary,
+  State<_InviteSheet> createState() => _InviteSheetState();
+}
+
+class _InviteSheetState extends State<_InviteSheet> {
+  final _msgController = TextEditingController();
+
+  @override
+  void dispose() {
+    _msgController.dispose();
+    super.dispose();
+  }
+
+  Future<void> _submit() async {
+    final vm = context.read<RoommateProfileViewModel>();
+    final messenger = ScaffoldMessenger.of(context);
+    final targetName = widget.profile.displayName;
+
+    final success = await vm.sendInvite(
+      targetUserId: widget.profile.userId,
+      targetName: widget.profile.fullName,
+      targetAvatar: widget.profile.avatarUrl,
+      message: _msgController.text.trim(),
+    );
+
+    if (!mounted) return;
+    Navigator.pop(context);
+    messenger.showSnackBar(
+      SnackBar(
+        content: Text(
+          success
+              ? 'Đã gửi lời mời đến $targetName'
+              : (vm.errorMessage ?? 'Không thể gửi lời mời'),
         ),
       ),
     );
   }
-}
-
-class _BottomNavItem extends StatelessWidget {
-  final IconData icon;
-  final IconData activeIcon;
-  final String label;
-  final bool isActive;
-  final VoidCallback onTap;
-
-  const _BottomNavItem({
-    required this.icon,
-    required this.activeIcon,
-    required this.label,
-    required this.isActive,
-    required this.onTap,
-  });
 
   @override
   Widget build(BuildContext context) {
-    final color = isActive
-        ? _UserHomeScreenState.primaryBlue
-        : _UserHomeScreenState.textSecondary;
-
-    return GestureDetector(
-      onTap: onTap,
-      child: Column(
-        mainAxisAlignment: MainAxisAlignment.center,
-        children: [
-          Icon(isActive ? activeIcon : icon, color: color, size: 28),
-          const SizedBox(height: 4),
-          Text(
-            label,
-            textAlign: TextAlign.center,
-            style: TextStyle(
-              color: color,
-              fontSize: 10,
-              fontWeight: isActive ? FontWeight.w700 : FontWeight.w500,
-            ),
+    return Consumer<RoommateProfileViewModel>(
+      builder: (context, vm, _) {
+        final isLoading = vm.isInviting;
+        return Container(
+          decoration: const BoxDecoration(
+            color: AppColors.surface,
+            borderRadius: BorderRadius.vertical(top: Radius.circular(28)),
           ),
-        ],
-      ),
+          padding: EdgeInsets.only(
+            left: 24,
+            right: 24,
+            top: 24,
+            bottom: MediaQuery.of(context).viewInsets.bottom + 24,
+          ),
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              // Handle bar
+              Center(
+                child: Container(
+                  width: 40,
+                  height: 4,
+                  decoration: BoxDecoration(
+                    color: AppColors.border,
+                    borderRadius: BorderRadius.circular(2),
+                  ),
+                ),
+              ),
+              const SizedBox(height: 24),
+              // Profile info row
+              Row(
+                children: [
+                  AppAvatar(
+                    name: widget.profile.displayName,
+                    avatarUrl: widget.profile.avatarUrl,
+                    size: 52,
+                  ),
+                  const SizedBox(width: 14),
+                  Expanded(
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Text(widget.profile.displayName,
+                            style: AppTextStyles.labelLg),
+                        const SizedBox(height: 2),
+                        Text(widget.profile.address,
+                            style: AppTextStyles.caption,
+                            maxLines: 1,
+                            overflow: TextOverflow.ellipsis),
+                      ],
+                    ),
+                  ),
+                  Container(
+                    padding: const EdgeInsets.symmetric(
+                        horizontal: 10, vertical: 6),
+                    decoration: BoxDecoration(
+                      gradient: const LinearGradient(
+                        colors: [AppColors.primary, AppColors.primaryDark],
+                        begin: Alignment.topLeft,
+                        end: Alignment.bottomRight,
+                      ),
+                      borderRadius: BorderRadius.circular(12),
+                    ),
+                    child: Column(
+                      mainAxisSize: MainAxisSize.min,
+                      children: [
+                        Text(
+                          '${widget.profile.matchPercentage}%',
+                          style: GoogleFonts.plusJakartaSans(
+                            fontSize: 14,
+                            fontWeight: FontWeight.w800,
+                            color: Colors.white,
+                          ),
+                        ),
+                        Text(
+                          'phù hợp',
+                          style: GoogleFonts.plusJakartaSans(
+                            fontSize: 9,
+                            fontWeight: FontWeight.w600,
+                            color: Colors.white70,
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+                ],
+              ),
+              const SizedBox(height: 20),
+              Text('Lời nhắn (tuỳ chọn)', style: AppTextStyles.label),
+              const SizedBox(height: 10),
+              TextField(
+                controller: _msgController,
+                enabled: !isLoading,
+                maxLines: 3,
+                maxLength: 200,
+                style: AppTextStyles.body,
+                decoration: InputDecoration(
+                  hintText:
+                      'Xin chào! Mình muốn tìm bạn ở ghép cùng...',
+                  hintStyle:
+                      AppTextStyles.body.copyWith(color: AppColors.textHint),
+                  filled: true,
+                  fillColor: AppColors.inputFill,
+                  border: OutlineInputBorder(
+                    borderRadius: BorderRadius.circular(16),
+                    borderSide: const BorderSide(color: AppColors.inputBorder),
+                  ),
+                  enabledBorder: OutlineInputBorder(
+                    borderRadius: BorderRadius.circular(16),
+                    borderSide: const BorderSide(color: AppColors.inputBorder),
+                  ),
+                  focusedBorder: OutlineInputBorder(
+                    borderRadius: BorderRadius.circular(16),
+                    borderSide: const BorderSide(
+                        color: AppColors.primary, width: 1.5),
+                  ),
+                  contentPadding: const EdgeInsets.all(14),
+                  counterStyle: AppTextStyles.caption,
+                ),
+              ),
+              const SizedBox(height: 16),
+              SizedBox(
+                width: double.infinity,
+                height: 52,
+                child: FilledButton(
+                  onPressed: isLoading ? null : _submit,
+                  style: FilledButton.styleFrom(
+                    backgroundColor: AppColors.primary,
+                    foregroundColor: Colors.white,
+                    disabledBackgroundColor:
+                        AppColors.primary.withValues(alpha: 0.6),
+                    disabledForegroundColor: Colors.white,
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(16),
+                    ),
+                    elevation: 0,
+                    textStyle: AppTextStyles.button,
+                  ),
+                  child: isLoading
+                      ? const SizedBox(
+                          width: 22,
+                          height: 22,
+                          child: CircularProgressIndicator(
+                            strokeWidth: 2.5,
+                            color: Colors.white,
+                          ),
+                        )
+                      : const Text('Gửi lời mời'),
+                ),
+              ),
+              const SizedBox(height: 10),
+              SizedBox(
+                width: double.infinity,
+                child: TextButton(
+                  onPressed: isLoading ? null : () => Navigator.pop(context),
+                  style: TextButton.styleFrom(
+                    foregroundColor: AppColors.textSecondary,
+                    padding: const EdgeInsets.symmetric(vertical: 12),
+                  ),
+                  child: Text('Huỷ', style: AppTextStyles.button.copyWith(
+                    color: AppColors.textSecondary,
+                  )),
+                ),
+              ),
+            ],
+          ),
+        );
+      },
     );
   }
 }

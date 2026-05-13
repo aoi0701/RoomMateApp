@@ -1,0 +1,109 @@
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+
+    function isAuth() {
+      return request.auth != null;
+    }
+
+    function isOwner(uid) {
+      return request.auth.uid == uid;
+    }
+
+    function isRoomGroupMember(groupId) {
+      return request.auth.uid in
+        get(/databases/$(database)/documents/room_groups/$(groupId)).data.memberIds;
+    }
+
+    // ── users ────────────────────────────────────────────────────────────────
+    // Mọi user đã đăng nhập đều đọc được (cần cho gợi ý bạn ở ghép).
+    // Chỉ chính chủ mới được tạo / cập nhật hồ sơ.
+    match /users/{userId} {
+      allow read: if isAuth();
+      allow create: if isAuth() && isOwner(userId);
+      allow update: if isAuth() && isOwner(userId);
+      allow delete: if false;
+    }
+
+    // ── posts ─────────────────────────────────────────────────────────────────
+    // Mọi user đã đăng nhập đọc được.
+    // Chỉ chủ bài (ownerId) mới sửa / xoá bài của mình.
+    match /posts/{postId} {
+      allow read: if isAuth();
+      allow create: if isAuth()
+        && request.resource.data.ownerId == request.auth.uid;
+      allow update, delete: if isAuth()
+        && resource.data.ownerId == request.auth.uid;
+    }
+
+    // ── roommate_requests ─────────────────────────────────────────────────────
+    // Người gửi (requesterId) và chủ bài (postOwnerId) đọc được.
+    // Người gửi tạo request; chủ bài cập nhật status (accept/reject).
+    match /roommate_requests/{requestId} {
+      allow read: if isAuth() && (
+        resource.data.requesterId == request.auth.uid ||
+        resource.data.postOwnerId == request.auth.uid
+      );
+      allow create: if isAuth()
+        && request.resource.data.requesterId == request.auth.uid;
+      allow update: if isAuth()
+        && resource.data.postOwnerId == request.auth.uid;
+      allow delete: if false;
+    }
+
+    // ── room_groups ───────────────────────────────────────────────────────────
+    // Chỉ thành viên trong nhóm (memberIds) mới đọc / cập nhật được.
+    // Tạo nhóm: bất kỳ user đã đăng nhập (hệ thống tự tạo khi accept request).
+    match /room_groups/{groupId} {
+      allow read: if isAuth()
+        && request.auth.uid in resource.data.memberIds;
+      allow create: if isAuth();
+      allow update: if isAuth()
+        && request.auth.uid in resource.data.memberIds;
+      allow delete: if false;
+    }
+
+    // ── expenses ──────────────────────────────────────────────────────────────
+    // Chỉ thành viên của room group mới đọc / ghi được.
+    match /expenses/{expenseId} {
+      allow read, update, delete: if isAuth()
+        && isRoomGroupMember(resource.data.roomGroupId);
+      allow create: if isAuth()
+        && isRoomGroupMember(request.resource.data.roomGroupId);
+    }
+
+    // ── expense_shares ────────────────────────────────────────────────────────
+    // Đọc: người nợ (fromUserId) hoặc người được nợ (toUserId).
+    // Tạo: thành viên room group.
+    // Cập nhật (markAsPaid): chỉ người nợ (fromUserId).
+    match /expense_shares/{shareId} {
+      allow read: if isAuth() && (
+        resource.data.fromUserId == request.auth.uid ||
+        resource.data.toUserId  == request.auth.uid
+      );
+      allow create: if isAuth()
+        && isRoomGroupMember(request.resource.data.roomGroupId);
+      allow update: if isAuth()
+        && resource.data.fromUserId == request.auth.uid;
+      allow delete: if false;
+    }
+
+    // ── roommate_profile_invites ──────────────────────────────────────────────
+    // Đọc: người gửi (senderId) hoặc người nhận (targetUserId).
+    // Tạo: chỉ khi senderId == uid đang đăng nhập.
+    // Cập nhật: người gửi hoặc người nhận (để đổi status).
+    match /roommate_profile_invites/{inviteId} {
+      allow read: if isAuth() && (
+        resource.data.senderId    == request.auth.uid ||
+        resource.data.targetUserId == request.auth.uid
+      );
+      allow create: if isAuth()
+        && request.resource.data.senderId == request.auth.uid;
+      allow update: if isAuth() && (
+        resource.data.senderId    == request.auth.uid ||
+        resource.data.targetUserId == request.auth.uid
+      );
+      allow delete: if false;
+    }
+  }
+}

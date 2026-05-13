@@ -83,6 +83,17 @@ class RoommateRequestViewModel extends ChangeNotifier {
     }
   }
 
+  Future<bool> hasPendingProfileInvite(String targetUserId) async {
+    try {
+      return await _repository.hasPendingProfileInvite(targetUserId);
+    } catch (_) {
+      return false;
+    }
+  }
+
+  Stream<List<RoommateRequestModel>> get sentProfileInvitesStream =>
+      _repository.getSentProfileInvitesStream();
+
   void ensureReceivedRequestsListening() {
     final currentUid = _repository.currentUser?.uid;
 

@@ -1,235 +1,3 @@
-// import 'package:flutter/material.dart';
-// import 'package:provider/provider.dart';
-
-// import 'package:roommateapp/features/auth/presentation/viewmodels/auth_viewmodel.dart';
-// import 'package:roommateapp/features/post/data/models/post_model.dart';
-// import 'package:roommateapp/features/post/presentation/viewmodels/post_list_viewmodel.dart';
-// import 'package:roommateapp/features/post/presentation/viewmodels/post_viewmodel.dart';
-// import 'package:roommateapp/features/post/presentation/views/post_detail_screen.dart';
-// import 'package:roommateapp/features/post/presentation/views/edit_post_screen.dart';
-
-
-// class MyPostsScreen extends StatelessWidget {
-//   const MyPostsScreen({super.key});
-
-//   Future<void> _showPostActions(
-//     BuildContext context,
-//     PostModel post,
-//   ) async {
-//     final action = await showModalBottomSheet<String>(
-//       context: context,
-//       builder: (_) {
-//         return SafeArea(
-//           child: Column(
-//             mainAxisSize: MainAxisSize.min,
-//             children: [
-//               ListTile(
-//                 leading: const Icon(Icons.edit_outlined),
-//                 title: const Text('Sửa bài đăng'),
-//                 onTap: () {
-//                   Navigator.pop(context, 'edit');
-//                 },
-//               ),
-//               ListTile(
-//                 leading: const Icon(Icons.delete_outline, color: Colors.red),
-//                 title: const Text(
-//                   'Xóa bài đăng',
-//                   style: TextStyle(color: Colors.red),
-//                 ),
-//                 onTap: () {
-//                   Navigator.pop(context, 'delete');
-//                 },
-//               ),
-//             ],
-//           ),
-//         );
-//       },
-//     );
-
-//     if (!context.mounted || action == null) return;
-
-//     if (action == 'edit') {
-//       Navigator.push(
-//         context,
-//         MaterialPageRoute(
-//           builder: (_) => EditPostScreen(post: post),
-//         ),
-//       );
-//     }
-
-//     if (action == 'delete') {
-//       final confirmed = await showDialog<bool>(
-//         context: context,
-//         builder: (_) => AlertDialog(
-//           title: const Text('Xác nhận xóa'),
-//           content: const Text('Bạn có chắc muốn xóa bài đăng này không?'),
-//           actions: [
-//             TextButton(
-//               onPressed: () => Navigator.pop(context, false),
-//               child: const Text('Hủy'),
-//             ),
-//             TextButton(
-//               onPressed: () => Navigator.pop(context, true),
-//               child: const Text(
-//                 'Xóa',
-//                 style: TextStyle(color: Colors.red),
-//               ),
-//             ),
-//           ],
-//         ),
-//       );
-
-//       if (confirmed != true || !context.mounted) return;
-
-//       final vm = context.read<PostViewModel>();
-//       final success = await vm.deletePost(post.id);
-
-//       if (!context.mounted) return;
-
-//       ScaffoldMessenger.of(context).showSnackBar(
-//         SnackBar(
-//           content: Text(
-//             success
-//                 ? 'Xóa bài đăng thành công'
-//                 : (vm.errorMessage ?? 'Xóa bài đăng thất bại'),
-//           ),
-//         ),
-//       );
-//     }
-//   }
-
-//   @override
-//   Widget build(BuildContext context) {
-//     final authVm = context.read<AuthViewModel>();
-//     final postVm = context.read<PostListViewModel>();
-
-//     final user = authVm.user;
-
-//     if (user == null) {
-//       return const Scaffold(
-//         body: Center(
-//           child: Text(
-//             'Chưa đăng nhập',
-//             style: TextStyle(fontSize: 16),
-//           ),
-//         ),
-//       );
-//     }
-
-//     return Scaffold(
-//       appBar: AppBar(
-//         title: const Text('Bài đăng của tôi'),
-//         centerTitle: true,
-//       ),
-//       body: StreamBuilder<List<PostModel>>(
-//         stream: postVm.getPostsByUser(user.uid),
-//         builder: (context, snapshot) {
-//           if (snapshot.connectionState == ConnectionState.waiting) {
-//             return const Center(child: CircularProgressIndicator());
-//           }
-
-//           if (snapshot.hasError) {
-//             return Center(
-//               child: Text('Có lỗi xảy ra: ${snapshot.error}'),
-//             );
-//           }
-
-//           if (!snapshot.hasData || snapshot.data!.isEmpty) {
-//             return const Center(
-//               child: Text(
-//                 'Bạn chưa có bài đăng nào',
-//                 style: TextStyle(fontSize: 16),
-//               ),
-//             );
-//           }
-
-//           final posts = snapshot.data!;
-
-//           return ListView.builder(
-//             padding: const EdgeInsets.all(16),
-//             itemCount: posts.length,
-//             itemBuilder: (context, index) {
-//               final post = posts[index];
-
-//               return Container(
-//                 margin: const EdgeInsets.only(bottom: 12),
-//                 decoration: BoxDecoration(
-//                   color: Colors.white,
-//                   borderRadius: BorderRadius.circular(16),
-//                   boxShadow: [
-//                     BoxShadow(
-//                       color: Colors.black.withValues(alpha: 0.05),
-//                       blurRadius: 10,
-//                       offset: const Offset(0, 4),
-//                     ),
-//                   ],
-//                 ),
-//                 child: ListTile(
-//                   contentPadding: const EdgeInsets.all(12),
-//                   leading: ClipRRect(
-//                     borderRadius: BorderRadius.circular(10),
-//                     child: Image.network(
-//                       post.imageUrl,
-//                       width: 60,
-//                       height: 60,
-//                       fit: BoxFit.cover,
-//                       errorBuilder: (_, _, _) =>
-//                           const Icon(Icons.image_not_supported),
-//                     ),
-//                   ),
-//                   title: Text(
-//                     post.title,
-//                     maxLines: 1,
-//                     overflow: TextOverflow.ellipsis,
-//                     style: const TextStyle(fontWeight: FontWeight.bold),
-//                   ),
-//                   subtitle: Text(
-//                     post.location,
-//                     maxLines: 1,
-//                     overflow: TextOverflow.ellipsis,
-//                   ),
-//                   trailing: SizedBox(
-//                     width: 80,
-//                     child: Column(
-//                       mainAxisSize: MainAxisSize.min,
-//                       mainAxisAlignment: MainAxisAlignment.center,
-//                       children: [
-//                         Text(
-//                           '${post.price}đ',
-//                           style: const TextStyle(
-//                             color: Colors.red,
-//                             fontWeight: FontWeight.bold,
-//                           ),
-//                         ),
-//                         IconButton(
-//                           icon: const Icon(Icons.more_vert),
-//                           onPressed: () => _showPostActions(context, post),
-//                           padding: EdgeInsets.zero,
-//                           constraints: const BoxConstraints(),
-//                         ),
-//                       ],
-//                     ),
-//                   ),
-//                   onTap: () {
-//                     Navigator.push(
-//                       context,
-//                       MaterialPageRoute(
-//                         builder: (_) => PostDetailScreen(post: post),
-//                       ),
-//                     );
-//                   },
-//                 ),
-//               );
-//             },
-//           );
-//         },
-//       ),
-//     );
-//   }
-// }
-
-
-
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 
@@ -240,6 +8,10 @@ import 'package:roommateapp/features/post/presentation/viewmodels/post_viewmodel
 import 'package:roommateapp/features/post/presentation/views/post_detail_screen.dart';
 import 'package:roommateapp/features/post/presentation/views/edit_post_screen.dart';
 
+import '../../../../core/theme/app_colors.dart';
+import '../../../../core/theme/app_text_styles.dart';
+import '../../../../core/widgets/app_state_widgets.dart';
+
 class MyPostsScreen extends StatelessWidget {
   const MyPostsScreen({super.key});
 
@@ -249,28 +21,38 @@ class MyPostsScreen extends StatelessWidget {
   ) async {
     final action = await showModalBottomSheet<String>(
       context: context,
+      backgroundColor: AppColors.surface,
+      shape: const RoundedRectangleBorder(
+        borderRadius: BorderRadius.vertical(top: Radius.circular(24)),
+      ),
       builder: (_) {
         return SafeArea(
           child: Column(
             mainAxisSize: MainAxisSize.min,
             children: [
-              ListTile(
-                leading: const Icon(Icons.edit_outlined),
-                title: const Text('Sửa bài đăng'),
-                onTap: () {
-                  Navigator.pop(context, 'edit');
-                },
-              ),
-              ListTile(
-                leading: const Icon(Icons.delete_outline, color: Colors.red),
-                title: const Text(
-                  'Xóa bài đăng',
-                  style: TextStyle(color: Colors.red),
+              Container(
+                width: 40,
+                height: 4,
+                margin: const EdgeInsets.only(top: 12, bottom: 8),
+                decoration: BoxDecoration(
+                  color: AppColors.border,
+                  borderRadius: BorderRadius.circular(2),
                 ),
-                onTap: () {
-                  Navigator.pop(context, 'delete');
-                },
               ),
+              ListTile(
+                leading: const Icon(Icons.edit_outlined, color: AppColors.primary),
+                title: Text('Sửa bài đăng', style: AppTextStyles.label),
+                onTap: () => Navigator.pop(context, 'edit'),
+              ),
+              ListTile(
+                leading: const Icon(Icons.delete_outline, color: AppColors.danger),
+                title: Text(
+                  'Xóa bài đăng',
+                  style: AppTextStyles.label.copyWith(color: AppColors.danger),
+                ),
+                onTap: () => Navigator.pop(context, 'delete'),
+              ),
+              const SizedBox(height: 8),
             ],
           ),
         );
@@ -282,9 +64,7 @@ class MyPostsScreen extends StatelessWidget {
     if (action == 'edit') {
       Navigator.push(
         context,
-        MaterialPageRoute(
-          builder: (_) => EditPostScreen(post: post),
-        ),
+        MaterialPageRoute(builder: (_) => EditPostScreen(post: post)),
       );
     }
 
@@ -292,8 +72,11 @@ class MyPostsScreen extends StatelessWidget {
       final confirmed = await showDialog<bool>(
         context: context,
         builder: (_) => AlertDialog(
-          title: const Text('Xác nhận xóa'),
-          content: const Text('Bạn có chắc muốn xóa bài đăng này không?'),
+          title: Text('Xác nhận xóa', style: AppTextStyles.h3),
+          content: Text(
+            'Bạn có chắc muốn xóa bài đăng này không?',
+            style: AppTextStyles.body,
+          ),
           actions: [
             TextButton(
               onPressed: () => Navigator.pop(context, false),
@@ -301,9 +84,9 @@ class MyPostsScreen extends StatelessWidget {
             ),
             TextButton(
               onPressed: () => Navigator.pop(context, true),
-              child: const Text(
+              child: Text(
                 'Xóa',
-                style: TextStyle(color: Colors.red),
+                style: AppTextStyles.label.copyWith(color: AppColors.danger),
               ),
             ),
           ],
@@ -329,6 +112,21 @@ class MyPostsScreen extends StatelessWidget {
     }
   }
 
+  static String _formatMoney(int value) {
+    final text = value.toString();
+    final buffer = StringBuffer();
+    var count = 0;
+    for (var i = text.length - 1; i >= 0; i--) {
+      buffer.write(text[i]);
+      count++;
+      if (count == 3 && i != 0) {
+        buffer.write('.');
+        count = 0;
+      }
+    }
+    return '${buffer.toString().split('').reversed.join()}đ';
+  }
+
   @override
   Widget build(BuildContext context) {
     final authVm = context.read<AuthViewModel>();
@@ -337,73 +135,68 @@ class MyPostsScreen extends StatelessWidget {
     final user = authVm.user;
 
     if (user == null) {
-      return const Scaffold(
+      return Scaffold(
         body: Center(
-          child: Text(
-            'Chưa đăng nhập',
-            style: TextStyle(fontSize: 16),
-          ),
+          child: Text('Chưa đăng nhập', style: AppTextStyles.body),
         ),
       );
     }
 
     return Scaffold(
-      appBar: AppBar(
-        title: const Text('Bài đăng của tôi'),
-        centerTitle: true,
-      ),
+      backgroundColor: AppColors.background,
+      appBar: AppBar(title: const Text('Bài đăng của tôi')),
       body: StreamBuilder<List<PostModel>>(
         stream: postVm.getPostsByUser(user.uid),
         builder: (context, snapshot) {
           if (snapshot.connectionState == ConnectionState.waiting) {
-            return const Center(child: CircularProgressIndicator());
+            return const AppLoadingState(message: 'Đang tải bài đăng...');
           }
 
           if (snapshot.hasError) {
-            return Center(
-              child: Text('Có lỗi xảy ra: ${snapshot.error}'),
+            return AppErrorState(
+              title: 'Không tải được bài đăng',
+              message: '${snapshot.error}',
             );
           }
 
           if (!snapshot.hasData || snapshot.data!.isEmpty) {
-            return const Center(
-              child: Text(
-                'Bạn chưa có bài đăng nào',
-                style: TextStyle(fontSize: 16),
-              ),
+            return const AppEmptyState(
+              title: 'Chưa có bài đăng',
+              message: 'Các bài đăng của bạn sẽ hiển thị ở đây.',
+              icon: Icons.article_outlined,
             );
           }
 
           final posts = snapshot.data!;
 
-          return ListView.builder(
-            padding: const EdgeInsets.all(16),
+          return ListView.separated(
+            padding: const EdgeInsets.all(20),
             itemCount: posts.length,
+            separatorBuilder: (_, index) => const SizedBox(height: 12),
             itemBuilder: (context, index) {
               final post = posts[index];
 
               return Container(
-                margin: const EdgeInsets.only(bottom: 12),
                 decoration: BoxDecoration(
-                  color: Colors.white,
-                  borderRadius: BorderRadius.circular(16),
-                  boxShadow: [
+                  color: AppColors.surface,
+                  borderRadius: BorderRadius.circular(20),
+                  border: Border.all(color: AppColors.border),
+                  boxShadow: const [
                     BoxShadow(
-                      color: Colors.black.withValues(alpha: 0.05),
-                      blurRadius: 10,
-                      offset: const Offset(0, 4),
+                      color: Color(0x08000000),
+                      blurRadius: 12,
+                      offset: Offset(0, 2),
                     ),
                   ],
                 ),
                 child: Material(
                   color: Colors.transparent,
                   child: InkWell(
-                    borderRadius: BorderRadius.circular(16),
+                    borderRadius: BorderRadius.circular(20),
                     onTap: () {
                       Navigator.push(
                         context,
                         MaterialPageRoute(
-                          // builder: (_) => PostDetailScreen(post: post),
                           builder: (_) => PostDetailScreen(
                             post: post,
                             currentUserId: user.uid,
@@ -412,26 +205,29 @@ class MyPostsScreen extends StatelessWidget {
                       );
                     },
                     child: Padding(
-                      padding: const EdgeInsets.all(12),
+                      padding: const EdgeInsets.all(14),
                       child: Row(
                         crossAxisAlignment: CrossAxisAlignment.center,
                         children: [
                           ClipRRect(
-                            borderRadius: BorderRadius.circular(10),
+                            borderRadius: BorderRadius.circular(12),
                             child: Image.network(
                               post.imageUrl,
-                              width: 60,
-                              height: 60,
+                              width: 64,
+                              height: 64,
                               fit: BoxFit.cover,
-                              errorBuilder: (_, _, _) => Container(
-                                width: 60,
-                                height: 60,
-                                color: Colors.grey.shade200,
-                                child: const Icon(Icons.image_not_supported),
+                              errorBuilder: (context, error, _) => Container(
+                                width: 64,
+                                height: 64,
+                                color: AppColors.inputFill,
+                                child: const Icon(
+                                  Icons.image_not_supported_outlined,
+                                  color: AppColors.textHint,
+                                ),
                               ),
                             ),
                           ),
-                          const SizedBox(width: 12),
+                          const SizedBox(width: 14),
                           Expanded(
                             child: Column(
                               mainAxisSize: MainAxisSize.min,
@@ -441,19 +237,15 @@ class MyPostsScreen extends StatelessWidget {
                                   post.title,
                                   maxLines: 1,
                                   overflow: TextOverflow.ellipsis,
-                                  style: const TextStyle(
-                                    fontWeight: FontWeight.bold,
-                                    fontSize: 16,
-                                  ),
+                                  style: AppTextStyles.labelLg,
                                 ),
                                 const SizedBox(height: 4),
                                 Text(
                                   post.location,
                                   maxLines: 1,
                                   overflow: TextOverflow.ellipsis,
-                                  style: TextStyle(
-                                    color: Colors.grey.shade700,
-                                    fontSize: 14,
+                                  style: AppTextStyles.caption.copyWith(
+                                    color: AppColors.textSecondary,
                                   ),
                                 ),
                               ],
@@ -465,22 +257,23 @@ class MyPostsScreen extends StatelessWidget {
                             crossAxisAlignment: CrossAxisAlignment.end,
                             children: [
                               Text(
-                                '${post.price}đ',
+                                _formatMoney(post.price),
                                 maxLines: 1,
-                                overflow: TextOverflow.ellipsis,
-                                style: const TextStyle(
-                                  color: Colors.red,
-                                  fontWeight: FontWeight.bold,
-                                  fontSize: 14,
+                                style: AppTextStyles.label.copyWith(
+                                  color: AppColors.primary,
                                 ),
                               ),
                               const SizedBox(height: 6),
                               InkWell(
                                 onTap: () => _showPostActions(context, post),
                                 borderRadius: BorderRadius.circular(20),
-                                child: const Padding(
-                                  padding: EdgeInsets.all(4),
-                                  child: Icon(Icons.more_vert, size: 20),
+                                child: Padding(
+                                  padding: const EdgeInsets.all(4),
+                                  child: Icon(
+                                    Icons.more_vert,
+                                    size: 20,
+                                    color: AppColors.textSecondary,
+                                  ),
                                 ),
                               ),
                             ],

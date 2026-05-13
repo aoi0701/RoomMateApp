@@ -162,21 +162,19 @@ class RoommateProfileRepository {
 
   Future<void> sendInvite({
     required String targetUserId,
+    required String targetName,
+    required String targetAvatar,
     String message = '',
   }) async {
     final currentUser = _auth.currentUser;
-    if (currentUser == null) {
-      throw Exception('Người dùng chưa đăng nhập');
-    }
-
-    if (currentUser.uid == targetUserId) {
-      throw Exception('Bạn không thể mời chính mình');
-    }
+    if (currentUser == null) throw Exception('Người dùng chưa đăng nhập');
+    if (currentUser.uid == targetUserId) throw Exception('Bạn không thể mời chính mình');
 
     final duplicate = await _firestore
-        .collection('roommate_profile_invites')
-        .where('senderId', isEqualTo: currentUser.uid)
-        .where('targetUserId', isEqualTo: targetUserId)
+        .collection('roommate_requests')
+        .where('requesterId', isEqualTo: currentUser.uid)
+        .where('postOwnerId', isEqualTo: targetUserId)
+        .where('inviteType', isEqualTo: 'profile_invite')
         .where('status', isEqualTo: 'pending')
         .limit(1)
         .get();
@@ -187,19 +185,22 @@ class RoommateProfileRepository {
 
     final senderDoc =
         await _firestore.collection('users').doc(currentUser.uid).get();
-    final sender = senderDoc.exists
-        ? UserModel.fromDocument(senderDoc)
-        : null;
+    final sender = senderDoc.exists ? UserModel.fromDocument(senderDoc) : null;
 
-    await _firestore.collection('roommate_profile_invites').add({
-      'senderId': currentUser.uid,
-      'senderName': sender?.fullName ?? currentUser.displayName ?? '',
-      'senderAvatar': sender?.avatarUrl ?? currentUser.photoURL ?? '',
-      'targetUserId': targetUserId,
+    await _firestore.collection('roommate_requests').add({
+      'postId': '',
+      'postOwnerId': targetUserId,
+      'requesterId': currentUser.uid,
+      'requesterName': sender?.fullName ?? currentUser.displayName ?? '',
+      'requesterAvatar': sender?.avatarUrl ?? currentUser.photoURL ?? '',
       'message': message.trim(),
       'status': 'pending',
+      'inviteType': 'profile_invite',
+      'targetName': targetName,
+      'targetAvatar': targetAvatar,
       'createdAt': FieldValue.serverTimestamp(),
       'updatedAt': FieldValue.serverTimestamp(),
+      'respondedAt': null,
     });
   }
 }

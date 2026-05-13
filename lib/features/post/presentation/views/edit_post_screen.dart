@@ -5,6 +5,9 @@ import 'package:flutter/material.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:provider/provider.dart';
 
+import '../../../../core/theme/app_colors.dart';
+import '../../../../core/theme/app_text_styles.dart';
+import '../../../../core/widgets/app_button.dart';
 import '../../../auth/presentation/viewmodels/auth_viewmodel.dart';
 import '../../../home/data/constants/room_filter_data.dart';
 import '../../../profile/data/models/user_model.dart';
@@ -27,10 +30,6 @@ class EditPostScreen extends StatefulWidget {
 }
 
 class _EditPostScreenState extends State<EditPostScreen> {
-  static const Color primaryBlue = Color(0xFF3B6EF5);
-  static const Color bgColor = Color(0xFFF6F8FC);
-  static const Color textPrimary = Color(0xFF111827);
-  static const Color textSecondary = Color(0xFF6B7280);
 
   final List<File> _selectedImages = [];
   late List<String> _existingImageUrls;
@@ -179,7 +178,7 @@ class _EditPostScreenState extends State<EditPostScreen> {
       ),
       focusedBorder: OutlineInputBorder(
         borderRadius: BorderRadius.circular(16),
-        borderSide: const BorderSide(color: primaryBlue),
+        borderSide: const BorderSide(color: AppColors.primary),
       ),
       contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 16),
     );
@@ -206,14 +205,7 @@ class _EditPostScreenState extends State<EditPostScreen> {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          Text(
-            title,
-            style: const TextStyle(
-              fontSize: 24,
-              fontWeight: FontWeight.w800,
-              color: textPrimary,
-            ),
-          ),
+          Text(title, style: AppTextStyles.h2),
           const SizedBox(height: 16),
           child,
         ],
@@ -295,7 +287,7 @@ class _EditPostScreenState extends State<EditPostScreen> {
     if (uid == null) {
       return const Text(
         'Chưa có thông tin hồ sơ để hiển thị thói quen sinh hoạt.',
-        style: TextStyle(color: textSecondary),
+        style: TextStyle(color: AppColors.textSecondary),
       );
     }
 
@@ -311,7 +303,7 @@ class _EditPostScreenState extends State<EditPostScreen> {
         if (!snapshot.hasData || !snapshot.data!.exists) {
           return const Text(
             'Chưa có dữ liệu hồ sơ.',
-            style: TextStyle(color: textSecondary),
+            style: TextStyle(color: AppColors.textSecondary),
           );
         }
 
@@ -324,7 +316,7 @@ class _EditPostScreenState extends State<EditPostScreen> {
         if (selectedHabits.isEmpty) {
           return const Text(
             'Bạn chưa cập nhật thói quen trong hồ sơ.',
-            style: TextStyle(color: textSecondary),
+            style: TextStyle(color: AppColors.textSecondary),
           );
         }
 
@@ -367,12 +359,12 @@ class _EditPostScreenState extends State<EditPostScreen> {
                     child: const Column(
                       mainAxisAlignment: MainAxisAlignment.center,
                       children: [
-                        Icon(Icons.add, size: 38, color: textSecondary),
+                        Icon(Icons.add, size: 38, color: AppColors.textSecondary),
                         SizedBox(height: 8),
                         Text(
                           'Thêm ảnh',
                           style: TextStyle(
-                            color: textSecondary,
+                            color: AppColors.textSecondary,
                             fontWeight: FontWeight.w600,
                           ),
                         ),
@@ -432,7 +424,7 @@ class _EditPostScreenState extends State<EditPostScreen> {
                     color: const Color(0xFFF7F8FB),
                     child: const Icon(
                       Icons.image_not_supported_outlined,
-                      color: textSecondary,
+                      color: AppColors.textSecondary,
                     ),
                   ),
                 ),
@@ -448,7 +440,7 @@ class _EditPostScreenState extends State<EditPostScreen> {
                 displayLocalImages
                     ? 'Đang dùng ${_selectedImages.length}/5 ảnh mới'
                     : 'Đang hiện ${_existingImageUrls.length}/5 anh',
-                style: const TextStyle(fontSize: 13, color: textSecondary),
+                style: const TextStyle(fontSize: 13, color: AppColors.textSecondary),
               ),
             ),
             TextButton(
@@ -470,12 +462,12 @@ class _EditPostScreenState extends State<EditPostScreen> {
         RoomFilterData.districtsByProvince[_selectedProvince] ?? const <String>[];
 
     return Scaffold(
-      backgroundColor: bgColor,
+      backgroundColor: AppColors.background,
       appBar: AppBar(
         title: const Text('Chỉnh sửa bài đăng'),
         centerTitle: true,
-        backgroundColor: bgColor,
-        surfaceTintColor: bgColor,
+        backgroundColor: AppColors.background,
+        surfaceTintColor: AppColors.background,
       ),
       body: SafeArea(
         child: SingleChildScrollView(
@@ -657,53 +649,17 @@ class _EditPostScreenState extends State<EditPostScreen> {
               Row(
                 children: [
                   Expanded(
-                    child: OutlinedButton(
-                      onPressed:
-                          vm.isLoading ? null : () => Navigator.pop(context),
-                      style: OutlinedButton.styleFrom(
-                        side: const BorderSide(color: Color(0xFFD5DBE7)),
-                        padding: const EdgeInsets.symmetric(vertical: 16),
-                        shape: RoundedRectangleBorder(
-                          borderRadius: BorderRadius.circular(18),
-                        ),
-                      ),
-                      child: const Text(
-                        'Hủy',
-                        style: TextStyle(
-                          color: textPrimary,
-                          fontWeight: FontWeight.w700,
-                        ),
-                      ),
+                    child: AppSecondaryButton(
+                      label: 'Hủy',
+                      onTap: vm.isLoading ? null : () => Navigator.pop(context),
                     ),
                   ),
                   const SizedBox(width: 14),
                   Expanded(
-                    child: ElevatedButton(
-                      onPressed: vm.isLoading ? null : _handleUpdatePost,
-                      style: ElevatedButton.styleFrom(
-                        backgroundColor: primaryBlue,
-                        foregroundColor: Colors.white,
-                        padding: const EdgeInsets.symmetric(vertical: 16),
-                        shape: RoundedRectangleBorder(
-                          borderRadius: BorderRadius.circular(18),
-                        ),
-                      ),
-                      child: vm.isLoading
-                          ? const SizedBox(
-                              width: 22,
-                              height: 22,
-                              child: CircularProgressIndicator(
-                                strokeWidth: 2,
-                                color: Colors.white,
-                              ),
-                            )
-                          : const Text(
-                              'Lưu thay đổi',
-                              style: TextStyle(
-                                fontSize: 16,
-                                fontWeight: FontWeight.w700,
-                              ),
-                            ),
+                    child: AppPrimaryButton(
+                      label: 'Lưu thay đổi',
+                      isLoading: vm.isLoading,
+                      onTap: vm.isLoading ? null : _handleUpdatePost,
                     ),
                   ),
                 ],

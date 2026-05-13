@@ -2,7 +2,9 @@ import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 
 import '../../../../core/theme/app_colors.dart';
+import '../../../../core/theme/app_text_styles.dart';
 import '../../../../core/widgets/app_state_widgets.dart';
+import '../../../../core/widgets/status_badge.dart';
 import '../../../auth/presentation/viewmodels/auth_viewmodel.dart';
 import '../../../expense/presentation/views/expense_list_screen.dart';
 import '../../data/models/room_group_model.dart';
@@ -40,23 +42,14 @@ class _RoomGroupScreenState extends State<RoomGroupScreen> {
     return Scaffold(
       backgroundColor: AppColors.background,
       appBar: AppBar(
-        elevation: 0,
-        backgroundColor: Colors.white,
-        surfaceTintColor: Colors.white,
-        centerTitle: true,
-        title: const Text(
-          'Chi tiêu',
-          style: TextStyle(
-            color: AppColors.textPrimary,
-            fontWeight: FontWeight.w700,
-          ),
+        title: const Text('Chi tiêu nhóm'),
+        leading: IconButton(
+          icon: const Icon(Icons.arrow_back_ios_new_rounded, size: 18),
+          onPressed: () => Navigator.pop(context),
         ),
-        iconTheme: const IconThemeData(color: AppColors.textPrimary),
       ),
-      body: SafeArea(
-        child: Consumer<RoomGroupViewModel>(
-          builder: (context, vm, _) => _buildBody(vm),
-        ),
+      body: Consumer<RoomGroupViewModel>(
+        builder: (context, vm, _) => _buildBody(vm),
       ),
     );
   }
@@ -71,14 +64,13 @@ class _RoomGroupScreenState extends State<RoomGroupScreen> {
       return AppErrorState(
         title: 'Không tải được dữ liệu',
         message: vm.errorMessage!,
-        onRetry:
-            userId != null ? () => vm.loadUserRoomGroups(userId) : null,
+        onRetry: userId != null ? () => vm.loadUserRoomGroups(userId) : null,
       );
     }
 
     if (vm.roomGroups.isEmpty) {
       return const AppEmptyState(
-        title: 'Chưa có nhóm phòng nào',
+        title: 'Chưa có nhóm phòng',
         message:
             'Khi bạn chấp nhận hoặc được chấp nhận yêu cầu ở ghép, nhóm phòng sẽ xuất hiện ở đây.',
         icon: Icons.group_outlined,
@@ -88,7 +80,7 @@ class _RoomGroupScreenState extends State<RoomGroupScreen> {
     return ListView.separated(
       padding: const EdgeInsets.all(20),
       itemCount: vm.roomGroups.length,
-      separatorBuilder: (_, __) => const SizedBox(height: 14),
+      separatorBuilder: (_, index) => const SizedBox(height: 12),
       itemBuilder: (context, index) {
         final group = vm.roomGroups[index];
         return _RoomGroupCard(
@@ -109,82 +101,67 @@ class _RoomGroupCard extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final isActive = group.status == 'active';
+
     return GestureDetector(
       onTap: onTap,
       child: Container(
-        padding: const EdgeInsets.all(18),
+        padding: const EdgeInsets.all(16),
         decoration: BoxDecoration(
-          color: Colors.white,
+          color: AppColors.surface,
           borderRadius: BorderRadius.circular(20),
+          border: Border.all(color: AppColors.border),
           boxShadow: const [
             BoxShadow(
-              color: Color(0x12000000),
-              blurRadius: 16,
-              offset: Offset(0, 6),
+              color: Color(0x08000000),
+              blurRadius: 12,
+              offset: Offset(0, 2),
             ),
           ],
         ),
         child: Row(
           children: [
             Container(
-              width: 52,
-              height: 52,
-              decoration: const BoxDecoration(
-                color: Color(0xFFEAF2FF),
-                shape: BoxShape.circle,
+              width: 48,
+              height: 48,
+              decoration: BoxDecoration(
+                gradient: const LinearGradient(
+                  colors: [AppColors.primary, AppColors.primaryDark],
+                  begin: Alignment.topLeft,
+                  end: Alignment.bottomRight,
+                ),
+                borderRadius: BorderRadius.circular(14),
               ),
               child: const Icon(
-                Icons.group_outlined,
-                color: AppColors.primary,
-                size: 26,
+                Icons.group_rounded,
+                color: Colors.white,
+                size: 24,
               ),
             ),
-            const SizedBox(width: 16),
+            const SizedBox(width: 14),
             Expanded(
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  Text(
-                    group.name,
-                    style: const TextStyle(
-                      fontSize: 17,
-                      fontWeight: FontWeight.w700,
-                      color: AppColors.textPrimary,
-                    ),
-                  ),
-                  const SizedBox(height: 4),
+                  Text(group.name, style: AppTextStyles.labelLg),
+                  const SizedBox(height: 3),
                   Text(
                     '${group.memberIds.length} thành viên',
-                    style: const TextStyle(
-                      fontSize: 13,
-                      color: AppColors.textSecondary,
-                    ),
+                    style: AppTextStyles.caption,
                   ),
                 ],
               ),
             ),
-            Container(
-              padding:
-                  const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
-              decoration: BoxDecoration(
-                color: isActive
-                    ? const Color(0xFFDCFCE7)
-                    : const Color(0xFFF3F4F6),
-                borderRadius: BorderRadius.circular(999),
-              ),
-              child: Text(
-                isActive ? 'Hoạt động' : group.status,
-                style: TextStyle(
-                  fontSize: 12,
-                  fontWeight: FontWeight.w600,
-                  color: isActive
-                      ? const Color(0xFF16A34A)
-                      : AppColors.textSecondary,
-                ),
-              ),
+            StatusBadge(
+              label: isActive ? 'Hoạt động' : group.status,
+              type: isActive ? BadgeType.success : BadgeType.neutral,
+              icon: isActive ? Icons.circle : null,
             ),
             const SizedBox(width: 8),
-            const Icon(Icons.chevron_right, color: AppColors.textSecondary),
+            const Icon(
+              Icons.chevron_right_rounded,
+              color: AppColors.textSecondary,
+              size: 20,
+            ),
           ],
         ),
       ),

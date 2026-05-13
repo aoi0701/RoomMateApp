@@ -1,6 +1,10 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 
+import '../../../../core/theme/app_colors.dart';
+import '../../../../core/theme/app_text_styles.dart';
+import '../../../../core/widgets/app_avatar.dart';
+import '../../../../core/widgets/app_button.dart';
 import '../../../../core/widgets/app_state_widgets.dart';
 import '../../data/models/roommate_request_model.dart';
 import '../viewmodels/roommate_request_viewmodel.dart';
@@ -13,15 +17,6 @@ class ReceivedRequestsScreen extends StatefulWidget {
 }
 
 class _ReceivedRequestsScreenState extends State<ReceivedRequestsScreen> {
-  static const Color primaryBlue = Color(0xFF3B6EF5);
-  static const Color bgColor = Color(0xFFF5F7FB);
-  static const Color textPrimary = Color(0xFF111827);
-  static const Color textSecondary = Color(0xFF6B7280);
-  static const Color lightBlue = Color(0xFFEAF2FF);
-  static const Color successGreen = Color(0xFF16A34A);
-  static const Color errorRed = Color(0xFFDC2626);
-  static const Color warningOrange = Color(0xFFF59E0B);
-
   @override
   void initState() {
     super.initState();
@@ -72,11 +67,11 @@ class _ReceivedRequestsScreenState extends State<ReceivedRequestsScreen> {
   Color _statusColor(RoommateRequestStatus status) {
     switch (status) {
       case RoommateRequestStatus.accepted:
-        return successGreen;
+        return AppColors.success;
       case RoommateRequestStatus.rejected:
-        return errorRed;
+        return AppColors.danger;
       case RoommateRequestStatus.pending:
-        return warningOrange;
+        return AppColors.warning;
     }
   }
 
@@ -98,26 +93,17 @@ class _ReceivedRequestsScreenState extends State<ReceivedRequestsScreen> {
         final requests = viewModel.receivedRequests;
 
         return Scaffold(
-          backgroundColor: bgColor,
+          backgroundColor: AppColors.background,
           appBar: AppBar(
-            elevation: 0,
-            backgroundColor: Colors.white,
-            surfaceTintColor: Colors.white,
-            centerTitle: true,
-            title: const Text(
-              'Yêu cầu đã nhận',
-              style: TextStyle(
-                color: textPrimary,
-                fontWeight: FontWeight.w700,
-              ),
+            title: const Text('Yêu cầu đã nhận'),
+            leading: IconButton(
+              icon: const Icon(Icons.arrow_back_ios_new_rounded, size: 18),
+              onPressed: () => Navigator.pop(context),
             ),
-            iconTheme: const IconThemeData(color: textPrimary),
           ),
           body: SafeArea(
             child: viewModel.isReceivedRequestsLoading
-                ? const AppLoadingState(
-                    message: 'Đang tải danh sách yêu cầu...',
-                  )
+                ? const AppLoadingState(message: 'Đang tải danh sách yêu cầu...')
                 : viewModel.errorMessage != null
                     ? AppErrorState(
                         title: 'Không tải được yêu cầu',
@@ -132,159 +118,188 @@ class _ReceivedRequestsScreenState extends State<ReceivedRequestsScreen> {
                             icon: Icons.inbox_outlined,
                           )
                         : ListView.separated(
-                    padding: const EdgeInsets.all(20),
-                    itemCount: requests.length,
-                    separatorBuilder: (context, index) =>
-                        const SizedBox(height: 14),
-                    itemBuilder: (context, index) {
-                      final request = requests[index];
-                      final statusColor = _statusColor(request.status);
-                      final statusText = _statusText(request.status);
+                            padding: const EdgeInsets.all(20),
+                            itemCount: requests.length,
+                            separatorBuilder: (context, index) =>
+                                const SizedBox(height: 14),
+                            itemBuilder: (context, index) {
+                              final request = requests[index];
+                              final statusColor = _statusColor(request.status);
+                              final statusText = _statusText(request.status);
 
-                      return Container(
-                        padding: const EdgeInsets.all(18),
-                        decoration: BoxDecoration(
-                          color: Colors.white,
-                          borderRadius: BorderRadius.circular(24),
-                          boxShadow: const [
-                            BoxShadow(
-                              color: Color(0x12000000),
-                              blurRadius: 16,
-                              offset: Offset(0, 6),
-                            ),
-                          ],
-                        ),
-                        child: Column(
-                          crossAxisAlignment: CrossAxisAlignment.start,
-                          children: [
-                            Row(
-                              children: [
-                                CircleAvatar(
-                                  radius: 24,
-                                  backgroundColor: lightBlue,
-                                  backgroundImage: request.requesterAvatar.isNotEmpty
-                                      ? NetworkImage(request.requesterAvatar)
-                                      : null,
-                                  child: request.requesterAvatar.isEmpty
-                                      ? const Icon(
-                                          Icons.person,
-                                          color: primaryBlue,
-                                        )
-                                      : null,
+                              return Container(
+                                padding: const EdgeInsets.all(18),
+                                decoration: BoxDecoration(
+                                  color: AppColors.surface,
+                                  borderRadius: BorderRadius.circular(24),
+                                  border: Border.all(color: AppColors.border),
+                                  boxShadow: const [
+                                    BoxShadow(
+                                      color: Color(0x08000000),
+                                      blurRadius: 12,
+                                      offset: Offset(0, 2),
+                                    ),
+                                  ],
                                 ),
-                                const SizedBox(width: 12),
-                                Expanded(
-                                  child: Column(
-                                    crossAxisAlignment: CrossAxisAlignment.start,
-                                    children: [
-                                      Text(
-                                        request.requesterName.isNotEmpty
-                                            ? request.requesterName
-                                            : 'Người dùng',
-                                        style: const TextStyle(
-                                          fontSize: 17,
-                                          fontWeight: FontWeight.w700,
-                                          color: textPrimary,
-                                        ),
-                                      ),
-                                      const SizedBox(height: 6),
-                                      Container(
-                                        padding: const EdgeInsets.symmetric(
-                                          horizontal: 12,
-                                          vertical: 6,
-                                        ),
-                                        decoration: BoxDecoration(
-                                          color: statusColor.withValues(alpha: 0.12),
-                                          borderRadius: BorderRadius.circular(999),
-                                        ),
-                                        child: Text(
-                                          statusText,
-                                          style: TextStyle(
-                                            color: statusColor,
-                                            fontWeight: FontWeight.w700,
-                                            fontSize: 13,
+                                child: Column(
+                                  crossAxisAlignment: CrossAxisAlignment.start,
+                                  children: [
+                                    if (request.inviteType ==
+                                        RoommateInviteType.profileInvite)
+                                      Padding(
+                                        padding:
+                                            const EdgeInsets.only(bottom: 12),
+                                        child: Container(
+                                          padding: const EdgeInsets.symmetric(
+                                              horizontal: 10, vertical: 5),
+                                          decoration: BoxDecoration(
+                                            color: AppColors.primarySurface,
+                                            borderRadius:
+                                                BorderRadius.circular(999),
+                                          ),
+                                          child: Row(
+                                            mainAxisSize: MainAxisSize.min,
+                                            children: [
+                                              const Icon(
+                                                Icons.person_add_alt_1_outlined,
+                                                size: 13,
+                                                color: AppColors.primary,
+                                              ),
+                                              const SizedBox(width: 5),
+                                              Text(
+                                                'Lời mời kết bạn',
+                                                style: AppTextStyles.labelSm
+                                                    .copyWith(
+                                                        color:
+                                                            AppColors.primary),
+                                              ),
+                                            ],
                                           ),
                                         ),
                                       ),
+                                    Row(
+                                      children: [
+                                        AppAvatar(
+                                          name: request.requesterName.isNotEmpty
+                                              ? request.requesterName
+                                              : 'Người dùng',
+                                          avatarUrl: request.requesterAvatar.isNotEmpty
+                                              ? request.requesterAvatar
+                                              : null,
+                                          size: 48,
+                                        ),
+                                        const SizedBox(width: 12),
+                                        Expanded(
+                                          child: Column(
+                                            crossAxisAlignment:
+                                                CrossAxisAlignment.start,
+                                            children: [
+                                              Text(
+                                                request.requesterName.isNotEmpty
+                                                    ? request.requesterName
+                                                    : 'Người dùng',
+                                                style: AppTextStyles.labelLg,
+                                              ),
+                                              const SizedBox(height: 6),
+                                              Container(
+                                                padding:
+                                                    const EdgeInsets.symmetric(
+                                                  horizontal: 10,
+                                                  vertical: 5,
+                                                ),
+                                                decoration: BoxDecoration(
+                                                  color: statusColor.withValues(
+                                                    alpha: 0.12,
+                                                  ),
+                                                  borderRadius:
+                                                      BorderRadius.circular(999),
+                                                ),
+                                                child: Text(
+                                                  statusText,
+                                                  style: AppTextStyles.labelSm
+                                                      .copyWith(
+                                                    color: statusColor,
+                                                  ),
+                                                ),
+                                              ),
+                                            ],
+                                          ),
+                                        ),
+                                      ],
+                                    ),
+                                    const SizedBox(height: 16),
+                                    Container(
+                                      width: double.infinity,
+                                      padding: const EdgeInsets.all(14),
+                                      decoration: BoxDecoration(
+                                        color: AppColors.inputFill,
+                                        borderRadius: BorderRadius.circular(16),
+                                        border:
+                                            Border.all(color: AppColors.inputBorder),
+                                      ),
+                                      child: Text(
+                                        request.message.isNotEmpty
+                                            ? request.message
+                                            : 'Không có lời nhắn',
+                                        style: AppTextStyles.body.copyWith(
+                                          color: AppColors.textSecondary,
+                                          height: 1.6,
+                                        ),
+                                      ),
+                                    ),
+                                    if (request.status ==
+                                        RoommateRequestStatus.pending) ...[
+                                      const SizedBox(height: 16),
+                                      Row(
+                                        children: [
+                                          Expanded(
+                                            child: OutlinedButton(
+                                              onPressed: viewModel.isLoading
+                                                  ? null
+                                                  : () =>
+                                                      _rejectRequest(request.id),
+                                              style: OutlinedButton.styleFrom(
+                                                foregroundColor: AppColors.danger,
+                                                side: const BorderSide(
+                                                  color: AppColors.danger,
+                                                ),
+                                                shape: RoundedRectangleBorder(
+                                                  borderRadius:
+                                                      BorderRadius.circular(14),
+                                                ),
+                                                padding: const EdgeInsets.symmetric(
+                                                  vertical: 14,
+                                                ),
+                                              ),
+                                              child: Text(
+                                                'Từ chối',
+                                                style: AppTextStyles.buttonSm
+                                                    .copyWith(
+                                                  color: AppColors.danger,
+                                                ),
+                                              ),
+                                            ),
+                                          ),
+                                          const SizedBox(width: 12),
+                                          Expanded(
+                                            child: AppPrimaryButton(
+                                              label: 'Chấp nhận',
+                                              isLoading: viewModel.isLoading,
+                                              onTap: viewModel.isLoading
+                                                  ? null
+                                                  : () =>
+                                                      _acceptRequest(request.id),
+                                              height: 48,
+                                            ),
+                                          ),
+                                        ],
+                                      ),
                                     ],
-                                  ),
+                                  ],
                                 ),
-                              ],
-                            ),
-                            const SizedBox(height: 16),
-                            Container(
-                              width: double.infinity,
-                              padding: const EdgeInsets.all(16),
-                              decoration: BoxDecoration(
-                                color: const Color(0xFFF8FAFF),
-                                borderRadius: BorderRadius.circular(18),
-                              ),
-                              child: Text(
-                                request.message.isNotEmpty
-                                    ? request.message
-                                    : 'Không có lời nhắn',
-                                style: const TextStyle(
-                                  fontSize: 15,
-                                  height: 1.6,
-                                  color: textSecondary,
-                                ),
-                              ),
-                            ),
-                            const SizedBox(height: 16),
-                            if (request.status == RoommateRequestStatus.pending)
-                              Row(
-                                children: [
-                                  Expanded(
-                                    child: OutlinedButton(
-                                      onPressed: viewModel.isLoading
-                                          ? null
-                                          : () => _rejectRequest(request.id),
-                                      style: OutlinedButton.styleFrom(
-                                        foregroundColor: errorRed,
-                                        side: const BorderSide(color: errorRed),
-                                        shape: RoundedRectangleBorder(
-                                          borderRadius: BorderRadius.circular(16),
-                                        ),
-                                        padding: const EdgeInsets.symmetric(vertical: 14),
-                                      ),
-                                      child: const Text(
-                                        'Từ chối',
-                                        style: TextStyle(
-                                          fontWeight: FontWeight.w700,
-                                        ),
-                                      ),
-                                    ),
-                                  ),
-                                  const SizedBox(width: 12),
-                                  Expanded(
-                                    child: ElevatedButton(
-                                      onPressed: viewModel.isLoading
-                                          ? null
-                                          : () => _acceptRequest(request.id),
-                                      style: ElevatedButton.styleFrom(
-                                        backgroundColor: primaryBlue,
-                                        foregroundColor: Colors.white,
-                                        elevation: 0,
-                                        shape: RoundedRectangleBorder(
-                                          borderRadius: BorderRadius.circular(16),
-                                        ),
-                                        padding: const EdgeInsets.symmetric(vertical: 14),
-                                      ),
-                                      child: const Text(
-                                        'Chấp nhận',
-                                        style: TextStyle(
-                                          fontWeight: FontWeight.w700,
-                                        ),
-                                      ),
-                                    ),
-                                  ),
-                                ],
-                              ),
-                          ],
-                        ),
-                      );
-                    },
-                  ),
+                              );
+                            },
+                          ),
           ),
         );
       },

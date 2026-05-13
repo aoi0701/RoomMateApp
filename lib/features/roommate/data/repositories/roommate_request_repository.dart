@@ -26,24 +26,15 @@ class RoommateRequestRepository {
     required String message,
   }) async {
     final user = currentUser;
-
-    if (user == null) {
-      throw Exception('Người dùng chưa đăng nhập');
-    }
+    if (user == null) throw Exception('Người dùng chưa đăng nhập');
 
     final postDoc = await _postRef.doc(postId).get();
-
-    if (!postDoc.exists) {
-      throw Exception('Bài đăng không tồn tại');
-    }
+    if (!postDoc.exists) throw Exception('Bài đăng không tồn tại');
 
     final postData = postDoc.data()!;
     final postOwnerId = postData['ownerId'] ?? '';
 
-    if (postOwnerId.isEmpty) {
-      throw Exception('Không tìm thấy chủ bài đăng');
-    }
-
+    if (postOwnerId.isEmpty) throw Exception('Không tìm thấy chủ bài đăng');
     if (postOwnerId == user.uid) {
       throw Exception('Bạn không thể gửi yêu cầu cho bài đăng của chính mình');
     }
@@ -67,6 +58,9 @@ class RoommateRequestRepository {
       'requesterAvatar': user.photoURL ?? '',
       'message': message.trim(),
       'status': RoommateRequestStatus.pending.name,
+      'inviteType': 'post_request',
+      'targetName': '',
+      'targetAvatar': '',
       'createdAt': FieldValue.serverTimestamp(),
       'updatedAt': FieldValue.serverTimestamp(),
       'respondedAt': null,
@@ -75,10 +69,7 @@ class RoommateRequestRepository {
 
   Stream<List<RoommateRequestModel>> getReceivedRequests() {
     final user = currentUser;
-
-    if (user == null) {
-      return const Stream.empty();
-    }
+    if (user == null) return const Stream.empty();
 
     return _requestRef
         .where('postOwnerId', isEqualTo: user.uid)
@@ -93,10 +84,7 @@ class RoommateRequestRepository {
 
   Stream<List<RoommateRequestModel>> getSentRequests() {
     final user = currentUser;
-
-    if (user == null) {
-      return const Stream.empty();
-    }
+    if (user == null) return const Stream.empty();
 
     return _requestRef
         .where('requesterId', isEqualTo: user.uid)
@@ -109,24 +97,33 @@ class RoommateRequestRepository {
         );
   }
 
+  Stream<List<RoommateRequestModel>> getSentProfileInvitesStream() {
+    final user = currentUser;
+    if (user == null) return const Stream.empty();
+
+    return _requestRef
+        .where('requesterId', isEqualTo: user.uid)
+        .where('inviteType', isEqualTo: 'profile_invite')
+        .orderBy('createdAt', descending: true)
+        .snapshots()
+        .map(
+          (snapshot) => snapshot.docs
+              .map((doc) => RoommateRequestModel.fromDocument(doc))
+              .toList(),
+        );
+  }
+
   Future<RoommateRequestModel> acceptRequest(String requestId) async {
     final user = currentUser;
-
-    if (user == null) {
-      throw Exception('Chưa đăng nhập');
-    }
+    if (user == null) throw Exception('Chưa đăng nhập');
 
     final requestDoc = await _requestRef.doc(requestId).get();
-
-    if (!requestDoc.exists) {
-      throw Exception('Yêu cầu không tồn tại');
-    }
+    if (!requestDoc.exists) throw Exception('Yêu cầu không tồn tại');
 
     final data = requestDoc.data()!;
     if (data['postOwnerId'] != user.uid) {
       throw Exception('Bạn không có quyền chấp nhận yêu cầu này');
     }
-
     if (data['status'] != RoommateRequestStatus.pending.name) {
       throw Exception('Yêu cầu này đã được xử lý rồi');
     }
@@ -146,28 +143,24 @@ class RoommateRequestRepository {
       requesterAvatar: data['requesterAvatar'] ?? '',
       message: data['message'] ?? '',
       status: RoommateRequestStatus.accepted,
+      inviteType: data['inviteType'] == 'profile_invite'
+          ? RoommateInviteType.profileInvite
+          : RoommateInviteType.postRequest,
       createdAt: (data['createdAt'] as Timestamp?)?.toDate(),
     );
   }
 
   Future<void> rejectRequest(String requestId) async {
     final user = currentUser;
-
-    if (user == null) {
-      throw Exception('Chưa đăng nhập');
-    }
+    if (user == null) throw Exception('Chưa đăng nhập');
 
     final requestDoc = await _requestRef.doc(requestId).get();
-
-    if (!requestDoc.exists) {
-      throw Exception('Yêu cầu không tồn tại');
-    }
+    if (!requestDoc.exists) throw Exception('Yêu cầu không tồn tại');
 
     final data = requestDoc.data()!;
     if (data['postOwnerId'] != user.uid) {
       throw Exception('Bạn không có quyền từ chối yêu cầu này');
     }
-
     if (data['status'] != RoommateRequestStatus.pending.name) {
       throw Exception('Yêu cầu này đã được xử lý rồi');
     }
@@ -181,14 +174,26 @@ class RoommateRequestRepository {
 
   Future<bool> hasPendingRequest(String postId) async {
     final user = currentUser;
-
-    if (user == null) {
-      return false;
-    }
+    if (user == null) return false;
 
     final query = await _requestRef
         .where('postId', isEqualTo: postId)
         .where('requesterId', isEqualTo: user.uid)
+        .where('status', isEqualTo: RoommateRequestStatus.pending.name)
+        .limit(1)
+        .get();
+
+    return query.docs.isNotEmpty;
+  }
+
+  Future<bool> hasPendingProfileInvite(String targetUserId) async {
+    final user = currentUser;
+    if (user == null) return false;
+
+    final query = await _requestRef
+        .where('requesterId', isEqualTo: user.uid)
+        .where('postOwnerId', isEqualTo: targetUserId)
+        .where('inviteType', isEqualTo: 'profile_invite')
         .where('status', isEqualTo: RoommateRequestStatus.pending.name)
         .limit(1)
         .get();

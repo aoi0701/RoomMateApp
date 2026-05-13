@@ -1,11 +1,16 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
+import 'package:google_fonts/google_fonts.dart';
 import 'package:provider/provider.dart';
 import 'package:roommateapp/features/post/presentation/views/create_post_screen.dart';
 import 'package:roommateapp/features/post/presentation/views/my_posts_screen.dart';
 import 'package:roommateapp/features/roommate/presentation/viewmodels/roommate_request_viewmodel.dart';
 import 'package:roommateapp/features/roommate/presentation/views/received_requests_screen.dart';
 
+import '../../../../core/theme/app_colors.dart';
+import '../../../../core/theme/app_text_styles.dart';
+import '../../../../core/widgets/app_avatar.dart';
+import '../../../../core/widgets/app_button.dart';
 import '../../../auth/presentation/viewmodels/auth_viewmodel.dart';
 import '../../../auth/presentation/views/login_screen.dart';
 import '../../../home/presentation/viewmodels/roommate_profile_viewmodel.dart';
@@ -31,12 +36,8 @@ class UserProfileScreen extends StatefulWidget {
 }
 
 class _UserProfileScreenState extends State<UserProfileScreen> {
-  static const Color primaryColor = Color(0xFF2F6BFF);
-  static const Color backgroundColor = Color(0xFFF5F6FA);
-  static const Color textPrimary = Color(0xFF111827);
-  static const Color textSecondary = Color(0xFF6B7280);
-  static const Color lightBlue = Color(0xFFEAF1FF);
-  static const Color cardShadow = Color(0x14000000);
+  String _viewedUserName = '';
+  String _viewedUserAvatar = '';
 
   bool _isCurrentUserProfile(String currentUserId) {
     return widget.userId == null || widget.userId == currentUserId;
@@ -65,28 +66,47 @@ class _UserProfileScreenState extends State<UserProfileScreen> {
     final isCurrentUserProfile = _isCurrentUserProfile(currentUser.uid);
 
     return Scaffold(
-      backgroundColor: backgroundColor,
+      backgroundColor: AppColors.background,
       body: SafeArea(
         child: StreamBuilder<DocumentSnapshot<Map<String, dynamic>>>(
           stream: profileVm.getUserProfileStream(viewedUserId),
           builder: (context, snapshot) {
             if (snapshot.connectionState == ConnectionState.waiting) {
-              return const Center(child: CircularProgressIndicator());
+              return const Center(
+                child: CircularProgressIndicator(color: AppColors.primary),
+              );
             }
 
             if (snapshot.hasError) {
               return Center(
-                child: Text('Không thể tải hồ sơ: ${snapshot.error}'),
+                child: Text(
+                  'Không thể tải hồ sơ: ${snapshot.error}',
+                  style: AppTextStyles.body,
+                ),
               );
             }
 
             if (!snapshot.hasData || !snapshot.data!.exists) {
-              return const Center(
-                child: Text('Không tìm thấy thông tin người dùng'),
+              return Center(
+                child: Text(
+                  'Không tìm thấy thông tin người dùng',
+                  style: AppTextStyles.body,
+                ),
               );
             }
 
             final user = UserModel.fromDocument(snapshot.data!);
+            if (_viewedUserName != user.fullName ||
+                _viewedUserAvatar != user.avatarUrl) {
+              WidgetsBinding.instance.addPostFrameCallback((_) {
+                if (mounted) {
+                  setState(() {
+                    _viewedUserName = user.fullName;
+                    _viewedUserAvatar = user.avatarUrl;
+                  });
+                }
+              });
+            }
             final fullName = user.fullName.trim().isNotEmpty
                 ? user.fullName.trim()
                 : 'Chưa cập nhật';
@@ -118,7 +138,9 @@ class _UserProfileScreenState extends State<UserProfileScreen> {
               stream: profileVm.hasUserPostsStream(viewedUserId),
               builder: (context, postSnapshot) {
                 if (postSnapshot.connectionState == ConnectionState.waiting) {
-                  return const Center(child: CircularProgressIndicator());
+                  return const Center(
+                    child: CircularProgressIndicator(color: AppColors.primary),
+                  );
                 }
 
                 final hasPosts = postSnapshot.data ?? false;
@@ -128,16 +150,14 @@ class _UserProfileScreenState extends State<UserProfileScreen> {
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
-                      _buildTopBar(
-                        isCurrentUserProfile: isCurrentUserProfile,
-                      ),
+                      _buildTopBar(isCurrentUserProfile: isCurrentUserProfile),
                       const SizedBox(height: 18),
                       _buildHeroProfile(
                         fullName: fullName,
                         subtitle: subtitle,
+                        avatarUrl: user.avatarUrl.isNotEmpty ? user.avatarUrl : null,
                       ),
-                      if (!isCurrentUserProfile &&
-                          widget.matchPercentage != null) ...[
+                      if (!isCurrentUserProfile && widget.matchPercentage != null) ...[
                         const SizedBox(height: 14),
                         _buildMatchBanner(widget.matchPercentage!),
                       ],
@@ -149,22 +169,12 @@ class _UserProfileScreenState extends State<UserProfileScreen> {
                         gender: gender,
                       ),
                       const SizedBox(height: 18),
-                      _buildLifestyleSection(
-                        user.habits,
-                        canEdit: isCurrentUserProfile,
-                      ),
+                      _buildLifestyleSection(user.habits, canEdit: isCurrentUserProfile),
                       const SizedBox(height: 18),
                       _buildRoommateCriteriaSection(user.roommateCriteria),
                       if (isCurrentUserProfile) ...[
                         const SizedBox(height: 22),
-                        const Text(
-                          'Quản lý',
-                          style: TextStyle(
-                            fontSize: 24,
-                            fontWeight: FontWeight.w800,
-                            color: textPrimary,
-                          ),
-                        ),
+                        Text('Quản lý', style: AppTextStyles.h1),
                         const SizedBox(height: 14),
                         _buildManageCard(
                           context,
@@ -193,8 +203,7 @@ class _UserProfileScreenState extends State<UserProfileScreen> {
                                 Navigator.push(
                                   context,
                                   MaterialPageRoute(
-                                    builder: (_) =>
-                                        const ReceivedRequestsScreen(),
+                                    builder: (_) => const ReceivedRequestsScreen(),
                                   ),
                                 );
                               },
@@ -210,9 +219,7 @@ class _UserProfileScreenState extends State<UserProfileScreen> {
                                 ? null
                                 : () async {
                                     await context.read<AuthViewModel>().logout();
-
                                     if (!context.mounted) return;
-
                                     final error =
                                         context.read<AuthViewModel>().errorMessage;
                                     if (error != null) {
@@ -230,8 +237,10 @@ class _UserProfileScreenState extends State<UserProfileScreen> {
                                     }
                                   },
                             style: ElevatedButton.styleFrom(
-                              backgroundColor: const Color(0xFFE74C3C),
+                              backgroundColor: AppColors.danger,
                               foregroundColor: Colors.white,
+                              disabledBackgroundColor: AppColors.danger.withValues(alpha: 0.45),
+                              disabledForegroundColor: Colors.white.withValues(alpha: 0.7),
                               elevation: 0,
                               shape: RoundedRectangleBorder(
                                 borderRadius: BorderRadius.circular(18),
@@ -246,13 +255,7 @@ class _UserProfileScreenState extends State<UserProfileScreen> {
                                       color: Colors.white,
                                     ),
                                   )
-                                : const Text(
-                                    'Đăng xuất',
-                                    style: TextStyle(
-                                      fontSize: 18,
-                                      fontWeight: FontWeight.w700,
-                                    ),
-                                  ),
+                                : Text('Đăng xuất', style: AppTextStyles.button),
                           ),
                         ),
                       ],
@@ -268,16 +271,24 @@ class _UserProfileScreenState extends State<UserProfileScreen> {
           ? BottomNavigationBar(
               currentIndex: 4,
               type: BottomNavigationBarType.fixed,
-              selectedItemColor: primaryColor,
-              unselectedItemColor: Colors.grey,
+              selectedItemColor: AppColors.primary,
+              unselectedItemColor: AppColors.textSecondary,
+              backgroundColor: AppColors.surface,
+              elevation: 0,
+              selectedLabelStyle: GoogleFonts.plusJakartaSans(
+                fontSize: 11,
+                fontWeight: FontWeight.w700,
+              ),
+              unselectedLabelStyle: GoogleFonts.plusJakartaSans(
+                fontSize: 11,
+                fontWeight: FontWeight.w500,
+              ),
               onTap: (index) {
                 if (index == 4) return;
                 if (index == 2) {
                   Navigator.push(
                     context,
-                    MaterialPageRoute(
-                      builder: (_) => const CreatePostScreen(),
-                    ),
+                    MaterialPageRoute(builder: (_) => const CreatePostScreen()),
                   );
                   return;
                 }
@@ -287,27 +298,27 @@ class _UserProfileScreenState extends State<UserProfileScreen> {
                 BottomNavigationBarItem(
                   icon: Icon(Icons.home_outlined),
                   activeIcon: Icon(Icons.home),
-                  label: 'Trang ch\u1EE7',
+                  label: 'Trang chủ',
                 ),
                 BottomNavigationBarItem(
                   icon: Icon(Icons.description_outlined),
                   activeIcon: Icon(Icons.description),
-                  label: 'Y\u00EAu c\u1EA7u',
+                  label: 'Yêu cầu',
                 ),
                 BottomNavigationBarItem(
                   icon: Icon(Icons.add_box_outlined),
                   activeIcon: Icon(Icons.add_box),
-                  label: '\u0110\u0103ng b\u00E0i',
+                  label: 'Đăng bài',
                 ),
                 BottomNavigationBarItem(
                   icon: Icon(Icons.chat_bubble_outline),
                   activeIcon: Icon(Icons.chat_bubble),
-                  label: 'Nh\u1EAFn tin',
+                  label: 'Nhắn tin',
                 ),
                 BottomNavigationBarItem(
                   icon: Icon(Icons.person_outline),
                   activeIcon: Icon(Icons.person),
-                  label: 'C\u00E1 nh\u00E2n',
+                  label: 'Cá nhân',
                 ),
               ],
             )
@@ -324,11 +335,12 @@ class _UserProfileScreenState extends State<UserProfileScreen> {
           width: 44,
           height: 44,
           decoration: BoxDecoration(
-            color: Colors.white,
+            color: AppColors.surface,
             borderRadius: BorderRadius.circular(14),
+            border: Border.all(color: AppColors.border),
             boxShadow: const [
               BoxShadow(
-                color: cardShadow,
+                color: Color(0x0A000000),
                 blurRadius: 12,
                 offset: Offset(0, 4),
               ),
@@ -338,22 +350,16 @@ class _UserProfileScreenState extends State<UserProfileScreen> {
             onPressed: () => Navigator.maybePop(context),
             icon: const Icon(
               Icons.arrow_back_ios_new_rounded,
-              color: textPrimary,
-              size: 20,
+              color: AppColors.textPrimary,
+              size: 18,
             ),
           ),
         ),
         Expanded(
           child: Text(
-            isCurrentUserProfile
-                ? 'Hồ sơ Cá nhân'
-                : 'Hồ sơ người đăng',
+            isCurrentUserProfile ? 'Hồ sơ Cá nhân' : 'Hồ sơ người đăng',
             textAlign: TextAlign.center,
-            style: const TextStyle(
-              fontSize: 20,
-              fontWeight: FontWeight.w800,
-              color: textPrimary,
-            ),
+            style: AppTextStyles.h2,
           ),
         ),
         const SizedBox(width: 44),
@@ -366,34 +372,18 @@ class _UserProfileScreenState extends State<UserProfileScreen> {
       width: double.infinity,
       padding: const EdgeInsets.symmetric(horizontal: 18, vertical: 14),
       decoration: BoxDecoration(
-        color: lightBlue,
+        color: AppColors.accent,
         borderRadius: BorderRadius.circular(18),
+        border: Border.all(color: AppColors.primary.withValues(alpha: 0.2)),
       ),
       child: Row(
         children: [
-          const Icon(
-            Icons.percent_rounded,
-            color: primaryColor,
-            size: 26,
-          ),
+          const Icon(Icons.percent_rounded, color: AppColors.primary, size: 26),
           const SizedBox(width: 10),
-          const Expanded(
-            child: Text(
-              'Tỉ lệ phù hợp',
-              style: TextStyle(
-                fontSize: 16,
-                fontWeight: FontWeight.w700,
-                color: textPrimary,
-              ),
-            ),
-          ),
+          Expanded(child: Text('Tỉ lệ phù hợp', style: AppTextStyles.labelLg)),
           Text(
             '$percentage%',
-            style: const TextStyle(
-              fontSize: 22,
-              fontWeight: FontWeight.w800,
-              color: primaryColor,
-            ),
+            style: AppTextStyles.h1.copyWith(color: AppColors.primary),
           ),
         ],
       ),
@@ -403,31 +393,18 @@ class _UserProfileScreenState extends State<UserProfileScreen> {
   Widget _buildHeroProfile({
     required String fullName,
     required String subtitle,
+    String? avatarUrl,
   }) {
     return Padding(
       padding: const EdgeInsets.symmetric(horizontal: 4),
       child: Row(
         crossAxisAlignment: CrossAxisAlignment.center,
         children: [
-          Container(
-            width: 100,
-            height: 100,
-            decoration: BoxDecoration(
-              color: Colors.white,
-              shape: BoxShape.circle,
-              boxShadow: const [
-                BoxShadow(
-                  color: cardShadow,
-                  blurRadius: 18,
-                  offset: Offset(0, 8),
-                ),
-              ],
-            ),
-            child: const Icon(
-              Icons.person,
-              size: 54,
-              color: primaryColor,
-            ),
+          AppAvatar(
+            name: fullName,
+            avatarUrl: avatarUrl,
+            size: 90,
+            showBorder: true,
           ),
           const SizedBox(width: 18),
           Expanded(
@@ -441,23 +418,19 @@ class _UserProfileScreenState extends State<UserProfileScreen> {
                         fullName,
                         maxLines: 2,
                         overflow: TextOverflow.ellipsis,
-                        style: const TextStyle(
-                          fontSize: 25,
-                          fontWeight: FontWeight.w800,
-                          color: Color(0xFF173A6A),
-                        ),
+                        style: AppTextStyles.h1.copyWith(fontSize: 22),
                       ),
                     ),
                     Container(
-                      width: 34,
-                      height: 34,
+                      width: 32,
+                      height: 32,
                       decoration: const BoxDecoration(
-                        color: primaryColor,
+                        color: AppColors.primary,
                         shape: BoxShape.circle,
                       ),
                       child: const Icon(
                         Icons.verified_rounded,
-                        size: 22,
+                        size: 20,
                         color: Colors.white,
                       ),
                     ),
@@ -469,9 +442,8 @@ class _UserProfileScreenState extends State<UserProfileScreen> {
                     subtitle,
                     maxLines: 2,
                     overflow: TextOverflow.ellipsis,
-                    style: const TextStyle(
-                      fontSize: 16,
-                      color: textSecondary,
+                    style: AppTextStyles.body.copyWith(
+                      color: AppColors.textSecondary,
                       height: 1.35,
                     ),
                   ),
@@ -490,50 +462,20 @@ class _UserProfileScreenState extends State<UserProfileScreen> {
     required String address,
     required String gender,
   }) {
-    return Container(
-      width: double.infinity,
-      padding: const EdgeInsets.all(20),
-      decoration: BoxDecoration(
-        color: Colors.white,
-        borderRadius: BorderRadius.circular(24),
-        boxShadow: const [
-          BoxShadow(
-            color: cardShadow,
-            blurRadius: 18,
-            offset: Offset(0, 8),
-          ),
-        ],
-      ),
+    return _ProfileCard(
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          const Text(
-            'Thông tin hồ sơ',
-            style: TextStyle(
-              fontSize: 24,
-              fontWeight: FontWeight.w800,
-              color: textPrimary,
-            ),
-          ),
+          Text('Thông tin hồ sơ', style: AppTextStyles.h2),
           const SizedBox(height: 18),
-          const Text(
-            'Thông tin liên hệ',
-            style: TextStyle(
-              fontSize: 17,
-              fontWeight: FontWeight.w700,
-              color: textPrimary,
-            ),
-          ),
+          Text('Thông tin liên hệ', style: AppTextStyles.labelLg),
           const SizedBox(height: 12),
           Row(
             crossAxisAlignment: CrossAxisAlignment.center,
             children: [
               Expanded(
                 flex: 7,
-                child: _ContactLine(
-                  icon: Icons.email_outlined,
-                  value: email,
-                ),
+                child: _ContactLine(icon: Icons.email_outlined, value: email),
               ),
               const SizedBox(width: 10),
               Expanded(
@@ -547,16 +489,9 @@ class _UserProfileScreenState extends State<UserProfileScreen> {
             ],
           ),
           const SizedBox(height: 18),
-          const Divider(height: 1),
+          const Divider(color: AppColors.border, height: 1),
           const SizedBox(height: 18),
-          const Text(
-            'Thông tin cơ bản',
-            style: TextStyle(
-              fontSize: 17,
-              fontWeight: FontWeight.w700,
-              color: textPrimary,
-            ),
-          ),
+          Text('Thông tin cơ bản', style: AppTextStyles.labelLg),
           const SizedBox(height: 12),
           Row(
             children: [
@@ -568,10 +503,7 @@ class _UserProfileScreenState extends State<UserProfileScreen> {
               ),
               const SizedBox(width: 12),
               Expanded(
-                child: _BasicInfoLine(
-                  icon: Icons.wc_outlined,
-                  value: gender,
-                ),
+                child: _BasicInfoLine(icon: Icons.wc_outlined, value: gender),
               ),
             ],
           ),
@@ -598,25 +530,13 @@ class _UserProfileScreenState extends State<UserProfileScreen> {
       children: [
         Row(
           children: [
-            const Expanded(
-              child: Text(
-                'Thói quen',
-                style: TextStyle(
-                  fontSize: 24,
-                  fontWeight: FontWeight.w800,
-                  color: textPrimary,
-                ),
-              ),
-            ),
+            Expanded(child: Text('Thói quen', style: AppTextStyles.h1)),
             if (canEdit)
               TextButton(
                 onPressed: _openEditHabits,
-                child: const Text(
+                child: Text(
                   'Chỉnh sửa',
-                  style: TextStyle(
-                    color: primaryColor,
-                    fontWeight: FontWeight.w700,
-                  ),
+                  style: AppTextStyles.label.copyWith(color: AppColors.primary),
                 ),
               ),
           ],
@@ -634,60 +554,22 @@ class _UserProfileScreenState extends State<UserProfileScreen> {
   }
 
   Widget _buildHabitsEmptyState({required bool canEdit}) {
-    return Container(
-      width: double.infinity,
-      padding: const EdgeInsets.all(20),
-      decoration: BoxDecoration(
-        color: Colors.white,
-        borderRadius: BorderRadius.circular(24),
-        boxShadow: const [
-          BoxShadow(
-            color: cardShadow,
-            blurRadius: 18,
-            offset: Offset(0, 8),
-          ),
-        ],
-      ),
+    return _ProfileCard(
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          const Text(
-            'Thói quen',
-            style: TextStyle(
-              fontSize: 24,
-              fontWeight: FontWeight.w800,
-              color: textPrimary,
-            ),
-          ),
+          Text('Thói quen', style: AppTextStyles.h2),
           const SizedBox(height: 10),
-          const Text(
+          Text(
             'Cập nhật thói quen để đề xuất tiêu chí bạn cùng phòng phù hợp hơn.',
-            style: TextStyle(
-              fontSize: 15,
+            style: AppTextStyles.body.copyWith(
+              color: AppColors.textSecondary,
               height: 1.45,
-              color: textSecondary,
             ),
           ),
           if (canEdit) ...[
             const SizedBox(height: 16),
-            OutlinedButton(
-              onPressed: _openEditHabits,
-              style: OutlinedButton.styleFrom(
-                side: const BorderSide(color: primaryColor),
-                shape: RoundedRectangleBorder(
-                  borderRadius: BorderRadius.circular(16),
-                ),
-                padding:
-                    const EdgeInsets.symmetric(horizontal: 18, vertical: 14),
-              ),
-              child: const Text(
-                'Thêm thói quen',
-                style: TextStyle(
-                  color: primaryColor,
-                  fontWeight: FontWeight.w700,
-                ),
-              ),
-            ),
+            AppSecondaryButton(label: 'Thêm thói quen', onTap: _openEditHabits),
           ],
         ],
       ),
@@ -695,39 +577,18 @@ class _UserProfileScreenState extends State<UserProfileScreen> {
   }
 
   Widget _buildRoommateCriteriaSection(List<String> criteria) {
-    return Container(
-      width: double.infinity,
-      padding: const EdgeInsets.all(20),
-      decoration: BoxDecoration(
-        color: Colors.white,
-        borderRadius: BorderRadius.circular(24),
-        boxShadow: const [
-          BoxShadow(
-            color: cardShadow,
-            blurRadius: 18,
-            offset: Offset(0, 8),
-          ),
-        ],
-      ),
+    return _ProfileCard(
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          const Text(
-            'Tiêu chí bạn cùng phòng',
-            style: TextStyle(
-              fontSize: 24,
-              fontWeight: FontWeight.w800,
-              color: textPrimary,
-            ),
-          ),
+          Text('Tiêu chí bạn cùng phòng', style: AppTextStyles.h2),
           const SizedBox(height: 16),
           if (criteria.isEmpty)
-            const Text(
+            Text(
               'Chưa có tiêu chí nào. Hãy thêm thói quen để hệ thống tự động đồng bộ.',
-              style: TextStyle(
-                fontSize: 15,
+              style: AppTextStyles.body.copyWith(
+                color: AppColors.textSecondary,
                 height: 1.5,
-                color: textSecondary,
               ),
             )
           else
@@ -740,26 +601,13 @@ class _UserProfileScreenState extends State<UserProfileScreen> {
                       width: 28,
                       height: 28,
                       decoration: const BoxDecoration(
-                        color: Color(0xFF8CC56D),
+                        color: AppColors.success,
                         shape: BoxShape.circle,
                       ),
-                      child: const Icon(
-                        Icons.check,
-                        size: 18,
-                        color: Colors.white,
-                      ),
+                      child: const Icon(Icons.check, size: 18, color: Colors.white),
                     ),
                     const SizedBox(width: 12),
-                    Expanded(
-                      child: Text(
-                        item,
-                        style: const TextStyle(
-                          fontSize: 16,
-                          fontWeight: FontWeight.w600,
-                          color: textPrimary,
-                        ),
-                      ),
-                    ),
+                    Expanded(child: Text(item, style: AppTextStyles.label)),
                   ],
                 ),
               ),
@@ -790,14 +638,18 @@ class _UserProfileScreenState extends State<UserProfileScreen> {
 
   Future<void> _sendInvite(String targetUserId) async {
     final vm = context.read<RoommateProfileViewModel>();
-    final success = await vm.sendInvite(targetUserId: targetUserId);
+    final messenger = ScaffoldMessenger.of(context);
+    final success = await vm.sendInvite(
+      targetUserId: targetUserId,
+      targetName: _viewedUserName,
+      targetAvatar: _viewedUserAvatar,
+    );
     if (!mounted) return;
-
-    ScaffoldMessenger.of(context).showSnackBar(
+    messenger.showSnackBar(
       SnackBar(
         content: Text(
           success
-              ? 'Đã gửi lời mời ở ghép'
+              ? 'Đã gửi lời mời đến ${_viewedUserName.isNotEmpty ? _viewedUserName : "người dùng"}'
               : (vm.errorMessage ?? 'Không thể gửi lời mời'),
         ),
       ),
@@ -810,10 +662,11 @@ class _UserProfileScreenState extends State<UserProfileScreen> {
     return Container(
       padding: const EdgeInsets.fromLTRB(18, 14, 18, 20),
       decoration: const BoxDecoration(
-        color: Colors.white,
+        color: AppColors.surface,
+        border: Border(top: BorderSide(color: AppColors.border)),
         boxShadow: [
           BoxShadow(
-            color: cardShadow,
+            color: Color(0x0A000000),
             blurRadius: 12,
             offset: Offset(0, -2),
           ),
@@ -822,59 +675,23 @@ class _UserProfileScreenState extends State<UserProfileScreen> {
       child: Row(
         children: [
           Expanded(
-            child: OutlinedButton(
-              onPressed: () {
+            child: AppSecondaryButton(
+              label: 'Nhắn tin',
+              onTap: () {
                 ScaffoldMessenger.of(context).showSnackBar(
                   const SnackBar(
                     content: Text('Tính năng nhắn tin sẽ cập nhật sau'),
                   ),
                 );
               },
-              style: OutlinedButton.styleFrom(
-                foregroundColor: primaryColor,
-                side: const BorderSide(color: primaryColor),
-                padding: const EdgeInsets.symmetric(vertical: 14),
-                shape: RoundedRectangleBorder(
-                  borderRadius: BorderRadius.circular(18),
-                ),
-              ),
-              child: const Text(
-                'Nhắn tin',
-                style: TextStyle(
-                  fontSize: 16,
-                  fontWeight: FontWeight.w700,
-                ),
-              ),
             ),
           ),
           const SizedBox(width: 12),
           Expanded(
-            child: ElevatedButton(
-              onPressed: inviteVm.isInviting ? null : () => _sendInvite(viewedUserId),
-              style: ElevatedButton.styleFrom(
-                backgroundColor: primaryColor,
-                foregroundColor: Colors.white,
-                padding: const EdgeInsets.symmetric(vertical: 14),
-                shape: RoundedRectangleBorder(
-                  borderRadius: BorderRadius.circular(18),
-                ),
-              ),
-              child: inviteVm.isInviting
-                  ? const SizedBox(
-                      width: 22,
-                      height: 22,
-                      child: CircularProgressIndicator(
-                        strokeWidth: 2,
-                        color: Colors.white,
-                      ),
-                    )
-                  : const Text(
-                      'Gửi lời mời ở ghép',
-                      style: TextStyle(
-                        fontSize: 16,
-                        fontWeight: FontWeight.w700,
-                      ),
-                    ),
+            child: AppPrimaryButton(
+              label: 'Gửi lời mời ở ghép',
+              isLoading: inviteVm.isInviting,
+              onTap: inviteVm.isInviting ? null : () => _sendInvite(viewedUserId),
             ),
           ),
         ],
@@ -890,13 +707,14 @@ class _UserProfileScreenState extends State<UserProfileScreen> {
 
     return Container(
       decoration: BoxDecoration(
-        color: Colors.white,
+        color: AppColors.surface,
         borderRadius: BorderRadius.circular(22),
+        border: Border.all(color: AppColors.border),
         boxShadow: const [
           BoxShadow(
-            color: cardShadow,
-            blurRadius: 16,
-            offset: Offset(0, 6),
+            color: Color(0x08000000),
+            blurRadius: 12,
+            offset: Offset(0, 2),
           ),
         ],
       ),
@@ -910,29 +728,21 @@ class _UserProfileScreenState extends State<UserProfileScreen> {
                 contentPadding:
                     const EdgeInsets.symmetric(horizontal: 18, vertical: 8),
                 leading: Container(
-                  width: 52,
-                  height: 52,
+                  width: 48,
+                  height: 48,
                   decoration: BoxDecoration(
-                    color: lightBlue,
-                    borderRadius: BorderRadius.circular(16),
+                    color: AppColors.accent,
+                    borderRadius: BorderRadius.circular(14),
                   ),
-                  child: Icon(item.icon, color: primaryColor, size: 28),
+                  child: Icon(item.icon, color: AppColors.primary, size: 24),
                 ),
-                title: Text(
-                  item.title,
-                  style: const TextStyle(
-                    fontSize: 20,
-                    fontWeight: FontWeight.w700,
-                    color: textPrimary,
-                  ),
-                ),
+                title: Text(item.title, style: AppTextStyles.labelLg),
                 subtitle: Padding(
                   padding: const EdgeInsets.only(top: 4),
                   child: Text(
                     item.subtitle,
-                    style: const TextStyle(
-                      fontSize: 14,
-                      color: textSecondary,
+                    style: AppTextStyles.caption.copyWith(
+                      color: AppColors.textSecondary,
                     ),
                   ),
                 ),
@@ -942,40 +752,71 @@ class _UserProfileScreenState extends State<UserProfileScreen> {
                     if (item.showBadge && pendingCount > 0)
                       Container(
                         padding: const EdgeInsets.symmetric(
-                          horizontal: 9,
-                          vertical: 4,
+                          horizontal: 8,
+                          vertical: 3,
                         ),
                         decoration: BoxDecoration(
-                          color: Colors.red,
+                          color: AppColors.danger,
                           borderRadius: BorderRadius.circular(999),
                         ),
                         child: Text(
                           pendingCount.toString(),
                           style: const TextStyle(
                             color: Colors.white,
-                            fontWeight: FontWeight.bold,
+                            fontWeight: FontWeight.w700,
+                            fontSize: 12,
                           ),
                         ),
                       ),
                     const SizedBox(width: 8),
                     const Icon(
                       Icons.chevron_right_rounded,
-                      size: 30,
-                      color: textSecondary,
+                      size: 24,
+                      color: AppColors.textSecondary,
                     ),
                   ],
                 ),
                 onTap: item.onTap,
               ),
               if (index != items.length - 1)
-                const Divider(height: 1, indent: 18, endIndent: 18),
+                const Divider(
+                  height: 1,
+                  indent: 18,
+                  endIndent: 18,
+                  color: AppColors.border,
+                ),
             ],
           );
         }),
       ),
     );
   }
+}
 
+class _ProfileCard extends StatelessWidget {
+  final Widget child;
+  const _ProfileCard({required this.child});
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      width: double.infinity,
+      padding: const EdgeInsets.all(20),
+      decoration: BoxDecoration(
+        color: AppColors.surface,
+        borderRadius: BorderRadius.circular(24),
+        border: Border.all(color: AppColors.border),
+        boxShadow: const [
+          BoxShadow(
+            color: Color(0x08000000),
+            blurRadius: 12,
+            offset: Offset(0, 2),
+          ),
+        ],
+      ),
+      child: child,
+    );
+  }
 }
 
 class _ContactLine extends StatelessWidget {
@@ -993,12 +834,8 @@ class _ContactLine extends StatelessWidget {
   Widget build(BuildContext context) {
     return Row(
       children: [
-        Icon(
-          icon,
-          color: _UserProfileScreenState.textSecondary,
-          size: 24,
-        ),
-        const SizedBox(width: 10),
+        Icon(icon, color: AppColors.textSecondary, size: 20),
+        const SizedBox(width: 8),
         Expanded(
           child: FittedBox(
             fit: BoxFit.scaleDown,
@@ -1009,12 +846,7 @@ class _ContactLine extends StatelessWidget {
               value,
               maxLines: 1,
               textAlign: textAlign,
-              style: const TextStyle(
-                fontSize: 15,
-                fontWeight: FontWeight.w500,
-                color: _UserProfileScreenState.textPrimary,
-                height: 1.2,
-              ),
+              style: AppTextStyles.body,
             ),
           ),
         ),
@@ -1027,38 +859,26 @@ class _BasicInfoLine extends StatelessWidget {
   final IconData icon;
   final String value;
 
-  const _BasicInfoLine({
-    required this.icon,
-    required this.value,
-  });
+  const _BasicInfoLine({required this.icon, required this.value});
 
   @override
   Widget build(BuildContext context) {
     return Container(
-      padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 14),
+      padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 12),
       decoration: BoxDecoration(
-        color: _UserProfileScreenState.lightBlue,
-        borderRadius: BorderRadius.circular(16),
+        color: AppColors.accent,
+        borderRadius: BorderRadius.circular(14),
       ),
       child: Row(
         children: [
-          Icon(
-            icon,
-            color: _UserProfileScreenState.primaryColor,
-            size: 22,
-          ),
-          const SizedBox(width: 10),
+          Icon(icon, color: AppColors.primary, size: 20),
+          const SizedBox(width: 8),
           Expanded(
             child: Text(
               value,
               maxLines: 2,
               overflow: TextOverflow.ellipsis,
-              style: const TextStyle(
-                fontSize: 15,
-                fontWeight: FontWeight.w600,
-                color: _UserProfileScreenState.textPrimary,
-                height: 1.3,
-              ),
+              style: AppTextStyles.label.copyWith(height: 1.3),
             ),
           ),
         ],
@@ -1069,10 +889,7 @@ class _BasicInfoLine extends StatelessWidget {
 
 class _ProfileHabitChip extends StatelessWidget {
   final ProfileHabitModel habit;
-
-  const _ProfileHabitChip({
-    required this.habit,
-  });
+  const _ProfileHabitChip({required this.habit});
 
   @override
   Widget build(BuildContext context) {
@@ -1086,29 +903,20 @@ class _ProfileHabitChip extends StatelessWidget {
         borderRadius: BorderRadius.circular(16),
         boxShadow: const [
           BoxShadow(
-            color: _UserProfileScreenState.cardShadow,
-            blurRadius: 12,
-            offset: Offset(0, 4),
+            color: Color(0x08000000),
+            blurRadius: 8,
+            offset: Offset(0, 2),
           ),
         ],
       ),
       child: Row(
         children: [
-          Icon(
-            habit.icon,
-            color: habit.foregroundColor,
-            size: 28,
-          ),
+          Icon(habit.icon, color: habit.foregroundColor, size: 26),
           const SizedBox(width: 10),
           Expanded(
             child: Text(
               habit.label,
-              style: const TextStyle(
-                fontSize: 15,
-                fontWeight: FontWeight.w600,
-                color: _UserProfileScreenState.textPrimary,
-                height: 1.25,
-              ),
+              style: AppTextStyles.label.copyWith(height: 1.25),
             ),
           ),
         ],
@@ -1132,6 +940,3 @@ class _ManageItem {
     this.showBadge = false,
   });
 }
-
-
-

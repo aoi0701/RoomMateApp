@@ -1,1 +1,28 @@
-{"flutter":{"platforms":{"android":{"default":{"projectId":"roommateapp-fbb4f","appId":"1:787375402089:android:9c7cba750f2462b09586f8","fileOutput":"android/app/google-services.json"}},"dart":{"lib/firebase_options.dart":{"projectId":"roommateapp-fbb4f","configurations":{"android":"1:787375402089:android:9c7cba750f2462b09586f8","ios":"1:787375402089:ios:dcc86f98640e6f4d9586f8","macos":"1:787375402089:ios:dcc86f98640e6f4d9586f8","web":"1:787375402089:web:bb98d7aa19147eb09586f8","windows":"1:787375402089:web:342b772a1dd356f99586f8"}}}}}}
+{
+  "firestore": {
+    "rules": "firestore.rules"
+  },
+  "flutter": {
+    "platforms": {
+      "android": {
+        "default": {
+          "projectId": "roommateapp-fbb4f",
+          "appId": "1:787375402089:android:9c7cba750f2462b09586f8",
+          "fileOutput": "android/app/google-services.json"
+        }
+      },
+      "dart": {
+        "lib/firebase_options.dart": {
+          "projectId": "roommateapp-fbb4f",
+          "configurations": {
+            "android": "1:787375402089:android:9c7cba750f2462b09586f8",
+            "ios": "1:787375402089:ios:dcc86f98640e6f4d9586f8",
+            "macos": "1:787375402089:ios:dcc86f98640e6f4d9586f8",
+            "web": "1:787375402089:web:bb98d7aa19147eb09586f8",
+            "windows": "1:787375402089:web:342b772a1dd356f99586f8"
+          }
+        }
+      }
+    }
+  }
+}

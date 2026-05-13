@@ -1,9 +1,12 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
+import 'package:google_fonts/google_fonts.dart';
 import 'package:provider/provider.dart';
 
 import '../../../../core/theme/app_colors.dart';
+import '../../../../core/theme/app_text_styles.dart';
 import '../../../../core/widgets/app_state_widgets.dart';
+import '../../../../core/widgets/status_badge.dart';
 import '../../../auth/presentation/viewmodels/auth_viewmodel.dart';
 import '../../../profile/presentation/viewmodels/user_profile_viewmodel.dart';
 import '../../data/models/expense_model.dart';
@@ -26,9 +29,9 @@ class _ExpenseDetailScreenState extends State<ExpenseDetailScreen> {
     WidgetsBinding.instance.addPostFrameCallback((_) {
       if (!mounted) return;
       context.read<ExpenseViewModel>().loadExpenseShares(
-        expenseId: widget.expense.id,
-        roomGroupId: widget.expense.roomGroupId,
-      );
+            expenseId: widget.expense.id,
+            roomGroupId: widget.expense.roomGroupId,
+          );
     });
   }
 
@@ -63,101 +66,118 @@ class _ExpenseDetailScreenState extends State<ExpenseDetailScreen> {
     return Scaffold(
       backgroundColor: AppColors.background,
       appBar: AppBar(
-        elevation: 0,
-        backgroundColor: Colors.white,
-        surfaceTintColor: Colors.white,
-        centerTitle: true,
-        title: const Text(
-          'Chi tiết khoản chi',
-          style: TextStyle(
-            color: AppColors.textPrimary,
-            fontWeight: FontWeight.w700,
-          ),
+        title: const Text('Chi tiết khoản chi'),
+        leading: IconButton(
+          icon: const Icon(Icons.arrow_back_ios_new_rounded, size: 18),
+          onPressed: () => Navigator.pop(context),
         ),
-        iconTheme: const IconThemeData(color: AppColors.textPrimary),
       ),
-      body: SafeArea(
-        child: Consumer<ExpenseViewModel>(
-          builder: (context, vm, _) {
-            return SingleChildScrollView(
-              padding: const EdgeInsets.all(20),
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  _buildInfoCard(expense),
-                  const SizedBox(height: 16),
-                  _buildSharesSection(vm, currentUserId),
-                ],
-              ),
-            );
-          },
-        ),
+      body: Consumer<ExpenseViewModel>(
+        builder: (context, vm, _) {
+          return SingleChildScrollView(
+            padding: const EdgeInsets.all(20),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                _buildSummaryCard(expense),
+                const SizedBox(height: 20),
+                _buildSharesSection(vm, currentUserId),
+              ],
+            ),
+          );
+        },
       ),
     );
   }
 
-  Widget _buildInfoCard(ExpenseModel expense) {
+  Widget _buildSummaryCard(ExpenseModel expense) {
     return Container(
       width: double.infinity,
       padding: const EdgeInsets.all(20),
       decoration: BoxDecoration(
-        color: Colors.white,
-        borderRadius: BorderRadius.circular(20),
+        gradient: const LinearGradient(
+          colors: [AppColors.primary, AppColors.primaryDark],
+          begin: Alignment.topLeft,
+          end: Alignment.bottomRight,
+        ),
+        borderRadius: BorderRadius.circular(24),
         boxShadow: const [
           BoxShadow(
-            color: Color(0x0F000000),
-            blurRadius: 12,
-            offset: Offset(0, 4),
+            color: Color(0x305B6AF0),
+            blurRadius: 20,
+            offset: Offset(0, 8),
           ),
         ],
       ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          Text(
-            expense.title,
-            style: const TextStyle(
-              fontSize: 22,
-              fontWeight: FontWeight.w800,
-              color: AppColors.textPrimary,
+          Container(
+            padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 5),
+            decoration: BoxDecoration(
+              color: Colors.white.withValues(alpha: 0.15),
+              borderRadius: BorderRadius.circular(8),
+            ),
+            child: Text(
+              'Tổng chi',
+              style: GoogleFonts.plusJakartaSans(
+                fontSize: 11,
+                fontWeight: FontWeight.w600,
+                color: Colors.white70,
+              ),
             ),
           ),
-          const SizedBox(height: 8),
+          const SizedBox(height: 12),
           Text(
             _formatMoney(expense.amount),
-            style: const TextStyle(
-              fontSize: 28,
+            style: GoogleFonts.plusJakartaSans(
+              fontSize: 32,
               fontWeight: FontWeight.w800,
-              color: AppColors.primary,
+              color: Colors.white,
+              height: 1,
             ),
           ),
-          const SizedBox(height: 16),
-          const Divider(color: AppColors.divider),
-          const SizedBox(height: 12),
-          _buildInfoRow(
-            label: 'Người trả',
-            child: _UserName(userId: expense.paidBy),
+          const SizedBox(height: 4),
+          Text(
+            expense.title,
+            style: GoogleFonts.plusJakartaSans(
+              fontSize: 16,
+              fontWeight: FontWeight.w600,
+              color: Colors.white.withValues(alpha: 0.9),
+            ),
           ),
-          const SizedBox(height: 10),
-          _buildInfoRow(
+          const SizedBox(height: 20),
+          const Divider(color: Colors.white24, height: 1),
+          const SizedBox(height: 16),
+          _buildMetaRow(
+            icon: Icons.person_outline_rounded,
+            label: 'Người trả',
+            child: _UserNameInline(userId: expense.paidBy),
+          ),
+          const SizedBox(height: 12),
+          _buildMetaRow(
+            icon: Icons.calendar_today_outlined,
             label: 'Ngày tạo',
             child: Text(
               _formatDate(expense.createdAt),
-              style: const TextStyle(
-                fontSize: 15,
-                color: AppColors.textPrimary,
+              style: GoogleFonts.plusJakartaSans(
+                fontSize: 14,
+                fontWeight: FontWeight.w600,
+                color: Colors.white,
               ),
             ),
           ),
           if (expense.note.isNotEmpty) ...[
-            const SizedBox(height: 10),
-            _buildInfoRow(
+            const SizedBox(height: 12),
+            _buildMetaRow(
+              icon: Icons.notes_rounded,
               label: 'Ghi chú',
               child: Text(
                 expense.note,
-                style: const TextStyle(
-                  fontSize: 15,
-                  color: AppColors.textPrimary,
+                style: GoogleFonts.plusJakartaSans(
+                  fontSize: 14,
+                  fontWeight: FontWeight.w500,
+                  color: Colors.white.withValues(alpha: 0.9),
                 ),
               ),
             ),
@@ -167,17 +187,23 @@ class _ExpenseDetailScreenState extends State<ExpenseDetailScreen> {
     );
   }
 
-  Widget _buildInfoRow({required String label, required Widget child}) {
+  Widget _buildMetaRow({
+    required IconData icon,
+    required String label,
+    required Widget child,
+  }) {
     return Row(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
+        Icon(icon, size: 16, color: Colors.white60),
+        const SizedBox(width: 8),
         SizedBox(
-          width: 90,
+          width: 80,
           child: Text(
             label,
-            style: const TextStyle(
-              fontSize: 14,
-              color: AppColors.textSecondary,
+            style: GoogleFonts.plusJakartaSans(
+              fontSize: 13,
+              color: Colors.white60,
               fontWeight: FontWeight.w500,
             ),
           ),
@@ -191,15 +217,8 @@ class _ExpenseDetailScreenState extends State<ExpenseDetailScreen> {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        const Text(
-          'Phân chia',
-          style: TextStyle(
-            fontSize: 18,
-            fontWeight: FontWeight.w800,
-            color: AppColors.textPrimary,
-          ),
-        ),
-        const SizedBox(height: 12),
+        Text('Phân chia chi phí', style: AppTextStyles.h2),
+        const SizedBox(height: 16),
         if (vm.isLoading)
           const AppLoadingState(message: 'Đang tải...')
         else if (vm.errorMessage != null)
@@ -217,16 +236,13 @@ class _ExpenseDetailScreenState extends State<ExpenseDetailScreen> {
             title: 'Không có phân chia',
             message: 'Người trả không cần nợ chính họ.',
             compact: true,
-            icon: Icons.check_circle_outline,
+            icon: Icons.check_circle_outline_rounded,
           )
         else
           ...vm.shares.map(
             (share) => Padding(
               padding: const EdgeInsets.only(bottom: 12),
-              child: _ShareCard(
-                share: share,
-                currentUserId: currentUserId,
-              ),
+              child: _ShareCard(share: share),
             ),
           ),
       ],
@@ -236,9 +252,8 @@ class _ExpenseDetailScreenState extends State<ExpenseDetailScreen> {
 
 class _ShareCard extends StatelessWidget {
   final ExpenseShareModel share;
-  final String currentUserId;
 
-  const _ShareCard({required this.share, required this.currentUserId});
+  const _ShareCard({required this.share});
 
   static String _formatMoney(double amount) {
     final text = amount.toStringAsFixed(0);
@@ -260,13 +275,14 @@ class _ShareCard extends StatelessWidget {
     return Container(
       padding: const EdgeInsets.all(16),
       decoration: BoxDecoration(
-        color: Colors.white,
-        borderRadius: BorderRadius.circular(16),
+        color: AppColors.surface,
+        borderRadius: BorderRadius.circular(20),
+        border: Border.all(color: AppColors.border),
         boxShadow: const [
           BoxShadow(
-            color: Color(0x0F000000),
-            blurRadius: 10,
-            offset: Offset(0, 4),
+            color: Color(0x08000000),
+            blurRadius: 12,
+            offset: Offset(0, 2),
           ),
         ],
       ),
@@ -278,48 +294,32 @@ class _ShareCard extends StatelessWidget {
               children: [
                 Row(
                   children: [
-                    _UserName(userId: share.fromUserId),
+                    _UserNameInline(userId: share.fromUserId),
                     const Padding(
-                      padding: EdgeInsets.symmetric(horizontal: 6),
+                      padding: EdgeInsets.symmetric(horizontal: 8),
                       child: Icon(
-                        Icons.arrow_forward,
+                        Icons.arrow_forward_rounded,
                         size: 14,
                         color: AppColors.textSecondary,
                       ),
                     ),
-                    _UserName(userId: share.toUserId),
+                    _UserNameInline(userId: share.toUserId),
                   ],
                 ),
                 const SizedBox(height: 6),
                 Text(
                   _formatMoney(share.amountOwed),
-                  style: const TextStyle(
-                    fontSize: 16,
-                    fontWeight: FontWeight.w800,
-                    color: AppColors.primary,
-                  ),
+                  style: AppTextStyles.h3.copyWith(color: AppColors.primary),
                 ),
               ],
             ),
           ),
-          Container(
-            padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
-            decoration: BoxDecoration(
-              color: share.isPaid
-                  ? const Color(0xFFDCFCE7)
-                  : const Color(0xFFFEF9C3),
-              borderRadius: BorderRadius.circular(999),
-            ),
-            child: Text(
-              share.isPaid ? 'Đã trả' : 'Chưa trả',
-              style: TextStyle(
-                fontSize: 12,
-                fontWeight: FontWeight.w700,
-                color: share.isPaid
-                    ? const Color(0xFF16A34A)
-                    : const Color(0xFFB45309),
-              ),
-            ),
+          StatusBadge(
+            label: share.isPaid ? 'Đã trả' : 'Chưa trả',
+            type: share.isPaid ? BadgeType.success : BadgeType.warning,
+            icon: share.isPaid
+                ? Icons.check_circle_outline_rounded
+                : Icons.schedule_rounded,
           ),
         ],
       ),
@@ -327,30 +327,20 @@ class _ShareCard extends StatelessWidget {
   }
 }
 
-class _UserName extends StatelessWidget {
+class _UserNameInline extends StatelessWidget {
   final String userId;
-
-  const _UserName({required this.userId});
+  const _UserNameInline({required this.userId});
 
   @override
   Widget build(BuildContext context) {
     return StreamBuilder<DocumentSnapshot<Map<String, dynamic>>>(
-      stream: context
-          .read<UserProfileViewModel>()
-          .getUserProfileStream(userId),
+      stream: context.read<UserProfileViewModel>().getUserProfileStream(userId),
       builder: (context, snapshot) {
         String name = 'Người dùng';
         if (snapshot.hasData && snapshot.data!.exists) {
           name = snapshot.data!.data()?['fullName'] ?? 'Người dùng';
         }
-        return Text(
-          name,
-          style: const TextStyle(
-            fontSize: 15,
-            fontWeight: FontWeight.w600,
-            color: AppColors.textPrimary,
-          ),
-        );
+        return Text(name, style: AppTextStyles.label);
       },
     );
   }

@@ -5,6 +5,9 @@ import 'package:flutter/material.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:provider/provider.dart';
 
+import '../../../../core/theme/app_colors.dart';
+import '../../../../core/theme/app_text_styles.dart';
+import '../../../../core/widgets/app_button.dart';
 import '../../../auth/presentation/viewmodels/auth_viewmodel.dart';
 import '../../../home/data/constants/room_filter_data.dart';
 import '../../../profile/data/models/user_model.dart';
@@ -21,10 +24,6 @@ class CreatePostScreen extends StatefulWidget {
 }
 
 class _CreatePostScreenState extends State<CreatePostScreen> {
-  static const Color primaryBlue = Color(0xFF3B6EF5);
-  static const Color bgColor = Color(0xFFF6F8FC);
-  static const Color textPrimary = Color(0xFF111827);
-  static const Color textSecondary = Color(0xFF6B7280);
 
   final List<File> _selectedImages = [];
 
@@ -150,7 +149,7 @@ class _CreatePostScreenState extends State<CreatePostScreen> {
       ),
       focusedBorder: OutlineInputBorder(
         borderRadius: BorderRadius.circular(16),
-        borderSide: const BorderSide(color: primaryBlue),
+        borderSide: const BorderSide(color: AppColors.primary),
       ),
       contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 16),
     );
@@ -182,7 +181,7 @@ class _CreatePostScreenState extends State<CreatePostScreen> {
             style: const TextStyle(
               fontSize: 24,
               fontWeight: FontWeight.w800,
-              color: textPrimary,
+              color: AppColors.textPrimary,
             ),
           ),
           const SizedBox(height: 16),
@@ -266,7 +265,7 @@ class _CreatePostScreenState extends State<CreatePostScreen> {
     if (uid == null) {
       return const Text(
         'Chưa có thông tin hồ sơ để hiển thị thói quen sinh hoạt.',
-        style: TextStyle(color: textSecondary),
+        style: TextStyle(color: AppColors.textSecondary),
       );
     }
 
@@ -282,7 +281,7 @@ class _CreatePostScreenState extends State<CreatePostScreen> {
         if (!snapshot.hasData || !snapshot.data!.exists) {
           return const Text(
             'Chưa có dữ liệu hồ sơ.',
-            style: TextStyle(color: textSecondary),
+            style: TextStyle(color: AppColors.textSecondary),
           );
         }
 
@@ -305,7 +304,7 @@ class _CreatePostScreenState extends State<CreatePostScreen> {
               style: TextStyle(
                 fontSize: 14,
                 height: 1.5,
-                color: textSecondary,
+                color: AppColors.textSecondary,
               ),
             ),
           );
@@ -350,12 +349,12 @@ class _CreatePostScreenState extends State<CreatePostScreen> {
                     child: const Column(
                       mainAxisAlignment: MainAxisAlignment.center,
                       children: [
-                        Icon(Icons.add, size: 38, color: textSecondary),
+                        Icon(Icons.add, size: 38, color: AppColors.textSecondary),
                         SizedBox(height: 8),
                         Text(
                           'Thêm ảnh',
                           style: TextStyle(
-                            color: textSecondary,
+                            color: AppColors.textSecondary,
                             fontWeight: FontWeight.w600,
                           ),
                         ),
@@ -408,7 +407,7 @@ class _CreatePostScreenState extends State<CreatePostScreen> {
         const SizedBox(height: 10),
         Text(
           'Tối đa 5 ảnh (${_selectedImages.length}/5)',
-          style: const TextStyle(fontSize: 13, color: textSecondary),
+          style: const TextStyle(fontSize: 13, color: AppColors.textSecondary),
         ),
       ],
     );
@@ -423,12 +422,12 @@ class _CreatePostScreenState extends State<CreatePostScreen> {
         RoomFilterData.districtsByProvince[_selectedProvince] ?? const <String>[];
 
     return Scaffold(
-      backgroundColor: bgColor,
+      backgroundColor: AppColors.background,
       appBar: AppBar(
         title: const Text('Đăng tin Tìm bạn ở ghép'),
         centerTitle: true,
-        backgroundColor: bgColor,
-        surfaceTintColor: bgColor,
+        backgroundColor: AppColors.background,
+        surfaceTintColor: AppColors.background,
       ),
       body: SafeArea(
         child: SingleChildScrollView(
@@ -620,53 +619,17 @@ class _CreatePostScreenState extends State<CreatePostScreen> {
               Row(
                 children: [
                   Expanded(
-                    child: OutlinedButton(
-                      onPressed:
-                          vm.isLoading ? null : () => Navigator.pop(context),
-                      style: OutlinedButton.styleFrom(
-                        side: const BorderSide(color: Color(0xFFD5DBE7)),
-                        padding: const EdgeInsets.symmetric(vertical: 16),
-                        shape: RoundedRectangleBorder(
-                          borderRadius: BorderRadius.circular(18),
-                        ),
-                      ),
-                      child: const Text(
-                        'Quay lại',
-                        style: TextStyle(
-                          color: textPrimary,
-                          fontWeight: FontWeight.w700,
-                        ),
-                      ),
+                    child: AppSecondaryButton(
+                      label: 'Quay lại',
+                      onTap: vm.isLoading ? null : () => Navigator.pop(context),
                     ),
                   ),
                   const SizedBox(width: 14),
                   Expanded(
-                    child: ElevatedButton(
-                      onPressed: vm.isLoading ? null : _handleCreatePost,
-                      style: ElevatedButton.styleFrom(
-                        backgroundColor: primaryBlue,
-                        foregroundColor: Colors.white,
-                        padding: const EdgeInsets.symmetric(vertical: 16),
-                        shape: RoundedRectangleBorder(
-                          borderRadius: BorderRadius.circular(18),
-                        ),
-                      ),
-                      child: vm.isLoading
-                          ? const SizedBox(
-                              width: 22,
-                              height: 22,
-                              child: CircularProgressIndicator(
-                                strokeWidth: 2,
-                                color: Colors.white,
-                              ),
-                            )
-                          : const Text(
-                              'Đăng bài',
-                              style: TextStyle(
-                                fontSize: 16,
-                                fontWeight: FontWeight.w700,
-                              ),
-                            ),
+                    child: AppPrimaryButton(
+                      label: 'Đăng bài',
+                      isLoading: vm.isLoading,
+                      onTap: vm.isLoading ? null : _handleCreatePost,
                     ),
                   ),
                 ],

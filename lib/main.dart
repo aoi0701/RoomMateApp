@@ -3,11 +3,10 @@ import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 
-import 'core/theme/app_colors.dart';
+import 'core/theme/app_theme.dart';
 import 'features/auth/data/repositories/auth_repository.dart';
 import 'features/auth/presentation/viewmodels/auth_viewmodel.dart';
 import 'features/auth/presentation/views/login_screen.dart';
-import 'features/admin/presentation/views/admin_home_screen.dart';
 import 'features/home/presentation/views/user_home_screen.dart';
 import 'features/home/data/repositories/home_search_filter_repository.dart';
 import 'features/home/data/repositories/roommate_profile_repository.dart';
@@ -24,8 +23,6 @@ import 'features/room_group/data/repositories/room_group_repository.dart';
 import 'features/room_group/presentation/viewmodels/room_group_viewmodel.dart';
 import 'features/expense/data/repositories/expense_repository.dart';
 import 'features/expense/presentation/viewmodels/expense_viewmodel.dart';
-import 'features/admin/data/repositories/admin_repository.dart';
-import 'features/admin/presentation/viewmodels/admin_viewmodel.dart';
 import 'firebase_options.dart';
 
 Future<void> main() async {
@@ -115,23 +112,11 @@ class MyApp extends StatelessWidget {
             repository: context.read<ExpenseRepository>(),
           ),
         ),
-        Provider<AdminRepository>(
-          create: (_) => AdminRepository(),
-        ),
-        ChangeNotifierProvider<AdminViewModel>(
-          create: (context) => AdminViewModel(
-            repository: context.read<AdminRepository>(),
-          ),
-        ),
       ],
       child: MaterialApp(
         debugShowCheckedModeBanner: false,
         title: 'RoomMate',
-        theme: ThemeData(
-          scaffoldBackgroundColor: AppColors.background,
-          colorScheme: ColorScheme.fromSeed(seedColor: AppColors.primary),
-          useMaterial3: true,
-        ),
+        theme: AppTheme.light,
         home: const AuthGate(),
       ),
     );
@@ -170,11 +155,6 @@ class AuthGate extends StatelessWidget {
                   child: CircularProgressIndicator(),
                 ),
               );
-            }
-
-            final role = roleSnapshot.data ?? 'user';
-            if (role == 'admin') {
-              return const AdminHomeScreen();
             }
 
             return const UserHomeScreen();

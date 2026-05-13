@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import '../../../../core/theme/app_colors.dart';
+import '../../../../core/widgets/app_button.dart';
 import '../widgets/auth_text_field.dart';
 
 class ResetPasswordScreen extends StatefulWidget {
@@ -42,48 +43,6 @@ class _ResetPasswordScreenState extends State<ResetPasswordScreen> {
       return 'Mật khẩu xác nhận không khớp';
     }
     return null;
-  }
-
-  Widget _buildPrimaryButton({
-    required String text,
-    required VoidCallback onTap,
-  }) {
-    return Container(
-      width: double.infinity,
-      decoration: BoxDecoration(
-        borderRadius: BorderRadius.circular(32),
-        gradient: const LinearGradient(
-          colors: [AppColors.primary, AppColors.primaryDark],
-        ),
-        boxShadow: const [
-          BoxShadow(
-            color: Color(0x22000000),
-            blurRadius: 14,
-            offset: Offset(0, 6),
-          ),
-        ],
-      ),
-      child: Material(
-        color: Colors.transparent,
-        child: InkWell(
-          borderRadius: BorderRadius.circular(32),
-          onTap: onTap,
-          child: Padding(
-            padding: const EdgeInsets.symmetric(vertical: 18),
-            child: Center(
-              child: Text(
-                text,
-                style: const TextStyle(
-                  color: AppColors.white,
-                  fontSize: 18,
-                  fontWeight: FontWeight.w700,
-                ),
-              ),
-            ),
-          ),
-        ),
-      ),
-    );
   }
 
   void _submit() {
@@ -178,8 +137,8 @@ class _ResetPasswordScreenState extends State<ResetPasswordScreen> {
                   ),
                 ),
                 const SizedBox(height: 18),
-                _buildPrimaryButton(
-                  text: 'Xác nhận',
+                AppPrimaryButton(
+                  label: 'Xác nhận',
                   onTap: _submit,
                 ),
               ],
