@@ -248,22 +248,39 @@ class _DebtCard extends StatelessWidget {
               Expanded(
                 child: Row(
                   children: [
-                    _UserNameText(userId: share.fromUserId),
+                    Expanded(
+                      child: _UserNameText(userId: share.fromUserId),
+                    ),
                     const Padding(
-                      padding: EdgeInsets.symmetric(horizontal: 8),
+                      padding: EdgeInsets.symmetric(horizontal: 6),
                       child: Icon(
                         Icons.arrow_forward_rounded,
                         size: 14,
                         color: AppColors.textSecondary,
                       ),
                     ),
-                    _UserNameText(userId: share.toUserId),
+                    Expanded(
+                      child: _UserNameText(userId: share.toUserId),
+                    ),
                   ],
                 ),
               ),
-              Text(
-                formatMoney(share.amountOwed),
-                style: AppTextStyles.labelLg.copyWith(color: AppColors.primary),
+              const SizedBox(width: 8),
+              Flexible(
+                flex: 0,
+                child: ConstrainedBox(
+                  constraints: const BoxConstraints(maxWidth: 120),
+                  child: Text(
+                    formatMoney(share.amountOwed),
+                    style: AppTextStyles.labelLg.copyWith(
+                      color: AppColors.primary,
+                    ),
+                    textAlign: TextAlign.right,
+                    overflow: TextOverflow.ellipsis,
+                    maxLines: 1,
+                    softWrap: false,
+                  ),
+                ),
               ),
             ],
           ),
@@ -295,7 +312,12 @@ class _UserNameText extends StatelessWidget {
         if (snapshot.hasData && snapshot.data!.exists) {
           name = snapshot.data!.data()?['fullName'] ?? 'Người dùng';
         }
-        return Text(name, style: AppTextStyles.label);
+        return Text(
+          name,
+          style: AppTextStyles.label,
+          overflow: TextOverflow.ellipsis,
+          maxLines: 1,
+        );
       },
     );
   }

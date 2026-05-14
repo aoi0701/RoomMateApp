@@ -1,0 +1,42 @@
+{
+  "indexes": [
+    {
+      "collectionGroup": "expenses",
+      "queryScope": "COLLECTION",
+      "fields": [
+        { "fieldPath": "roomGroupId", "order": "ASCENDING" },
+        { "fieldPath": "createdAt", "order": "DESCENDING" }
+      ]
+    },
+    {
+      "collectionGroup": "expense_shares",
+      "queryScope": "COLLECTION",
+      "fields": [
+        { "fieldPath": "expenseId", "order": "ASCENDING" },
+        { "fieldPath": "roomGroupId", "order": "ASCENDING" },
+        { "fieldPath": "visibleToUserIds", "arrayConfig": "CONTAINS" }
+      ]
+    },
+    {
+      "collectionGroup": "expense_shares",
+      "queryScope": "COLLECTION",
+      "fields": [
+        { "fieldPath": "roomGroupId", "order": "ASCENDING" },
+        { "fieldPath": "fromUserId", "order": "ASCENDING" },
+        { "fieldPath": "isPaid", "order": "ASCENDING" },
+        { "fieldPath": "visibleToUserIds", "arrayConfig": "CONTAINS" }
+      ]
+    },
+    {
+      "collectionGroup": "expense_shares",
+      "queryScope": "COLLECTION",
+      "fields": [
+        { "fieldPath": "roomGroupId", "order": "ASCENDING" },
+        { "fieldPath": "toUserId", "order": "ASCENDING" },
+        { "fieldPath": "isPaid", "order": "ASCENDING" },
+        { "fieldPath": "visibleToUserIds", "arrayConfig": "CONTAINS" }
+      ]
+    }
+  ],
+  "fieldOverrides": []
+}

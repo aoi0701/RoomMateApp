@@ -136,6 +136,8 @@ class _ExpenseDetailScreenState extends State<ExpenseDetailScreen> {
               color: Colors.white,
               height: 1,
             ),
+            overflow: TextOverflow.ellipsis,
+            maxLines: 1,
           ),
           const SizedBox(height: 4),
           Text(
@@ -234,7 +236,7 @@ class _ExpenseDetailScreenState extends State<ExpenseDetailScreen> {
         else if (vm.shares.isEmpty)
           const AppEmptyState(
             title: 'Không có phân chia',
-            message: 'Người trả không cần nợ chính họ.',
+            message: 'Khoản chi này không có ai cần thanh toán lại.',
             compact: true,
             icon: Icons.check_circle_outline_rounded,
           )

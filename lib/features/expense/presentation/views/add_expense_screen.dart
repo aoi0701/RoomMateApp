@@ -46,16 +46,18 @@ class _AddExpenseScreenState extends State<AddExpenseScreen> {
 
   Future<void> _submit() async {
     if (!_formKey.currentState!.validate()) return;
-    if (_selectedParticipants.isEmpty) {
+    final currentUserId = context.read<AuthViewModel>().user?.uid ?? '';
+
+    final nonPayers = _selectedParticipants.where((id) => id != currentUserId).toList();
+    if (nonPayers.isEmpty) {
       ScaffoldMessenger.of(context).showSnackBar(
         const SnackBar(
-          content: Text('Vui lòng chọn ít nhất một người tham gia'),
+          content: Text('Vui lòng chọn ít nhất một người khác để chia tiền'),
         ),
       );
       return;
     }
 
-    final currentUserId = context.read<AuthViewModel>().user?.uid ?? '';
     final amount = double.tryParse(
           _amountController.text.trim().replaceAll('.', ''),
         ) ??
@@ -68,6 +70,7 @@ class _AddExpenseScreenState extends State<AddExpenseScreen> {
       amount: amount,
       paidBy: currentUserId,
       participantIds: _selectedParticipants.toList(),
+      visibleToUserIds: widget.roomGroup.memberIds,
       note: _noteController.text.trim(),
     );
 

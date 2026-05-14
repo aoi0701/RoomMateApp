@@ -193,9 +193,16 @@ class _ExpenseCard extends StatelessWidget {
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  Text(expense.title, style: AppTextStyles.label),
+                  Text(
+                    expense.title,
+                    style: AppTextStyles.label,
+                    overflow: TextOverflow.ellipsis,
+                    maxLines: 1,
+                  ),
                   const SizedBox(height: 3),
-                  Row(
+                  Wrap(
+                    spacing: 8,
+                    runSpacing: 2,
                     children: [
                       Container(
                         width: 6,
@@ -230,22 +237,34 @@ class _ExpenseCard extends StatelessWidget {
                 ],
               ),
             ),
-            Column(
-              crossAxisAlignment: CrossAxisAlignment.end,
-              children: [
-                Text(
-                  ExpenseListScreen._formatMoney(expense.amount),
-                  style: AppTextStyles.labelLg.copyWith(
-                    color: AppColors.primary,
-                  ),
+            Flexible(
+              flex: 0,
+              child: ConstrainedBox(
+                constraints: const BoxConstraints(maxWidth: 120),
+                child: Row(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    Flexible(
+                      child: Text(
+                        ExpenseListScreen._formatMoney(expense.amount),
+                        style: AppTextStyles.labelLg.copyWith(
+                          color: AppColors.primary,
+                        ),
+                        textAlign: TextAlign.right,
+                        overflow: TextOverflow.ellipsis,
+                        maxLines: 1,
+                        softWrap: false,
+                      ),
+                    ),
+                    const SizedBox(width: 4),
+                    const Icon(
+                      Icons.chevron_right_rounded,
+                      color: AppColors.textSecondary,
+                      size: 18,
+                    ),
+                  ],
                 ),
-                const SizedBox(height: 2),
-                const Icon(
-                  Icons.chevron_right_rounded,
-                  color: AppColors.textSecondary,
-                  size: 18,
-                ),
-              ],
+              ),
             ),
           ],
         ),

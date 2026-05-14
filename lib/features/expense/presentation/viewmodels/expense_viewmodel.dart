@@ -37,11 +37,12 @@ class ExpenseViewModel extends ChangeNotifier {
     required double amount,
     required String paidBy,
     required List<String> participantIds,
+    required List<String> visibleToUserIds,
   }) {
-    if (participantIds.isEmpty) return [];
+    final nonPayers = participantIds.where((id) => id != paidBy).toList();
+    if (nonPayers.isEmpty) return [];
     final amountPerPerson = amount / participantIds.length;
-    return participantIds
-        .where((id) => id != paidBy)
+    return nonPayers
         .map(
           (id) => ExpenseShareModel(
             id: '',
@@ -49,6 +50,7 @@ class ExpenseViewModel extends ChangeNotifier {
             roomGroupId: roomGroupId,
             fromUserId: id,
             toUserId: paidBy,
+            visibleToUserIds: visibleToUserIds,
             amountOwed: amountPerPerson,
             isPaid: false,
           ),
@@ -62,6 +64,7 @@ class ExpenseViewModel extends ChangeNotifier {
     required double amount,
     required String paidBy,
     required List<String> participantIds,
+    required List<String> visibleToUserIds,
     required String note,
   }) async {
     try {
@@ -80,12 +83,17 @@ class ExpenseViewModel extends ChangeNotifier {
 
       final savedExpense = await _repository.addExpense(tempExpense);
 
+      if (savedExpense.id.isEmpty) {
+        throw Exception('Lưu khoản chi thất bại: không lấy được ID');
+      }
+
       final shares = calculateEqualSplit(
         expenseId: savedExpense.id,
         roomGroupId: roomGroupId,
         amount: amount,
         paidBy: paidBy,
         participantIds: participantIds,
+        visibleToUserIds: visibleToUserIds,
       );
 
       if (shares.isNotEmpty) {
