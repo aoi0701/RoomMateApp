@@ -22,6 +22,8 @@ class ExpenseRepository {
   CollectionReference<Map<String, dynamic>> get _shares =>
       _firestore.collection('expense_shares');
 
+  // ── existing ────────────────────────────────────────────────────────────────
+
   Future<ExpenseModel> addExpense(ExpenseModel expense) async {
     try {
       final docRef = _expenses.doc();
@@ -38,8 +40,7 @@ class ExpenseRepository {
       final batch = _firestore.batch();
       for (final share in shares) {
         final docRef = _shares.doc();
-        final model = share.copyWith(id: docRef.id);
-        batch.set(docRef, model.toMap());
+        batch.set(docRef, share.copyWith(id: docRef.id).toMap());
       }
       await batch.commit();
     } catch (e) {
@@ -47,13 +48,18 @@ class ExpenseRepository {
     }
   }
 
+  Future<ExpenseModel?> getExpenseById(String expenseId) async {
+    final doc = await _expenses.doc(expenseId).get();
+    if (!doc.exists) return null;
+    return ExpenseModel.fromDocument(doc);
+  }
+
   Stream<List<ExpenseModel>> getExpensesByRoomGroup(String roomGroupId) {
     return _expenses
         .where('roomGroupId', isEqualTo: roomGroupId)
         .orderBy('createdAt', descending: true)
         .snapshots()
-        .map((snapshot) =>
-            snapshot.docs.map(ExpenseModel.fromDocument).toList());
+        .map((s) => s.docs.map(ExpenseModel.fromDocument).toList());
   }
 
   Future<List<ExpenseShareModel>> getExpenseSharesByExpense({
@@ -111,6 +117,138 @@ class ExpenseRepository {
       });
     } catch (e) {
       throw Exception('Không thể cập nhật trạng thái thanh toán: $e');
+    }
+  }
+
+  // ── new ─────────────────────────────────────────────────────────────────────
+
+  Future<void> updateExpense({
+    required String expenseId,
+    required String title,
+    required double amount,
+    required String paidBy,
+    required List<String> participantIds,
+    required String note,
+    required SplitType splitType,
+    required Map<String, double> customSplits,
+    required List<ExpenseShareModel> newShares,
+  }) async {
+    try {
+      final user = _auth.currentUser;
+      if (user == null) throw Exception('Chưa đăng nhập');
+
+      final oldShares = await _shares
+          .where('expenseId', isEqualTo: expenseId)
+          .get();
+
+      final batch = _firestore.batch();
+
+      batch.update(_expenses.doc(expenseId), {
+        'title': title,
+        'amount': amount,
+        'paidBy': paidBy,
+        'participantIds': participantIds,
+        'note': note,
+        'splitType': splitType == SplitType.custom ? 'custom' : 'equal',
+        'customSplits': customSplits,
+      });
+
+      for (final doc in oldShares.docs) {
+        batch.delete(doc.reference);
+      }
+
+      for (final share in newShares) {
+        final ref = _shares.doc();
+        batch.set(ref, share.copyWith(id: ref.id).toMap());
+      }
+
+      await batch.commit();
+    } catch (e) {
+      throw Exception('Không thể cập nhật khoản chi: $e');
+    }
+  }
+
+  Future<void> deleteExpense(String expenseId) async {
+    try {
+      final user = _auth.currentUser;
+      if (user == null) throw Exception('Chưa đăng nhập');
+
+      final shares = await _shares
+          .where('expenseId', isEqualTo: expenseId)
+          .get();
+
+      final batch = _firestore.batch();
+      batch.delete(_expenses.doc(expenseId));
+      for (final doc in shares.docs) {
+        batch.delete(doc.reference);
+      }
+      await batch.commit();
+    } catch (e) {
+      throw Exception('Không thể xoá khoản chi: $e');
+    }
+  }
+
+  Future<List<ExpenseModel>> getExpensesByMonth({
+    required String roomGroupId,
+    required int year,
+    required int month,
+  }) async {
+    try {
+      final firstDay = DateTime(year, month);
+      final lastDay = DateTime(year, month + 1);
+      final snapshot = await _expenses
+          .where('roomGroupId', isEqualTo: roomGroupId)
+          .where('createdAt', isGreaterThanOrEqualTo: Timestamp.fromDate(firstDay))
+          .where('createdAt', isLessThan: Timestamp.fromDate(lastDay))
+          .orderBy('createdAt')
+          .get();
+      return snapshot.docs.map(ExpenseModel.fromDocument).toList();
+    } catch (e) {
+      throw Exception('Không thể tải thống kê tháng: $e');
+    }
+  }
+
+  Future<List<ExpenseShareModel>> getAllUnpaidSharesByGroup(
+    String roomGroupId,
+  ) async {
+    try {
+      final snapshot = await _shares
+          .where('roomGroupId', isEqualTo: roomGroupId)
+          .where('isPaid', isEqualTo: false)
+          .get();
+      return snapshot.docs.map(ExpenseShareModel.fromDocument).toList();
+    } catch (e) {
+      throw Exception('Không thể tải danh sách công nợ: $e');
+    }
+  }
+
+  Future<void> settleAllDebts({
+    required String fromUserId,
+    required String toUserId,
+    required String roomGroupId,
+  }) async {
+    try {
+      // Query by 3 fields, filter toUserId client-side to avoid 4-field composite index
+      final snapshot = await _shares
+          .where('roomGroupId', isEqualTo: roomGroupId)
+          .where('fromUserId', isEqualTo: fromUserId)
+          .where('isPaid', isEqualTo: false)
+          .get();
+
+      final relevant = snapshot.docs
+          .where((doc) => doc.data()['toUserId'] == toUserId)
+          .toList();
+
+      final batch = _firestore.batch();
+      for (final doc in relevant) {
+        batch.update(doc.reference, {
+          'isPaid': true,
+          'paidAt': FieldValue.serverTimestamp(),
+        });
+      }
+      await batch.commit();
+    } catch (e) {
+      throw Exception('Không thể thanh toán tất cả công nợ: $e');
     }
   }
 }

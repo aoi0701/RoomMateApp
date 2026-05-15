@@ -12,6 +12,7 @@ import '../viewmodels/expense_viewmodel.dart';
 import 'add_expense_screen.dart';
 import 'debt_screen.dart';
 import 'expense_detail_screen.dart';
+import 'monthly_summary_screen.dart';
 
 class ExpenseListScreen extends StatelessWidget {
   final RoomGroupModel roomGroup;
@@ -54,6 +55,23 @@ class ExpenseListScreen extends StatelessWidget {
           onPressed: () => Navigator.pop(context),
         ),
         actions: [
+          TextButton.icon(
+            onPressed: () => Navigator.push(
+              context,
+              MaterialPageRoute(
+                builder: (_) => MonthlySummaryScreen(roomGroup: roomGroup),
+              ),
+            ),
+            icon: const Icon(Icons.bar_chart_rounded, size: 16),
+            label: const Text('Thống kê'),
+            style: TextButton.styleFrom(
+              foregroundColor: AppColors.primary,
+              textStyle: GoogleFonts.plusJakartaSans(
+                fontSize: 13,
+                fontWeight: FontWeight.w700,
+              ),
+            ),
+          ),
           TextButton.icon(
             onPressed: () => Navigator.push(
               context,
@@ -130,7 +148,10 @@ class ExpenseListScreen extends StatelessWidget {
                 onTap: () => Navigator.push(
                   context,
                   MaterialPageRoute(
-                    builder: (_) => ExpenseDetailScreen(expense: expense),
+                    builder: (_) => ExpenseDetailScreen(
+                      expense: expense,
+                      roomGroup: roomGroup,
+                    ),
                   ),
                 ),
               );

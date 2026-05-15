@@ -9,30 +9,49 @@ import '../../../../core/widgets/app_state_widgets.dart';
 import '../../../../core/widgets/status_badge.dart';
 import '../../../auth/presentation/viewmodels/auth_viewmodel.dart';
 import '../../../profile/presentation/viewmodels/user_profile_viewmodel.dart';
+import '../../../room_group/data/models/room_group_model.dart';
 import '../../data/models/expense_model.dart';
 import '../../data/models/expense_share_model.dart';
+import '../../data/repositories/expense_repository.dart';
 import '../viewmodels/expense_viewmodel.dart';
+import 'edit_expense_screen.dart';
 
 class ExpenseDetailScreen extends StatefulWidget {
   final ExpenseModel expense;
+  final RoomGroupModel roomGroup;
 
-  const ExpenseDetailScreen({super.key, required this.expense});
+  const ExpenseDetailScreen({
+    super.key,
+    required this.expense,
+    required this.roomGroup,
+  });
 
   @override
   State<ExpenseDetailScreen> createState() => _ExpenseDetailScreenState();
 }
 
 class _ExpenseDetailScreenState extends State<ExpenseDetailScreen> {
+  late ExpenseModel _expense;
+
   @override
   void initState() {
     super.initState();
+    _expense = widget.expense;
     WidgetsBinding.instance.addPostFrameCallback((_) {
       if (!mounted) return;
       context.read<ExpenseViewModel>().loadExpenseShares(
-            expenseId: widget.expense.id,
-            roomGroupId: widget.expense.roomGroupId,
+            expenseId: _expense.id,
+            roomGroupId: _expense.roomGroupId,
           );
     });
+  }
+
+  Future<void> _reloadExpense() async {
+    final repo = ExpenseRepository();
+    final updated = await repo.getExpenseById(_expense.id);
+    if (updated != null && mounted) {
+      setState(() => _expense = updated);
+    }
   }
 
   static String _formatMoney(double amount) {
@@ -58,10 +77,52 @@ class _ExpenseDetailScreenState extends State<ExpenseDetailScreen> {
     return '$d/$m/$y';
   }
 
+  void _showDeleteDialog() {
+    showDialog(
+      context: context,
+      builder: (ctx) => AlertDialog(
+        title: const Text('Xóa khoản chi'),
+        content: const Text('Bạn có chắc muốn xóa khoản chi này?'),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(ctx),
+            child: const Text('Huỷ'),
+          ),
+          TextButton(
+            onPressed: () async {
+              Navigator.pop(ctx);
+              final vm = context.read<ExpenseViewModel>();
+              final messenger = ScaffoldMessenger.of(context);
+              final navigator = Navigator.of(context);
+              final success = await vm.deleteExpense(widget.expense.id);
+              if (!mounted) return;
+              if (success) {
+                navigator.pop();
+                messenger.showSnackBar(
+                  const SnackBar(content: Text('Đã xóa khoản chi')),
+                );
+              } else {
+                messenger.showSnackBar(
+                  SnackBar(content: Text(vm.errorMessage ?? 'Xóa thất bại')),
+                );
+              }
+            },
+            child: const Text(
+              'Xóa',
+              style: TextStyle(color: AppColors.danger),
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
-    final currentUserId = context.read<AuthViewModel>().user?.uid ?? '';
-    final expense = widget.expense;
+    final currentUserId = context.watch<AuthViewModel>().user?.uid ?? '';
+    final isMember =
+        currentUserId.isNotEmpty &&
+        widget.roomGroup.memberIds.contains(currentUserId);
 
     return Scaffold(
       backgroundColor: AppColors.background,
@@ -71,6 +132,41 @@ class _ExpenseDetailScreenState extends State<ExpenseDetailScreen> {
           icon: const Icon(Icons.arrow_back_ios_new_rounded, size: 18),
           onPressed: () => Navigator.pop(context),
         ),
+        actions: [
+          if (isMember) ...[
+            IconButton(
+              icon: const Icon(Icons.edit_outlined),
+              onPressed: () async {
+                final result = await Navigator.push<bool>(
+                  context,
+                  MaterialPageRoute(
+                    builder: (_) => EditExpenseScreen(
+                      expense: _expense,
+                      roomGroup: widget.roomGroup,
+                    ),
+                  ),
+                );
+                if (!mounted) return;
+                if (result == true) {
+                  await _reloadExpense();
+                  if (!mounted) return;
+                  context.read<ExpenseViewModel>().loadExpenseShares(
+                        expenseId: _expense.id,
+                        roomGroupId: _expense.roomGroupId,
+                      );
+                  ScaffoldMessenger.of(context).showSnackBar(
+                    const SnackBar(content: Text('Đã cập nhật khoản chi')),
+                  );
+                }
+              },
+            ),
+            IconButton(
+              icon: const Icon(Icons.delete_outline_rounded),
+              color: AppColors.danger,
+              onPressed: _showDeleteDialog,
+            ),
+          ],
+        ],
       ),
       body: Consumer<ExpenseViewModel>(
         builder: (context, vm, _) {
@@ -79,7 +175,7 @@ class _ExpenseDetailScreenState extends State<ExpenseDetailScreen> {
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                _buildSummaryCard(expense),
+                _buildSummaryCard(_expense),
                 const SizedBox(height: 20),
                 _buildSharesSection(vm, currentUserId),
               ],
@@ -331,6 +427,7 @@ class _ShareCard extends StatelessWidget {
 
 class _UserNameInline extends StatelessWidget {
   final String userId;
+
   const _UserNameInline({required this.userId});
 
   @override
@@ -338,7 +435,7 @@ class _UserNameInline extends StatelessWidget {
     return StreamBuilder<DocumentSnapshot<Map<String, dynamic>>>(
       stream: context.read<UserProfileViewModel>().getUserProfileStream(userId),
       builder: (context, snapshot) {
-        String name = 'Người dùng';
+        var name = 'Người dùng';
         if (snapshot.hasData && snapshot.data!.exists) {
           name = snapshot.data!.data()?['fullName'] ?? 'Người dùng';
         }

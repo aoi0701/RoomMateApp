@@ -6,7 +6,6 @@ class ExpenseShareModel {
   final String roomGroupId;
   final String fromUserId;
   final String toUserId;
-  final List<String> visibleToUserIds;
   final double amountOwed;
   final bool isPaid;
   final DateTime? paidAt;
@@ -18,7 +17,6 @@ class ExpenseShareModel {
     required this.roomGroupId,
     required this.fromUserId,
     required this.toUserId,
-    required this.visibleToUserIds,
     required this.amountOwed,
     required this.isPaid,
     this.paidAt,
@@ -35,7 +33,6 @@ class ExpenseShareModel {
       roomGroupId: data['roomGroupId'] ?? '',
       fromUserId: data['fromUserId'] ?? '',
       toUserId: data['toUserId'] ?? '',
-      visibleToUserIds: List<String>.from(data['visibleToUserIds'] ?? []),
       amountOwed: (data['amountOwed'] as num?)?.toDouble() ?? 0,
       isPaid: data['isPaid'] as bool? ?? false,
       paidAt: (data['paidAt'] as Timestamp?)?.toDate(),
@@ -49,7 +46,6 @@ class ExpenseShareModel {
       'roomGroupId': roomGroupId,
       'fromUserId': fromUserId,
       'toUserId': toUserId,
-      'visibleToUserIds': visibleToUserIds,
       'amountOwed': amountOwed,
       'isPaid': isPaid,
       'paidAt': paidAt != null ? Timestamp.fromDate(paidAt!) : null,
@@ -65,7 +61,6 @@ class ExpenseShareModel {
     String? roomGroupId,
     String? fromUserId,
     String? toUserId,
-    List<String>? visibleToUserIds,
     double? amountOwed,
     bool? isPaid,
     DateTime? paidAt,
@@ -77,7 +72,6 @@ class ExpenseShareModel {
       roomGroupId: roomGroupId ?? this.roomGroupId,
       fromUserId: fromUserId ?? this.fromUserId,
       toUserId: toUserId ?? this.toUserId,
-      visibleToUserIds: visibleToUserIds ?? this.visibleToUserIds,
       amountOwed: amountOwed ?? this.amountOwed,
       isPaid: isPaid ?? this.isPaid,
       paidAt: paidAt ?? this.paidAt,

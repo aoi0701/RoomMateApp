@@ -14,31 +14,48 @@ import '../../../room_group/data/models/room_group_model.dart';
 import '../../data/models/expense_model.dart';
 import '../viewmodels/expense_viewmodel.dart';
 
-class AddExpenseScreen extends StatefulWidget {
+class EditExpenseScreen extends StatefulWidget {
+  final ExpenseModel expense;
   final RoomGroupModel roomGroup;
 
-  const AddExpenseScreen({super.key, required this.roomGroup});
+  const EditExpenseScreen({
+    super.key,
+    required this.expense,
+    required this.roomGroup,
+  });
 
   @override
-  State<AddExpenseScreen> createState() => _AddExpenseScreenState();
+  State<EditExpenseScreen> createState() => _EditExpenseScreenState();
 }
 
-class _AddExpenseScreenState extends State<AddExpenseScreen> {
+class _EditExpenseScreenState extends State<EditExpenseScreen> {
   final _formKey = GlobalKey<FormState>();
-  final _titleController = TextEditingController();
-  final _amountController = TextEditingController();
-  final _noteController = TextEditingController();
+  late final TextEditingController _titleController;
+  late final TextEditingController _amountController;
+  late final TextEditingController _noteController;
 
   late Set<String> _selectedParticipants;
-  SplitType _splitType = SplitType.equal;
+  late SplitType _splitType;
   final Map<String, TextEditingController> _customControllers = {};
 
   @override
   void initState() {
     super.initState();
-    _selectedParticipants = Set.from(widget.roomGroup.memberIds);
+    _titleController =
+        TextEditingController(text: widget.expense.title);
+    _amountController = TextEditingController(
+      text: widget.expense.amount.toStringAsFixed(0),
+    );
+    _noteController = TextEditingController(text: widget.expense.note);
+    _selectedParticipants =
+        Set.from(widget.expense.participantIds);
+    _splitType = widget.expense.splitType;
+
     for (final uid in widget.roomGroup.memberIds) {
-      _customControllers[uid] = TextEditingController();
+      final existing = widget.expense.customSplits[uid];
+      _customControllers[uid] = TextEditingController(
+        text: existing != null ? existing.toStringAsFixed(0) : '',
+      );
     }
   }
 
@@ -107,7 +124,8 @@ class _AddExpenseScreenState extends State<AddExpenseScreen> {
     }
 
     final vm = context.read<ExpenseViewModel>();
-    final success = await vm.addExpense(
+    final success = await vm.updateExpense(
+      expenseId: widget.expense.id,
       roomGroupId: widget.roomGroup.id,
       title: _titleController.text.trim(),
       amount: amount,
@@ -121,10 +139,12 @@ class _AddExpenseScreenState extends State<AddExpenseScreen> {
     if (!mounted) return;
 
     if (success) {
-      Navigator.pop(context);
+      Navigator.pop(context, true);
     } else {
       ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text(vm.errorMessage ?? 'Thêm khoản chi thất bại')),
+        SnackBar(
+          content: Text(vm.errorMessage ?? 'Cập nhật khoản chi thất bại'),
+        ),
       );
     }
   }
@@ -169,7 +189,7 @@ class _AddExpenseScreenState extends State<AddExpenseScreen> {
     return Scaffold(
       backgroundColor: AppColors.background,
       appBar: AppBar(
-        title: const Text('Thêm khoản chi'),
+        title: const Text('Chỉnh sửa khoản chi'),
         leading: IconButton(
           icon: const Icon(Icons.arrow_back_ios_new_rounded, size: 18),
           onPressed: () => Navigator.pop(context),
@@ -259,7 +279,6 @@ class _AddExpenseScreenState extends State<AddExpenseScreen> {
                     child: Column(
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
-                        // Split type toggle
                         SegmentedButton<SplitType>(
                           segments: const [
                             ButtonSegment(
@@ -347,10 +366,11 @@ class _AddExpenseScreenState extends State<AddExpenseScreen> {
                                 Text(
                                   _formatMoney(_parsedAmount - _customTotal),
                                   style: AppTextStyles.caption.copyWith(
-                                    color: (_parsedAmount - _customTotal).abs() <=
-                                            1
-                                        ? AppColors.success
-                                        : AppColors.warning,
+                                    color:
+                                        (_parsedAmount - _customTotal).abs() <=
+                                                1
+                                            ? AppColors.success
+                                            : AppColors.warning,
                                     fontWeight: FontWeight.w700,
                                   ),
                                 ),
@@ -363,7 +383,7 @@ class _AddExpenseScreenState extends State<AddExpenseScreen> {
                   ),
                   const SizedBox(height: 28),
                   AppPrimaryButton(
-                    label: 'Lưu khoản chi',
+                    label: 'Lưu thay đổi',
                     isLoading: vm.isLoading,
                     onTap: _submit,
                   ),
@@ -473,11 +493,14 @@ class _CustomSplitTile extends StatelessWidget {
                     suffixText: 'đ',
                     filled: true,
                     fillColor: AppColors.inputFill,
-                    contentPadding:
-                        const EdgeInsets.symmetric(horizontal: 12, vertical: 12),
+                    contentPadding: const EdgeInsets.symmetric(
+                      horizontal: 12,
+                      vertical: 12,
+                    ),
                     enabledBorder: OutlineInputBorder(
                       borderRadius: BorderRadius.circular(10),
-                      borderSide: const BorderSide(color: AppColors.inputBorder),
+                      borderSide:
+                          const BorderSide(color: AppColors.inputBorder),
                     ),
                     focusedBorder: OutlineInputBorder(
                       borderRadius: BorderRadius.circular(10),

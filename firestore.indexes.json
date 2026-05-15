@@ -9,12 +9,11 @@
       ]
     },
     {
-      "collectionGroup": "expense_shares",
+      "collectionGroup": "expenses",
       "queryScope": "COLLECTION",
       "fields": [
-        { "fieldPath": "expenseId", "order": "ASCENDING" },
         { "fieldPath": "roomGroupId", "order": "ASCENDING" },
-        { "fieldPath": "visibleToUserIds", "arrayConfig": "CONTAINS" }
+        { "fieldPath": "createdAt", "order": "ASCENDING" }
       ]
     },
     {
@@ -23,8 +22,7 @@
       "fields": [
         { "fieldPath": "roomGroupId", "order": "ASCENDING" },
         { "fieldPath": "fromUserId", "order": "ASCENDING" },
-        { "fieldPath": "isPaid", "order": "ASCENDING" },
-        { "fieldPath": "visibleToUserIds", "arrayConfig": "CONTAINS" }
+        { "fieldPath": "isPaid", "order": "ASCENDING" }
       ]
     },
     {
@@ -33,8 +31,63 @@
       "fields": [
         { "fieldPath": "roomGroupId", "order": "ASCENDING" },
         { "fieldPath": "toUserId", "order": "ASCENDING" },
-        { "fieldPath": "isPaid", "order": "ASCENDING" },
-        { "fieldPath": "visibleToUserIds", "arrayConfig": "CONTAINS" }
+        { "fieldPath": "isPaid", "order": "ASCENDING" }
+      ]
+    },
+    {
+      "collectionGroup": "expense_shares",
+      "queryScope": "COLLECTION",
+      "fields": [
+        { "fieldPath": "expenseId", "order": "ASCENDING" },
+        { "fieldPath": "roomGroupId", "order": "ASCENDING" }
+      ]
+    },
+    {
+      "collectionGroup": "expense_shares",
+      "queryScope": "COLLECTION",
+      "fields": [
+        { "fieldPath": "roomGroupId", "order": "ASCENDING" },
+        { "fieldPath": "isPaid", "order": "ASCENDING" }
+      ]
+    },
+    {
+      "collectionGroup": "roommate_requests",
+      "queryScope": "COLLECTION",
+      "fields": [
+        { "fieldPath": "postOwnerId", "order": "ASCENDING" },
+        { "fieldPath": "createdAt", "order": "DESCENDING" }
+      ]
+    },
+    {
+      "collectionGroup": "roommate_requests",
+      "queryScope": "COLLECTION",
+      "fields": [
+        { "fieldPath": "requesterId", "order": "ASCENDING" },
+        { "fieldPath": "createdAt", "order": "DESCENDING" }
+      ]
+    },
+    {
+      "collectionGroup": "roommate_requests",
+      "queryScope": "COLLECTION",
+      "fields": [
+        { "fieldPath": "postId", "order": "ASCENDING" },
+        { "fieldPath": "requesterId", "order": "ASCENDING" },
+        { "fieldPath": "status", "order": "ASCENDING" }
+      ]
+    },
+    {
+      "collectionGroup": "posts",
+      "queryScope": "COLLECTION",
+      "fields": [
+        { "fieldPath": "ownerId", "order": "ASCENDING" },
+        { "fieldPath": "createdAt", "order": "DESCENDING" }
+      ]
+    },
+    {
+      "collectionGroup": "posts",
+      "queryScope": "COLLECTION",
+      "fields": [
+        { "fieldPath": "createdAt", "order": "DESCENDING" }
       ]
     }
   ],

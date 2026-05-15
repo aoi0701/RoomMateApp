@@ -31,10 +31,15 @@ class _DebtScreenState extends State<DebtScreen> {
     super.initState();
     WidgetsBinding.instance.addPostFrameCallback((_) {
       if (!mounted) return;
-      context.read<ExpenseViewModel>().loadDebts(
-            userId: widget.currentUserId,
-            roomGroupId: widget.roomGroupId,
-          );
+      final vm = context.read<ExpenseViewModel>();
+      vm.loadDebts(
+        userId: widget.currentUserId,
+        roomGroupId: widget.roomGroupId,
+      );
+      vm.loadNetDebtSummary(
+        roomGroupId: widget.roomGroupId,
+        currentUserId: widget.currentUserId,
+      );
     });
   }
 
@@ -53,6 +58,52 @@ class _DebtScreenState extends State<DebtScreen> {
       ),
     );
     if (success) {
+      vm.loadDebts(
+        userId: widget.currentUserId,
+        roomGroupId: widget.roomGroupId,
+      );
+    }
+  }
+
+  Future<void> _settleAll(NetDebtEntry entry) async {
+    final vm = context.read<ExpenseViewModel>();
+
+    final confirmed = await showDialog<bool>(
+      context: context,
+      builder: (ctx) => AlertDialog(
+        title: const Text('Thanh toán tất cả'),
+        content: const Text(
+          'Bạn có chắc muốn đánh dấu tất cả công nợ này là đã thanh toán?',
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(ctx, false),
+            child: const Text('Huỷ'),
+          ),
+          TextButton(
+            onPressed: () => Navigator.pop(ctx, true),
+            child: Text(
+              'Xác nhận',
+              style: TextStyle(color: AppColors.primary),
+            ),
+          ),
+        ],
+      ),
+    );
+
+    if (confirmed != true) return;
+
+    final success = await vm.settleAllDebts(
+      fromUserId: entry.fromUserId,
+      toUserId: entry.toUserId,
+      roomGroupId: widget.roomGroupId,
+    );
+    if (!mounted) return;
+    if (success) {
+      vm.loadNetDebtSummary(
+        roomGroupId: widget.roomGroupId,
+        currentUserId: widget.currentUserId,
+      );
       vm.loadDebts(
         userId: widget.currentUserId,
         roomGroupId: widget.roomGroupId,
@@ -96,14 +147,22 @@ class _DebtScreenState extends State<DebtScreen> {
             return AppErrorState(
               title: 'Không tải được công nợ',
               message: vm.errorMessage!,
-              onRetry: () => vm.loadDebts(
-                userId: widget.currentUserId,
-                roomGroupId: widget.roomGroupId,
-              ),
+              onRetry: () {
+                vm.loadDebts(
+                  userId: widget.currentUserId,
+                  roomGroupId: widget.roomGroupId,
+                );
+                vm.loadNetDebtSummary(
+                  roomGroupId: widget.roomGroupId,
+                  currentUserId: widget.currentUserId,
+                );
+              },
             );
           }
 
-          if (vm.myDebts.isEmpty && vm.othersDebts.isEmpty) {
+          if (vm.myDebts.isEmpty &&
+              vm.othersDebts.isEmpty &&
+              vm.netDebts.isEmpty) {
             return const AppEmptyState(
               title: 'Không có công nợ',
               message: 'Tất cả khoản chi đã được thanh toán.',
@@ -114,6 +173,28 @@ class _DebtScreenState extends State<DebtScreen> {
           return ListView(
             padding: const EdgeInsets.all(20),
             children: [
+              // Net debt section
+              if (vm.netDebts.isNotEmpty) ...[
+                _SectionHeader(
+                  title: 'Sau khi đối soát',
+                  count: vm.netDebts.length,
+                  color: AppColors.primary,
+                ),
+                const SizedBox(height: 12),
+                ...vm.netDebts.map(
+                  (entry) => Padding(
+                    padding: const EdgeInsets.only(bottom: 12),
+                    child: _NetDebtCard(
+                      entry: entry,
+                      currentUserId: widget.currentUserId,
+                      formatMoney: _formatMoney,
+                      onSettle: () => _settleAll(entry),
+                      isLoading: vm.isLoading,
+                    ),
+                  ),
+                ),
+                const SizedBox(height: 8),
+              ],
               if (vm.myDebts.isNotEmpty) ...[
                 _SectionHeader(
                   title: 'Tôi nợ',
@@ -205,6 +286,93 @@ class _SectionHeader extends StatelessWidget {
           ),
         ),
       ],
+    );
+  }
+}
+
+class _NetDebtCard extends StatelessWidget {
+  final NetDebtEntry entry;
+  final String currentUserId;
+  final String Function(double) formatMoney;
+  final VoidCallback onSettle;
+  final bool isLoading;
+
+  const _NetDebtCard({
+    required this.entry,
+    required this.currentUserId,
+    required this.formatMoney,
+    required this.onSettle,
+    required this.isLoading,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    final isDebtor = entry.fromUserId == currentUserId;
+
+    return Container(
+      padding: const EdgeInsets.all(16),
+      decoration: BoxDecoration(
+        color: AppColors.surface,
+        borderRadius: BorderRadius.circular(20),
+        border: Border.all(color: AppColors.border),
+        boxShadow: const [
+          BoxShadow(
+            color: Color(0x08000000),
+            blurRadius: 12,
+            offset: Offset(0, 2),
+          ),
+        ],
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Row(
+            children: [
+              Expanded(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(
+                      isDebtor
+                          ? 'Bạn cần trả'
+                          : 'Bạn được nhận từ',
+                      style: AppTextStyles.caption.copyWith(
+                        color: isDebtor
+                            ? AppColors.danger
+                            : AppColors.successText,
+                      ),
+                    ),
+                    const SizedBox(height: 4),
+                    Row(
+                      children: [
+                        _UserNameText(
+                          userId: isDebtor ? entry.toUserId : entry.fromUserId,
+                        ),
+                        const SizedBox(width: 8),
+                        Text(
+                          formatMoney(entry.netAmount),
+                          style: AppTextStyles.labelLg.copyWith(
+                            color: AppColors.primary,
+                          ),
+                        ),
+                      ],
+                    ),
+                  ],
+                ),
+              ),
+            ],
+          ),
+          if (isDebtor) ...[
+            const SizedBox(height: 14),
+            AppPrimaryButton(
+              label: 'Thanh toán tất cả',
+              onTap: isLoading ? null : onSettle,
+              isLoading: isLoading,
+              height: 42,
+            ),
+          ],
+        ],
+      ),
     );
   }
 }
@@ -322,3 +490,4 @@ class _UserNameText extends StatelessWidget {
     );
   }
 }
+
