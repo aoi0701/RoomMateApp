@@ -6,6 +6,8 @@ import '../../../../core/theme/app_colors.dart';
 import '../../../../core/theme/app_text_styles.dart';
 import '../../../../core/widgets/app_avatar.dart';
 import '../../../../core/widgets/app_button.dart';
+import '../../../chat/presentation/viewmodels/chat_viewmodel.dart';
+import '../../../chat/presentation/views/chat_detail_screen.dart';
 import '../../../profile/data/models/user_model.dart';
 import '../../../profile/presentation/viewmodels/user_profile_viewmodel.dart';
 import '../../../roommate/presentation/viewmodels/roommate_request_viewmodel.dart';
@@ -483,30 +485,73 @@ class PostDetailScreen extends StatelessWidget {
           ),
         ],
       ),
-      child: AppPrimaryButton(
-        label: 'Gửi yêu cầu ở ghép',
-        onTap: () async {
-          final viewModel = context.read<RoommateRequestViewModel>();
-          final messenger = ScaffoldMessenger.of(context);
-          final navigator = Navigator.of(context);
+      child: StreamBuilder<DocumentSnapshot<Map<String, dynamic>>>(
+        stream: context
+            .read<UserProfileViewModel>()
+            .getUserProfileStream(post.ownerId),
+        builder: (context, snapshot) {
+          final owner = snapshot.hasData && snapshot.data!.exists
+              ? UserModel.fromDocument(snapshot.data!)
+              : null;
 
-          final hasRequested = await viewModel.hasPendingRequest(post.id);
-
-          if (hasRequested) {
-            messenger.showSnackBar(
-              const SnackBar(
-                content: Text('Bạn đã gửi yêu cầu cho bài đăng này rồi'),
+          return Row(
+            children: [
+              Expanded(
+                child: AppSecondaryButton(
+                  label: 'Nhắn tin',
+                  icon: const Icon(Icons.chat_bubble_outline_rounded, size: 18),
+                  height: 52,
+                  onTap: () {
+                    final chatVm = context.read<ChatViewModel>();
+                    final _ = chatVm.getConversationId(
+                        currentUserId ?? '', post.ownerId);
+                    Navigator.push(
+                      context,
+                      MaterialPageRoute(
+                        builder: (_) => ChatDetailScreen(
+                          otherUserId: post.ownerId,
+                          otherUserName: owner?.fullName ?? '',
+                          otherUserAvatar: owner?.avatarUrl ?? '',
+                        ),
+                      ),
+                    );
+                  },
+                ),
               ),
-            );
-            return;
-          }
+              const SizedBox(width: 12),
+              Expanded(
+                child: AppPrimaryButton(
+                  label: 'Gửi yêu cầu',
+                  height: 52,
+                  onTap: () async {
+                    final viewModel = context.read<RoommateRequestViewModel>();
+                    final messenger = ScaffoldMessenger.of(context);
+                    final navigator = Navigator.of(context);
 
-          if (!context.mounted) return;
+                    final hasRequested =
+                        await viewModel.hasPendingRequest(post.id);
 
-          navigator.push(
-            MaterialPageRoute(
-              builder: (_) => SendRequestScreen(postId: post.id),
-            ),
+                    if (hasRequested) {
+                      messenger.showSnackBar(
+                        const SnackBar(
+                          content:
+                              Text('Bạn đã gửi yêu cầu cho bài đăng này rồi'),
+                        ),
+                      );
+                      return;
+                    }
+
+                    if (!context.mounted) return;
+
+                    navigator.push(
+                      MaterialPageRoute(
+                        builder: (_) => SendRequestScreen(postId: post.id),
+                      ),
+                    );
+                  },
+                ),
+              ),
+            ],
           );
         },
       ),

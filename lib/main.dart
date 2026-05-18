@@ -23,14 +23,20 @@ import 'features/room_group/data/repositories/room_group_repository.dart';
 import 'features/room_group/presentation/viewmodels/room_group_viewmodel.dart';
 import 'features/expense/data/repositories/expense_repository.dart';
 import 'features/expense/presentation/viewmodels/expense_viewmodel.dart';
+import 'features/chat/data/repositories/chat_repository.dart';
+import 'features/chat/presentation/viewmodels/chat_viewmodel.dart';
 import 'firebase_options.dart';
 
 Future<void> main() async {
   WidgetsFlutterBinding.ensureInitialized();
 
-  await Firebase.initializeApp(
-    options: DefaultFirebaseOptions.currentPlatform,
-  );
+  try {
+    await Firebase.initializeApp(
+      options: DefaultFirebaseOptions.currentPlatform,
+    );
+  } on FirebaseException catch (e) {
+    if (e.code != 'duplicate-app') rethrow;
+  }
 
   runApp(const MyApp());
 }
@@ -110,6 +116,14 @@ class MyApp extends StatelessWidget {
         ChangeNotifierProvider<ExpenseViewModel>(
           create: (context) => ExpenseViewModel(
             repository: context.read<ExpenseRepository>(),
+          ),
+        ),
+        Provider<ChatRepository>(
+          create: (_) => ChatRepository(),
+        ),
+        ChangeNotifierProvider<ChatViewModel>(
+          create: (context) => ChatViewModel(
+            repository: context.read<ChatRepository>(),
           ),
         ),
       ],

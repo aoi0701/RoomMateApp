@@ -2,8 +2,12 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:provider/provider.dart';
+import 'package:roommateapp/features/chat/presentation/viewmodels/chat_viewmodel.dart';
+import 'package:roommateapp/features/chat/presentation/views/chat_detail_screen.dart';
+import 'package:roommateapp/features/chat/presentation/views/chat_list_screen.dart';
 import 'package:roommateapp/features/post/presentation/views/create_post_screen.dart';
 import 'package:roommateapp/features/post/presentation/views/my_posts_screen.dart';
+import 'package:roommateapp/features/room_group/presentation/views/room_group_screen.dart';
 import 'package:roommateapp/features/roommate/presentation/viewmodels/roommate_request_viewmodel.dart';
 
 import '../../../../core/theme/app_colors.dart';
@@ -254,23 +258,38 @@ class _UserProfileScreenState extends State<UserProfileScreen> {
       ),
       bottomNavigationBar: isCurrentUserProfile
           ? BottomNavigationBar(
-              currentIndex: 4,
+              currentIndex: 5,
               type: BottomNavigationBarType.fixed,
               selectedItemColor: AppColors.primary,
               unselectedItemColor: AppColors.textSecondary,
               backgroundColor: AppColors.surface,
               elevation: 0,
               selectedLabelStyle: GoogleFonts.plusJakartaSans(
-                fontSize: 11,
+                fontSize: 10,
                 fontWeight: FontWeight.w700,
               ),
               unselectedLabelStyle: GoogleFonts.plusJakartaSans(
-                fontSize: 11,
+                fontSize: 10,
                 fontWeight: FontWeight.w500,
               ),
               onTap: (index) {
-                if (index == 4) return;
+                if (index == 5) return; // already on Cá nhân
                 if (index == 2) {
+                  Navigator.push(
+                    context,
+                    MaterialPageRoute(
+                        builder: (_) => const ChatListScreen()),
+                  );
+                  return;
+                }
+                if (index == 3) {
+                  Navigator.push(
+                    context,
+                    MaterialPageRoute(builder: (_) => const RoomGroupScreen()),
+                  );
+                  return;
+                }
+                if (index == 4) {
                   Navigator.push(
                     context,
                     MaterialPageRoute(builder: (_) => const CreatePostScreen()),
@@ -291,14 +310,19 @@ class _UserProfileScreenState extends State<UserProfileScreen> {
                   label: 'Yêu cầu',
                 ),
                 BottomNavigationBarItem(
+                  icon: Icon(Icons.chat_bubble_outline_rounded),
+                  activeIcon: Icon(Icons.chat_bubble_rounded),
+                  label: 'Nhắn tin',
+                ),
+                BottomNavigationBarItem(
+                  icon: Icon(Icons.wallet_outlined),
+                  activeIcon: Icon(Icons.wallet),
+                  label: 'Chi tiêu',
+                ),
+                BottomNavigationBarItem(
                   icon: Icon(Icons.add_box_outlined),
                   activeIcon: Icon(Icons.add_box),
                   label: 'Đăng bài',
-                ),
-                BottomNavigationBarItem(
-                  icon: Icon(Icons.chat_bubble_outline),
-                  activeIcon: Icon(Icons.chat_bubble),
-                  label: 'Nhắn tin',
                 ),
                 BottomNavigationBarItem(
                   icon: Icon(Icons.person_outline),
@@ -643,6 +667,8 @@ class _UserProfileScreenState extends State<UserProfileScreen> {
 
   Widget _buildInviteActionBar(String viewedUserId) {
     final inviteVm = context.watch<RoommateProfileViewModel>();
+    final authVm = context.read<AuthViewModel>();
+    final currentUserId = authVm.user?.uid ?? '';
 
     return Container(
       padding: const EdgeInsets.fromLTRB(18, 14, 18, 20),
@@ -662,10 +688,19 @@ class _UserProfileScreenState extends State<UserProfileScreen> {
           Expanded(
             child: AppSecondaryButton(
               label: 'Nhắn tin',
+              icon: const Icon(Icons.chat_bubble_outline_rounded, size: 18),
               onTap: () {
-                ScaffoldMessenger.of(context).showSnackBar(
-                  const SnackBar(
-                    content: Text('Tính năng nhắn tin sẽ cập nhật sau'),
+                final chatVm = context.read<ChatViewModel>();
+                final _ = chatVm.getConversationId(
+                    currentUserId, viewedUserId);
+                Navigator.push(
+                  context,
+                  MaterialPageRoute(
+                    builder: (_) => ChatDetailScreen(
+                      otherUserId: viewedUserId,
+                      otherUserName: _viewedUserName,
+                      otherUserAvatar: _viewedUserAvatar,
+                    ),
                   ),
                 );
               },

@@ -100,12 +100,14 @@ class _EditPostScreenState extends State<EditPostScreen> {
 
   Future<void> _handleUpdatePost() async {
     FocusScope.of(context).unfocus();
+    final vm = context.read<PostViewModel>();
+    final messenger = ScaffoldMessenger.of(context);
+    final navigator = Navigator.of(context);
 
     final lifestyleHabits = await _loadLifestyleHabitIds(
       context.read<AuthViewModel>().user?.uid,
       fallback: widget.post.lifestyleHabits,
     );
-    final vm = context.read<PostViewModel>();
     final success = await vm.updatePost(
       postId: widget.post.id,
       title: _titleController.text,
@@ -124,7 +126,7 @@ class _EditPostScreenState extends State<EditPostScreen> {
 
     if (!mounted) return;
 
-    ScaffoldMessenger.of(context).showSnackBar(
+    messenger.showSnackBar(
       SnackBar(
         content: Text(
           success
@@ -135,7 +137,7 @@ class _EditPostScreenState extends State<EditPostScreen> {
     );
 
     if (success) {
-      Navigator.pop(context);
+      navigator.pop();
     }
   }
 

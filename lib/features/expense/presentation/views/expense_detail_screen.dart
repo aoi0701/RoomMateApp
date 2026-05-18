@@ -137,6 +137,8 @@ class _ExpenseDetailScreenState extends State<ExpenseDetailScreen> {
             IconButton(
               icon: const Icon(Icons.edit_outlined),
               onPressed: () async {
+                final vm = context.read<ExpenseViewModel>();
+                final messenger = ScaffoldMessenger.of(context);
                 final result = await Navigator.push<bool>(
                   context,
                   MaterialPageRoute(
@@ -150,11 +152,11 @@ class _ExpenseDetailScreenState extends State<ExpenseDetailScreen> {
                 if (result == true) {
                   await _reloadExpense();
                   if (!mounted) return;
-                  context.read<ExpenseViewModel>().loadExpenseShares(
-                        expenseId: _expense.id,
-                        roomGroupId: _expense.roomGroupId,
-                      );
-                  ScaffoldMessenger.of(context).showSnackBar(
+                  vm.loadExpenseShares(
+                    expenseId: _expense.id,
+                    roomGroupId: _expense.roomGroupId,
+                  );
+                  messenger.showSnackBar(
                     const SnackBar(content: Text('Đã cập nhật khoản chi')),
                   );
                 }

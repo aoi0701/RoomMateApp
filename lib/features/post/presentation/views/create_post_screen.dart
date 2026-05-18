@@ -6,7 +6,6 @@ import 'package:image_picker/image_picker.dart';
 import 'package:provider/provider.dart';
 
 import '../../../../core/theme/app_colors.dart';
-import '../../../../core/theme/app_text_styles.dart';
 import '../../../../core/widgets/app_button.dart';
 import '../../../auth/presentation/viewmodels/auth_viewmodel.dart';
 import '../../../home/data/constants/room_filter_data.dart';
@@ -83,11 +82,13 @@ class _CreatePostScreenState extends State<CreatePostScreen> {
 
   Future<void> _handleCreatePost() async {
     FocusScope.of(context).unfocus();
+    final vm = context.read<PostViewModel>();
+    final messenger = ScaffoldMessenger.of(context);
+    final navigator = Navigator.of(context);
 
     final lifestyleHabits = await _loadLifestyleHabitIds(
       context.read<AuthViewModel>().user?.uid,
     );
-    final vm = context.read<PostViewModel>();
     final success = await vm.createPost(
       title: _titleController.text,
       location: _locationController.text,
@@ -105,7 +106,7 @@ class _CreatePostScreenState extends State<CreatePostScreen> {
 
     if (!mounted) return;
 
-    ScaffoldMessenger.of(context).showSnackBar(
+    messenger.showSnackBar(
       SnackBar(
         content: Text(
           success ? 'Đăng bài thành công' : (vm.errorMessage ?? 'Đăng bài thất bại'),
@@ -114,7 +115,7 @@ class _CreatePostScreenState extends State<CreatePostScreen> {
     );
 
     if (success) {
-      Navigator.pop(context);
+      navigator.pop();
     }
   }
 

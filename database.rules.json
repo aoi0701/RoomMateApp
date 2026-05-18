@@ -1,0 +1,21 @@
+{
+  "rules": {
+    "chats": {
+      "$conversationId": {
+        ".read": "auth != null && ($conversationId.contains(auth.uid))",
+        ".write": "auth != null && ($conversationId.contains(auth.uid))",
+        "messages": {
+          "$messageId": {
+            ".validate": "newData.hasChildren(['senderId', 'text', 'createdAt'])"
+          }
+        }
+      }
+    },
+    "user_conversations": {
+      "$userId": {
+        ".read": "auth != null && auth.uid === $userId",
+        ".write": "auth != null"
+      }
+    }
+  }
+}

@@ -13,6 +13,8 @@ import '../viewmodels/home_search_filter_viewmodel.dart';
 import '../viewmodels/roommate_profile_viewmodel.dart';
 import 'room_search_filter_screen.dart';
 import '../../../auth/presentation/viewmodels/auth_viewmodel.dart';
+import '../../../chat/presentation/viewmodels/chat_viewmodel.dart';
+import '../../../chat/presentation/views/chat_list_screen.dart';
 import '../../../roommate/presentation/views/roommate_request_tab_screen.dart';
 import '../../../post/data/models/post_model.dart';
 import '../../../post/presentation/viewmodels/post_list_viewmodel.dart';
@@ -470,6 +472,11 @@ class _UserHomeScreenState extends State<UserHomeScreen> {
         label: 'Yêu cầu',
       ),
       _NavItemData(
+        icon: Icons.chat_bubble_outline_rounded,
+        activeIcon: Icons.chat_bubble_rounded,
+        label: 'Nhắn tin',
+      ),
+      _NavItemData(
         icon: Icons.wallet_outlined,
         activeIcon: Icons.wallet_rounded,
         label: 'Chi tiêu',
@@ -501,7 +508,7 @@ class _UserHomeScreenState extends State<UserHomeScreen> {
       child: SafeArea(
         top: false,
         child: Padding(
-          padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 8),
+          padding: const EdgeInsets.symmetric(horizontal: 4, vertical: 8),
           child: Row(
             children: List.generate(items.length, (index) {
               final item = items[index];
@@ -516,22 +523,6 @@ class _UserHomeScreenState extends State<UserHomeScreen> {
                           .resetFilter(clearSaved: true);
                       _searchController.clear();
                       setState(() => _selectedIndex = index);
-                    } else if (index == 2) {
-                      Navigator.push(
-                        context,
-                        MaterialPageRoute(
-                          builder: (_) => const RoomGroupScreen(),
-                        ),
-                      );
-                    } else if (index == 3) {
-                      _openCreatePost();
-                    } else if (index == 4) {
-                      Navigator.push(
-                        context,
-                        MaterialPageRoute(
-                          builder: (_) => const UserProfileScreen(),
-                        ),
-                      );
                     } else if (index == 1) {
                       Navigator.push(
                         context,
@@ -539,32 +530,105 @@ class _UserHomeScreenState extends State<UserHomeScreen> {
                           builder: (_) => const RoommateRequestTabScreen(),
                         ),
                       );
-                    } else {
-                      setState(() => _selectedIndex = index);
+                    } else if (index == 2) {
+                      Navigator.push(
+                        context,
+                        MaterialPageRoute(
+                          builder: (_) => const ChatListScreen(),
+                        ),
+                      );
+                    } else if (index == 3) {
+                      Navigator.push(
+                        context,
+                        MaterialPageRoute(
+                          builder: (_) => const RoomGroupScreen(),
+                        ),
+                      );
+                    } else if (index == 4) {
+                      _openCreatePost();
+                    } else if (index == 5) {
+                      Navigator.push(
+                        context,
+                        MaterialPageRoute(
+                          builder: (_) => const UserProfileScreen(),
+                        ),
+                      );
                     }
                   },
                   child: Column(
                     mainAxisSize: MainAxisSize.min,
                     children: [
-                      AnimatedContainer(
-                        duration: const Duration(milliseconds: 200),
-                        padding: const EdgeInsets.symmetric(
-                          horizontal: 14,
-                          vertical: 6,
-                        ),
-                        decoration: BoxDecoration(
-                          color: isActive
-                              ? AppColors.accent
-                              : Colors.transparent,
-                          borderRadius: BorderRadius.circular(12),
-                        ),
-                        child: Icon(
-                          isActive ? item.activeIcon : item.icon,
-                          color: isActive
-                              ? AppColors.primary
-                              : AppColors.textSecondary,
-                          size: 22,
-                        ),
+                      Stack(
+                        clipBehavior: Clip.none,
+                        children: [
+                          AnimatedContainer(
+                            duration: const Duration(milliseconds: 200),
+                            padding: const EdgeInsets.symmetric(
+                              horizontal: 10,
+                              vertical: 6,
+                            ),
+                            decoration: BoxDecoration(
+                              color: isActive
+                                  ? AppColors.accent
+                                  : Colors.transparent,
+                              borderRadius: BorderRadius.circular(12),
+                            ),
+                            child: Icon(
+                              isActive ? item.activeIcon : item.icon,
+                              color: isActive
+                                  ? AppColors.primary
+                                  : AppColors.textSecondary,
+                              size: 22,
+                            ),
+                          ),
+                          // Unread badge for Nhắn tin tab (index 2)
+                          if (index == 2)
+                            Positioned(
+                              top: -2,
+                              right: -2,
+                              child: StreamBuilder<List<dynamic>>(
+                                stream: context
+                                    .read<ChatViewModel>()
+                                    .conversationsStream,
+                                builder: (context, snapshot) {
+                                  final convs = snapshot.data ?? [];
+                                  final totalUnread = convs.fold<int>(
+                                    0,
+                                    (acc, c) {
+                                      // ignore: avoid_dynamic_calls
+                                      final count = (c as dynamic).unreadCount
+                                          as int? ??
+                                          0;
+                                      return acc + count;
+                                    },
+                                  );
+                                  if (totalUnread == 0) {
+                                    return const SizedBox.shrink();
+                                  }
+                                  return Container(
+                                    width: 14,
+                                    height: 14,
+                                    decoration: const BoxDecoration(
+                                      color: AppColors.danger,
+                                      shape: BoxShape.circle,
+                                    ),
+                                    child: Center(
+                                      child: Text(
+                                        totalUnread > 9
+                                            ? '9+'
+                                            : '$totalUnread',
+                                        style: const TextStyle(
+                                          color: Colors.white,
+                                          fontSize: 8,
+                                          fontWeight: FontWeight.w800,
+                                        ),
+                                      ),
+                                    ),
+                                  );
+                                },
+                              ),
+                            ),
+                        ],
                       ),
                       const SizedBox(height: 2),
                       Text(

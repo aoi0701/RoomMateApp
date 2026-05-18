@@ -56,6 +56,7 @@ class DefaultFirebaseOptions {
     messagingSenderId: '787375402089',
     projectId: 'roommateapp-fbb4f',
     storageBucket: 'roommateapp-fbb4f.firebasestorage.app',
+    databaseURL: 'https://roommateapp-fbb4f-default-rtdb.asia-southeast1.firebasedatabase.app',
   );
 
   static const FirebaseOptions ios = FirebaseOptions(
@@ -64,6 +65,7 @@ class DefaultFirebaseOptions {
     messagingSenderId: '787375402089',
     projectId: 'roommateapp-fbb4f',
     storageBucket: 'roommateapp-fbb4f.firebasestorage.app',
+    databaseURL: 'https://roommateapp-fbb4f-default-rtdb.asia-southeast1.firebasedatabase.app',
     iosBundleId: 'com.example.roommateapp',
   );
 
@@ -73,6 +75,7 @@ class DefaultFirebaseOptions {
     messagingSenderId: '787375402089',
     projectId: 'roommateapp-fbb4f',
     storageBucket: 'roommateapp-fbb4f.firebasestorage.app',
+    databaseURL: 'https://roommateapp-fbb4f-default-rtdb.asia-southeast1.firebasedatabase.app',
     iosBundleId: 'com.example.roommateapp',
   );
 
@@ -83,6 +86,7 @@ class DefaultFirebaseOptions {
     projectId: 'roommateapp-fbb4f',
     authDomain: 'roommateapp-fbb4f.firebaseapp.com',
     storageBucket: 'roommateapp-fbb4f.firebasestorage.app',
+    databaseURL: 'https://roommateapp-fbb4f-default-rtdb.asia-southeast1.firebasedatabase.app',
     measurementId: 'G-YL5X7431RJ',
   );
 }
