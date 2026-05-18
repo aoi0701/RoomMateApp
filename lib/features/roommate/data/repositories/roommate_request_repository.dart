@@ -172,6 +172,24 @@ class RoommateRequestRepository {
     });
   }
 
+  Future<void> deleteRequest(String requestId) async {
+    final user = currentUser;
+    if (user == null) throw Exception('Chưa đăng nhập');
+
+    final doc = await _requestRef.doc(requestId).get();
+    if (!doc.exists) throw Exception('Yêu cầu không tồn tại');
+
+    final data = doc.data()!;
+    final requesterId = data['requesterId'] ?? '';
+    final postOwnerId = data['postOwnerId'] ?? '';
+
+    if (user.uid != requesterId && user.uid != postOwnerId) {
+      throw Exception('Bạn không có quyền xóa yêu cầu này');
+    }
+
+    await _requestRef.doc(requestId).delete();
+  }
+
   Future<bool> hasPendingRequest(String postId) async {
     final user = currentUser;
     if (user == null) return false;

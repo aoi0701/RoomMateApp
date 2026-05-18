@@ -2,6 +2,7 @@ import 'dart:async';
 
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 
 import '../../data/repositories/auth_repository.dart';
 
@@ -45,6 +46,38 @@ class AuthViewModel extends ChangeNotifier {
       return null;
     } catch (e) {
       errorMessage = 'Đã có lỗi xảy ra: $e';
+      return null;
+    } finally {
+      isLoading = false;
+      notifyListeners();
+    }
+  }
+
+  Future<String?> signInWithGoogle() async {
+    try {
+      isLoading = true;
+      errorMessage = null;
+      notifyListeners();
+
+      final role = await _repository.signInWithGoogle();
+      return role;
+    } on PlatformException catch (e) {
+      if (e.code == 'sign_in_canceled' || e.code == 'network_error') {
+        errorMessage = null;
+      } else {
+        errorMessage = e.message ?? 'Đăng nhập Google thất bại';
+      }
+      return null;
+    } on FirebaseAuthException catch (e) {
+      errorMessage = _mapFirebaseAuthError(e);
+      return null;
+    } catch (e) {
+      final msg = e.toString();
+      if (msg.contains('cancelled')) {
+        errorMessage = null;
+      } else {
+        errorMessage = 'Đăng nhập Google thất bại: $e';
+      }
       return null;
     } finally {
       isLoading = false;

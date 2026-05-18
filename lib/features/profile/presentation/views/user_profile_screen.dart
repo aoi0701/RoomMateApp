@@ -5,7 +5,6 @@ import 'package:provider/provider.dart';
 import 'package:roommateapp/features/post/presentation/views/create_post_screen.dart';
 import 'package:roommateapp/features/post/presentation/views/my_posts_screen.dart';
 import 'package:roommateapp/features/roommate/presentation/viewmodels/roommate_request_viewmodel.dart';
-import 'package:roommateapp/features/roommate/presentation/views/received_requests_screen.dart';
 
 import '../../../../core/theme/app_colors.dart';
 import '../../../../core/theme/app_text_styles.dart';
@@ -190,20 +189,6 @@ class _UserProfileScreenState extends State<UserProfileScreen> {
                                   context,
                                   MaterialPageRoute(
                                     builder: (_) => const MyPostsScreen(),
-                                  ),
-                                );
-                              },
-                            ),
-                            _ManageItem(
-                              icon: Icons.mark_email_unread_outlined,
-                              title: 'Yêu cầu ở ghép',
-                              subtitle: 'Theo dõi các yêu cầu bạn đã nhận',
-                              showBadge: true,
-                              onTap: () {
-                                Navigator.push(
-                                  context,
-                                  MaterialPageRoute(
-                                    builder: (_) => const ReceivedRequestsScreen(),
                                   ),
                                 );
                               },
@@ -703,8 +688,6 @@ class _UserProfileScreenState extends State<UserProfileScreen> {
     BuildContext context, {
     required List<_ManageItem> items,
   }) {
-    final pendingCount = context.watch<RoommateRequestViewModel>().pendingCount;
-
     return Container(
       decoration: BoxDecoration(
         color: AppColors.surface,
@@ -746,35 +729,10 @@ class _UserProfileScreenState extends State<UserProfileScreen> {
                     ),
                   ),
                 ),
-                trailing: Row(
-                  mainAxisSize: MainAxisSize.min,
-                  children: [
-                    if (item.showBadge && pendingCount > 0)
-                      Container(
-                        padding: const EdgeInsets.symmetric(
-                          horizontal: 8,
-                          vertical: 3,
-                        ),
-                        decoration: BoxDecoration(
-                          color: AppColors.danger,
-                          borderRadius: BorderRadius.circular(999),
-                        ),
-                        child: Text(
-                          pendingCount.toString(),
-                          style: const TextStyle(
-                            color: Colors.white,
-                            fontWeight: FontWeight.w700,
-                            fontSize: 12,
-                          ),
-                        ),
-                      ),
-                    const SizedBox(width: 8),
-                    const Icon(
-                      Icons.chevron_right_rounded,
-                      size: 24,
-                      color: AppColors.textSecondary,
-                    ),
-                  ],
+                trailing: const Icon(
+                  Icons.chevron_right_rounded,
+                  size: 24,
+                  color: AppColors.textSecondary,
                 ),
                 onTap: item.onTap,
               ),
@@ -930,13 +888,11 @@ class _ManageItem {
   final String title;
   final String subtitle;
   final VoidCallback onTap;
-  final bool showBadge;
 
   _ManageItem({
     required this.icon,
     required this.title,
     required this.subtitle,
     required this.onTap,
-    this.showBadge = false,
   });
 }

@@ -12,8 +12,8 @@ import '../../data/models/roommate_profile_model.dart';
 import '../viewmodels/home_search_filter_viewmodel.dart';
 import '../viewmodels/roommate_profile_viewmodel.dart';
 import 'room_search_filter_screen.dart';
-import 'sent_invites_screen.dart';
 import '../../../auth/presentation/viewmodels/auth_viewmodel.dart';
+import '../../../roommate/presentation/views/roommate_request_tab_screen.dart';
 import '../../../post/data/models/post_model.dart';
 import '../../../post/presentation/viewmodels/post_list_viewmodel.dart';
 import '../../../post/presentation/views/create_post_screen.dart';
@@ -536,7 +536,7 @@ class _UserHomeScreenState extends State<UserHomeScreen> {
                       Navigator.push(
                         context,
                         MaterialPageRoute(
-                          builder: (_) => const SentInvitesScreen(),
+                          builder: (_) => const RoommateRequestTabScreen(),
                         ),
                       );
                     } else {

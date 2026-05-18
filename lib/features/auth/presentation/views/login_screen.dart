@@ -31,6 +31,37 @@ class _LoginScreenState extends State<LoginScreen> {
     super.dispose();
   }
 
+  Future<void> _handleGoogleSignIn() async {
+    final vm = context.read<AuthViewModel>();
+    final role = await vm.signInWithGoogle();
+
+    if (!mounted) return;
+
+    if (role == null) {
+      if (vm.errorMessage != null) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text(vm.errorMessage!)),
+        );
+      }
+      return;
+    }
+
+    if (role == 'banned') {
+      await vm.logout();
+      if (!mounted) return;
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('Tài khoản của bạn đã bị khóa')),
+      );
+      return;
+    }
+
+    Navigator.pushAndRemoveUntil(
+      context,
+      MaterialPageRoute(builder: (_) => const UserHomeScreen()),
+      (route) => false,
+    );
+  }
+
   Future<void> _handleLogin() async {
     FocusScope.of(context).unfocus();
 
@@ -234,7 +265,7 @@ class _LoginScreenState extends State<LoginScreen> {
               SocialLoginButton(
                 text: 'Tiếp tục với Google',
                 imagePath: 'assets/images/google.png',
-                onTap: () {},
+                onTap: vm.isLoading ? null : _handleGoogleSignIn,
               ),
               const SizedBox(height: 32),
 

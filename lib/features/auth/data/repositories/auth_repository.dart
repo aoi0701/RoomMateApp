@@ -1,5 +1,6 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
+import 'package:google_sign_in/google_sign_in.dart';
 
 class AuthRepository {
   final FirebaseAuth _auth;
@@ -63,6 +64,47 @@ class AuthRepository {
   Future<String> getUserRole(String uid) async {
     final doc = await _firestore.collection('users').doc(uid).get();
     return doc.data()?['role'] ?? 'user';
+  }
+
+  Future<String> signInWithGoogle() async {
+    final googleUser = await GoogleSignIn().signIn();
+    if (googleUser == null) {
+      throw Exception('Google Sign-In cancelled by user');
+    }
+
+    final googleAuth = await googleUser.authentication;
+    final credential = GoogleAuthProvider.credential(
+      accessToken: googleAuth.accessToken,
+      idToken: googleAuth.idToken,
+    );
+
+    final userCredential = await _auth.signInWithCredential(credential);
+    final user = userCredential.user;
+    if (user == null) {
+      throw Exception('Không lấy được thông tin người dùng từ Google');
+    }
+
+    final docRef = _firestore.collection('users').doc(user.uid);
+    final doc = await docRef.get();
+
+    if (!doc.exists) {
+      await docRef.set({
+        'uid': user.uid,
+        'fullName': user.displayName ?? '',
+        'email': user.email ?? '',
+        'avatarUrl': user.photoURL ?? '',
+        'phone': '',
+        'address': '',
+        'gender': '',
+        'habits': const <String>[],
+        'roommateCriteria': const <String>[],
+        'role': 'user',
+        'createdAt': FieldValue.serverTimestamp(),
+      });
+    }
+
+    final role = doc.exists ? (doc.data()?['role'] ?? 'user') : 'user';
+    return role as String;
   }
 
   Future<void> resetPassword(String email) {

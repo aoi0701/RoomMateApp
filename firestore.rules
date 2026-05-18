@@ -10,7 +10,6 @@ service cloud.firestore {
       return request.auth.uid == uid;
     }
 
-    // ── users ────────────────────────────────────────────────────────────────
     match /users/{userId} {
       allow read: if isAuth();
       allow create: if isAuth() && isOwner(userId);
@@ -18,7 +17,6 @@ service cloud.firestore {
       allow delete: if false;
     }
 
-    // ── posts ─────────────────────────────────────────────────────────────────
     match /posts/{postId} {
       allow read: if isAuth();
       allow create: if isAuth() && request.resource.data.ownerId == request.auth.uid;
@@ -26,7 +24,6 @@ service cloud.firestore {
       allow delete: if isAuth() && resource.data.ownerId == request.auth.uid;
     }
 
-    // ── roommate_requests ─────────────────────────────────────────────────────
     match /roommate_requests/{requestId} {
       allow read: if isAuth() && (
         resource.data.requesterId == request.auth.uid ||
@@ -34,10 +31,12 @@ service cloud.firestore {
       );
       allow create: if isAuth();
       allow update: if isAuth() && resource.data.postOwnerId == request.auth.uid;
-      allow delete: if false;
+      allow delete: if isAuth() && (
+        resource.data.requesterId == request.auth.uid ||
+        resource.data.postOwnerId == request.auth.uid
+      );
     }
 
-    // ── room_groups ───────────────────────────────────────────────────────────
     match /room_groups/{groupId} {
       allow read: if isAuth() && request.auth.uid in resource.data.memberIds;
       allow create: if isAuth();
@@ -45,7 +44,6 @@ service cloud.firestore {
       allow delete: if false;
     }
 
-    // ── expenses ──────────────────────────────────────────────────────────────
     match /expenses/{expenseId} {
       allow read: if isAuth();
       allow create: if isAuth();
@@ -55,11 +53,6 @@ service cloud.firestore {
         get(/databases/$(database)/documents/room_groups/$(resource.data.roomGroupId)).data.memberIds;
     }
 
-    // ── expense_shares ────────────────────────────────────────────────────────
-    // create : any authenticated user (batch write after addExpense)
-    // update : the debtor (fromUserId) marks a share as paid
-    // delete : the creditor (toUserId) OR the expense payer — needed so
-    //          deleteExpense / updateExpense can remove all shares in one batch
     match /expense_shares/{shareId} {
       allow read: if isAuth();
       allow create: if isAuth();
@@ -68,7 +61,6 @@ service cloud.firestore {
         get(/databases/$(database)/documents/room_groups/$(resource.data.roomGroupId)).data.memberIds;
     }
 
-    // ── roommate_profile_invites ──────────────────────────────────────────────
     match /roommate_profile_invites/{inviteId} {
       allow read: if isAuth() && (
         resource.data.senderId     == request.auth.uid ||

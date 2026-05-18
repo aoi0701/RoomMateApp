@@ -202,6 +202,24 @@ class RoommateRequestViewModel extends ChangeNotifier {
     }
   }
 
+  Future<bool> deleteRequest(String requestId) async {
+    try {
+      _isLoading = true;
+      _errorMessage = null;
+      notifyListeners();
+
+      await _repository.deleteRequest(requestId);
+      return true;
+    } catch (e) {
+      _errorMessage = e.toString().replaceFirst('Exception: ', '');
+      notifyListeners();
+      return false;
+    } finally {
+      _isLoading = false;
+      notifyListeners();
+    }
+  }
+
   Future<bool> rejectRequest(String requestId) async {
     try {
       _setLoading(true);
