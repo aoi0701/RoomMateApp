@@ -185,12 +185,21 @@ class RoommateRequestViewModel extends ChangeNotifier {
 
       final request = await _repository.acceptRequest(requestId);
 
-      await _roomGroupRepository.createGroupAfterAcceptRequest(
-        ownerId: request.postOwnerId,
-        requesterId: request.requesterId,
-        postId: request.postId,
-        groupName: 'Nhóm phòng',
-      );
+      try {
+        await _roomGroupRepository.createGroupAfterAcceptRequest(
+          ownerId: request.postOwnerId,
+          requesterId: request.requesterId,
+          postId: request.postId,
+          groupName: 'Nhóm phòng',
+        );
+      } catch (groupError) {
+        try {
+          await _repository.rejectRequest(requestId);
+        } catch (_) {}
+        throw Exception(
+          'Không thể tạo nhóm phòng. Yêu cầu đã được hoàn tác. Vui lòng thử lại.',
+        );
+      }
 
       return true;
     } catch (e) {

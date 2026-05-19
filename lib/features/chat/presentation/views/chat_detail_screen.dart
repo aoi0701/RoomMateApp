@@ -31,6 +31,8 @@ class _ChatDetailScreenState extends State<ChatDetailScreen> {
   final _scrollController = ScrollController();
   late final String _conversationId;
   late final String _currentUserId;
+  bool _isAtBottom = true;
+  bool _isConversationReady = false;
 
   @override
   void initState() {
@@ -40,9 +42,24 @@ class _ChatDetailScreenState extends State<ChatDetailScreen> {
     final chatVm = context.read<ChatViewModel>();
     _conversationId =
         chatVm.getConversationId(_currentUserId, widget.otherUserId);
+    _initializeConversation();
+    _scrollController.addListener(() {
+      if (!_scrollController.hasClients) return;
+      final pos = _scrollController.position;
+      _isAtBottom = pos.pixels >= pos.maxScrollExtent - 100;
+    });
+  }
 
-    WidgetsBinding.instance.addPostFrameCallback((_) {
-      chatVm.markAsRead(_conversationId);
+  Future<void> _initializeConversation() async {
+    final chatVm = context.read<ChatViewModel>();
+    await chatVm.ensureConversation(
+      conversationId: _conversationId,
+      otherUserId: widget.otherUserId,
+    );
+    await chatVm.markAsRead(_conversationId);
+    if (!mounted) return;
+    setState(() {
+      _isConversationReady = true;
     });
   }
 
@@ -112,7 +129,7 @@ class _ChatDetailScreenState extends State<ChatDetailScreen> {
               child: Text(
                 widget.otherUserName.isNotEmpty
                     ? widget.otherUserName
-                    : 'Người dùng',
+                    : 'Nguoi dung',
                 style: AppTextStyles.labelLg,
                 maxLines: 1,
                 overflow: TextOverflow.ellipsis,
@@ -124,57 +141,67 @@ class _ChatDetailScreenState extends State<ChatDetailScreen> {
       body: Column(
         children: [
           Expanded(
-            child: StreamBuilder<List<ChatMessageModel>>(
-              stream: chatVm.getMessagesStream(_conversationId),
-              builder: (context, snapshot) {
-                if (snapshot.connectionState == ConnectionState.waiting) {
-                  return const AppLoadingState(
-                      message: 'Đang tải tin nhắn...');
-                }
+            child: !_isConversationReady
+                ? const AppLoadingState(
+                    message: 'Dang chuan bi cuoc tro chuyen...',
+                  )
+                : StreamBuilder<List<ChatMessageModel>>(
+                    stream: chatVm.getMessagesStream(_conversationId),
+                    builder: (context, snapshot) {
+                      if (snapshot.connectionState == ConnectionState.waiting) {
+                        return const AppLoadingState(
+                          message: 'Dang tai tin nhan...',
+                        );
+                      }
 
-                if (snapshot.hasError) {
-                  return AppErrorState(
-                    title: 'Lỗi tải tin nhắn',
-                    message: snapshot.error.toString(),
-                  );
-                }
+                      if (snapshot.hasError) {
+                        return AppErrorState(
+                          title: 'Loi tai tin nhan',
+                          message: snapshot.error.toString(),
+                        );
+                      }
 
-                final messages = snapshot.data ?? [];
+                      final messages = snapshot.data ?? [];
 
-                if (messages.isEmpty) {
-                  return const AppEmptyState(
-                    icon: Icons.chat_bubble_outline_rounded,
-                    title: 'Chưa có tin nhắn',
-                    message: 'Hãy gửi lời nhắn đầu tiên!',
-                  );
-                }
+                      if (messages.isEmpty) {
+                        return const AppEmptyState(
+                          icon: Icons.chat_bubble_outline_rounded,
+                          title: 'Chua co tin nhan',
+                          message: 'Hay gui loi nhan dau tien!',
+                        );
+                      }
 
-                WidgetsBinding.instance
-                    .addPostFrameCallback((_) => _scrollToBottom());
+                      final lastMessage =
+                          messages.isNotEmpty ? messages.last : null;
+                      final isMine = lastMessage?.senderId == _currentUserId;
+                      if (_isAtBottom || isMine) {
+                        WidgetsBinding.instance
+                            .addPostFrameCallback((_) => _scrollToBottom());
+                      }
 
-                return ListView.builder(
-                  controller: _scrollController,
-                  padding: const EdgeInsets.fromLTRB(16, 16, 16, 8),
-                  itemCount: messages.length,
-                  itemBuilder: (context, index) {
-                    final msg = messages[index];
-                    final isMine = msg.senderId == _currentUserId;
-                    final showTimestamp = index == 0 ||
-                        messages[index].createdAt
-                                .difference(messages[index - 1].createdAt)
-                                .inMinutes
-                                .abs() >
-                            5;
+                      return ListView.builder(
+                        controller: _scrollController,
+                        padding: const EdgeInsets.fromLTRB(16, 16, 16, 8),
+                        itemCount: messages.length,
+                        itemBuilder: (context, index) {
+                          final msg = messages[index];
+                          final isMine = msg.senderId == _currentUserId;
+                          final showTimestamp = index == 0 ||
+                              messages[index].createdAt
+                                      .difference(messages[index - 1].createdAt)
+                                      .inMinutes
+                                      .abs() >
+                                  5;
 
-                    return _MessageItem(
-                      message: msg,
-                      isMine: isMine,
-                      showTimestamp: showTimestamp,
-                    );
-                  },
-                );
-              },
-            ),
+                          return _MessageItem(
+                            message: msg,
+                            isMine: isMine,
+                            showTimestamp: showTimestamp,
+                          );
+                        },
+                      );
+                    },
+                  ),
           ),
           _buildInputBar(),
         ],
@@ -212,13 +239,15 @@ class _ChatDetailScreenState extends State<ChatDetailScreen> {
               textCapitalization: TextCapitalization.sentences,
               style: AppTextStyles.body,
               decoration: InputDecoration(
-                hintText: 'Nhập tin nhắn...',
+                hintText: 'Nhap tin nhan...',
                 hintStyle:
                     AppTextStyles.body.copyWith(color: AppColors.textHint),
                 filled: true,
                 fillColor: AppColors.inputFill,
                 contentPadding: const EdgeInsets.symmetric(
-                    horizontal: 16, vertical: 10),
+                  horizontal: 16,
+                  vertical: 10,
+                ),
                 border: OutlineInputBorder(
                   borderRadius: BorderRadius.circular(20),
                   borderSide: const BorderSide(color: AppColors.inputBorder),
@@ -303,9 +332,7 @@ class _MessageItem extends StatelessWidget {
               padding:
                   const EdgeInsets.symmetric(horizontal: 14, vertical: 10),
               decoration: BoxDecoration(
-                color: isMine
-                    ? AppColors.primary
-                    : AppColors.surface,
+                color: isMine ? AppColors.primary : AppColors.surface,
                 borderRadius: BorderRadius.only(
                   topLeft: const Radius.circular(18),
                   topRight: const Radius.circular(18),
@@ -314,9 +341,7 @@ class _MessageItem extends StatelessWidget {
                   bottomRight:
                       isMine ? const Radius.circular(4) : const Radius.circular(18),
                 ),
-                border: isMine
-                    ? null
-                    : Border.all(color: AppColors.border),
+                border: isMine ? null : Border.all(color: AppColors.border),
                 boxShadow: const [
                   BoxShadow(
                     color: Color(0x08000000),
@@ -364,8 +389,8 @@ class _MessageItem extends StatelessWidget {
 
     final timeStr =
         '${dt.hour.toString().padLeft(2, '0')}:${dt.minute.toString().padLeft(2, '0')}';
-    if (diff == 0) return 'Hôm nay $timeStr';
-    if (diff == 1) return 'Hôm qua $timeStr';
+    if (diff == 0) return 'Hom nay $timeStr';
+    if (diff == 1) return 'Hom qua $timeStr';
     return '${dt.day}/${dt.month}/${dt.year} $timeStr';
   }
 }

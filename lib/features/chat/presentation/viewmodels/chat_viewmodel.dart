@@ -25,6 +25,16 @@ class ChatViewModel extends ChangeNotifier {
   Stream<List<ChatMessageModel>> getMessagesStream(String conversationId) =>
       _repository.getMessagesStream(conversationId);
 
+  Future<void> ensureConversation({
+    required String conversationId,
+    required String otherUserId,
+  }) async {
+    await _repository.ensureConversation(
+      conversationId: conversationId,
+      otherUserId: otherUserId,
+    );
+  }
+
   Future<bool> sendMessage({
     required String conversationId,
     required String receiverId,

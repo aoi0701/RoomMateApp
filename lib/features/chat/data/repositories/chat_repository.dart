@@ -29,6 +29,25 @@ class ChatRepository {
     return sorted.join('_');
   }
 
+  List<String> _getSortedParticipants(String uid1, String uid2) {
+    final sorted = [uid1, uid2]..sort();
+    return sorted;
+  }
+
+  Future<void> ensureConversation({
+    required String conversationId,
+    required String otherUserId,
+  }) async {
+    final user = _currentUser;
+    if (user == null) throw Exception('Not authenticated');
+
+    final participants = _getSortedParticipants(user.uid, otherUserId);
+    await _db.ref().update({
+      'chats/$conversationId/participantAId': participants[0],
+      'chats/$conversationId/participantBId': participants[1],
+    });
+  }
+
   Future<void> sendMessage({
     required String conversationId,
     required String receiverId,
@@ -37,60 +56,59 @@ class ChatRepository {
     required String receiverAvatar,
   }) async {
     final user = _currentUser;
-    if (user == null) throw Exception('Chưa đăng nhập');
+    if (user == null) throw Exception('Not authenticated');
 
-    final now = ServerValue.timestamp;
-    final messagesRef =
-        _db.ref('chats/$conversationId/messages').push();
+    final participants = _getSortedParticipants(user.uid, receiverId);
+    final trimmedText = text.trim();
+    final createdAt = ServerValue.timestamp;
+    final messagesRef = _db.ref('chats/$conversationId/messages').push();
     final messageId = messagesRef.key!;
+    final senderName = user.displayName ?? '';
+    final senderAvatar = user.photoURL ?? '';
 
-    final messageData = {
-      'senderId': user.uid,
-      'senderName': user.displayName ?? '',
-      'senderAvatar': user.photoURL ?? '',
-      'text': text.trim(),
-      'createdAt': now,
-      'isRead': false,
-    };
-
-    final senderConvData = {
-      'otherUserId': receiverId,
-      'otherUserName': receiverName,
-      'otherUserAvatar': receiverAvatar,
-      'lastMessage': text.trim(),
-      'lastMessageAt': now,
-      'unreadCount': 0,
-    };
-
-    final receiverConvData = {
-      'otherUserId': user.uid,
-      'otherUserName': user.displayName ?? '',
-      'otherUserAvatar': user.photoURL ?? '',
-      'lastMessage': text.trim(),
-      'lastMessageAt': now,
-    };
-
-    // Increment receiver's unreadCount atomically
-    final receiverUnreadRef =
-        _db.ref('user_conversations/$receiverId/$conversationId/unreadCount');
-
-    await _db.ref().update({
-      'chats/$conversationId/messages/$messageId': messageData,
-      'user_conversations/${user.uid}/$conversationId': senderConvData,
-      'user_conversations/$receiverId/$conversationId/otherUserId':
-          receiverConvData['otherUserId'],
+    final updates = <String, dynamic>{
+      'chats/$conversationId/participantAId': participants[0],
+      'chats/$conversationId/participantBId': participants[1],
+      'chats/$conversationId/messages/$messageId/senderId': user.uid,
+      'chats/$conversationId/messages/$messageId/senderName': senderName,
+      'chats/$conversationId/messages/$messageId/senderAvatar': senderAvatar,
+      'chats/$conversationId/messages/$messageId/text': trimmedText,
+      'chats/$conversationId/messages/$messageId/createdAt': createdAt,
+      'chats/$conversationId/messages/$messageId/isRead': false,
+      'user_conversations/${user.uid}/$conversationId/otherUserId': receiverId,
+      'user_conversations/${user.uid}/$conversationId/otherUserName':
+          receiverName,
+      'user_conversations/${user.uid}/$conversationId/otherUserAvatar':
+          receiverAvatar,
+      'user_conversations/${user.uid}/$conversationId/lastMessageId':
+          messageId,
+      'user_conversations/${user.uid}/$conversationId/lastMessage':
+          trimmedText,
+      'user_conversations/${user.uid}/$conversationId/lastMessageAt':
+          createdAt,
+      'user_conversations/${user.uid}/$conversationId/unreadCount': 0,
+      'user_conversations/$receiverId/$conversationId/otherUserId': user.uid,
       'user_conversations/$receiverId/$conversationId/otherUserName':
-          receiverConvData['otherUserName'],
+          senderName,
       'user_conversations/$receiverId/$conversationId/otherUserAvatar':
-          receiverConvData['otherUserAvatar'],
+          senderAvatar,
+      'user_conversations/$receiverId/$conversationId/lastMessageId':
+          messageId,
       'user_conversations/$receiverId/$conversationId/lastMessage':
-          receiverConvData['lastMessage'],
+          trimmedText,
       'user_conversations/$receiverId/$conversationId/lastMessageAt':
-          receiverConvData['lastMessageAt'],
-    });
+          createdAt,
+      'user_conversations/$receiverId/$conversationId/unreadCount':
+          ServerValue.increment(1),
+    };
 
-    // Increment unread count for receiver separately
-    await receiverUnreadRef.set(ServerValue.increment(1));
+    try {
+      await _db.ref().update(updates);
+    } on FirebaseException catch (e) {
+      throw Exception(
+        'Failed to update chat conversation metadata for both participants: ${e.message ?? e.code}',
+      );
+    }
   }
 
   Stream<List<ChatMessageModel>> getMessagesStream(String conversationId) {
@@ -126,13 +144,16 @@ class ChatRepository {
       if (data == null) return <ChatConversationModel>[];
 
       final map = Map<dynamic, dynamic>.from(data as Map);
-      final convs = map.entries.map((entry) {
-        final convMap = Map<dynamic, dynamic>.from(entry.value as Map);
-        return ChatConversationModel.fromMap(entry.key as String, convMap);
+      final conversations = map.entries.map((entry) {
+        final conversationMap = Map<dynamic, dynamic>.from(entry.value as Map);
+        return ChatConversationModel.fromMap(
+          entry.key as String,
+          conversationMap,
+        );
       }).toList();
 
-      convs.sort((a, b) => b.lastMessageAt.compareTo(a.lastMessageAt));
-      return convs;
+      conversations.sort((a, b) => b.lastMessageAt.compareTo(a.lastMessageAt));
+      return conversations;
     });
   }
 
@@ -140,29 +161,28 @@ class ChatRepository {
     final user = _currentUser;
     if (user == null) return;
 
-    await _db
-        .ref('user_conversations/${user.uid}/$conversationId/unreadCount')
-        .set(0);
-
-    // Mark all unread messages in this conversation as read
     final messagesSnap =
         await _db.ref('chats/$conversationId/messages').get();
-    if (!messagesSnap.exists || messagesSnap.value == null) return;
 
-    final map =
-        Map<dynamic, dynamic>.from(messagesSnap.value as Map);
-    final updates = <String, dynamic>{};
-    for (final entry in map.entries) {
-      final msgData =
-          Map<dynamic, dynamic>.from(entry.value as Map);
-      final senderId = msgData['senderId'] as String? ?? '';
-      final isRead = msgData['isRead'] as bool? ?? false;
-      if (senderId != user.uid && !isRead) {
-        updates['chats/$conversationId/messages/${entry.key}/isRead'] = true;
+    final updates = <String, dynamic>{
+      'user_conversations/${user.uid}/$conversationId/unreadCount': 0,
+    };
+
+    if (messagesSnap.exists && messagesSnap.value != null) {
+      final map =
+          Map<dynamic, dynamic>.from(messagesSnap.value as Map);
+      for (final entry in map.entries) {
+        final msgData =
+            Map<dynamic, dynamic>.from(entry.value as Map);
+        final senderId = msgData['senderId'] as String? ?? '';
+        final isRead = msgData['isRead'] as bool? ?? false;
+        if (senderId != user.uid && !isRead) {
+          updates['chats/$conversationId/messages/${entry.key}/isRead'] =
+              true;
+        }
       }
     }
-    if (updates.isNotEmpty) {
-      await _db.ref().update(updates);
-    }
+
+    await _db.ref().update(updates);
   }
 }

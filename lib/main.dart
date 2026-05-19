@@ -171,6 +171,15 @@ class AuthGate extends StatelessWidget {
               );
             }
 
+            final role = roleSnapshot.data ?? 'user';
+
+            if (role == 'banned') {
+              WidgetsBinding.instance.addPostFrameCallback((_) async {
+                await authRepository.logout();
+              });
+              return const LoginScreen();
+            }
+
             return const UserHomeScreen();
           },
         );

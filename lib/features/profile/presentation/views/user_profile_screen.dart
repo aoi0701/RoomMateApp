@@ -5,10 +5,12 @@ import 'package:provider/provider.dart';
 import 'package:roommateapp/features/chat/presentation/viewmodels/chat_viewmodel.dart';
 import 'package:roommateapp/features/chat/presentation/views/chat_detail_screen.dart';
 import 'package:roommateapp/features/chat/presentation/views/chat_list_screen.dart';
+import 'package:roommateapp/features/home/presentation/views/user_home_screen.dart';
 import 'package:roommateapp/features/post/presentation/views/create_post_screen.dart';
 import 'package:roommateapp/features/post/presentation/views/my_posts_screen.dart';
 import 'package:roommateapp/features/room_group/presentation/views/room_group_screen.dart';
 import 'package:roommateapp/features/roommate/presentation/viewmodels/roommate_request_viewmodel.dart';
+import 'package:roommateapp/features/roommate/presentation/views/roommate_request_tab_screen.dart';
 
 import '../../../../core/theme/app_colors.dart';
 import '../../../../core/theme/app_text_styles.dart';
@@ -273,30 +275,42 @@ class _UserProfileScreenState extends State<UserProfileScreen> {
                 fontWeight: FontWeight.w500,
               ),
               onTap: (index) {
-                if (index == 5) return; // already on Cá nhân
-                if (index == 2) {
-                  Navigator.push(
-                    context,
-                    MaterialPageRoute(
-                        builder: (_) => const ChatListScreen()),
-                  );
-                  return;
+                if (index == 5) return;
+                switch (index) {
+                  case 0:
+                    Navigator.pushAndRemoveUntil(
+                      context,
+                      MaterialPageRoute(builder: (_) => const UserHomeScreen()),
+                      (route) => false,
+                    );
+                    break;
+                  case 1:
+                    Navigator.push(
+                      context,
+                      MaterialPageRoute(
+                        builder: (_) => const RoommateRequestTabScreen(),
+                      ),
+                    );
+                    break;
+                  case 2:
+                    Navigator.push(
+                      context,
+                      MaterialPageRoute(builder: (_) => const ChatListScreen()),
+                    );
+                    break;
+                  case 3:
+                    Navigator.push(
+                      context,
+                      MaterialPageRoute(builder: (_) => const RoomGroupScreen()),
+                    );
+                    break;
+                  case 4:
+                    Navigator.push(
+                      context,
+                      MaterialPageRoute(builder: (_) => const CreatePostScreen()),
+                    );
+                    break;
                 }
-                if (index == 3) {
-                  Navigator.push(
-                    context,
-                    MaterialPageRoute(builder: (_) => const RoomGroupScreen()),
-                  );
-                  return;
-                }
-                if (index == 4) {
-                  Navigator.push(
-                    context,
-                    MaterialPageRoute(builder: (_) => const CreatePostScreen()),
-                  );
-                  return;
-                }
-                Navigator.pop(context);
               },
               items: const [
                 BottomNavigationBarItem(

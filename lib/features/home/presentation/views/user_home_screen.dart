@@ -15,6 +15,7 @@ import 'room_search_filter_screen.dart';
 import '../../../auth/presentation/viewmodels/auth_viewmodel.dart';
 import '../../../chat/presentation/viewmodels/chat_viewmodel.dart';
 import '../../../chat/presentation/views/chat_list_screen.dart';
+import '../../../roommate/presentation/viewmodels/roommate_request_viewmodel.dart';
 import '../../../roommate/presentation/views/roommate_request_tab_screen.dart';
 import '../../../post/data/models/post_model.dart';
 import '../../../post/presentation/viewmodels/post_list_viewmodel.dart';
@@ -41,7 +42,8 @@ class _UserHomeScreenState extends State<UserHomeScreen> {
     super.initState();
     WidgetsBinding.instance.addPostFrameCallback((_) {
       if (!mounted) return;
-      context.read<HomeSearchFilterViewModel>().resetFilter(clearSaved: true);
+      context.read<HomeSearchFilterViewModel>().loadSavedFilter();
+      context.read<RoommateRequestViewModel>().ensureReceivedRequestsListening();
     });
   }
 
@@ -518,9 +520,6 @@ class _UserHomeScreenState extends State<UserHomeScreen> {
                   behavior: HitTestBehavior.opaque,
                   onTap: () {
                     if (index == 0) {
-                      context
-                          .read<HomeSearchFilterViewModel>()
-                          .resetFilter(clearSaved: true);
                       _searchController.clear();
                       setState(() => _selectedIndex = index);
                     } else if (index == 1) {
@@ -581,6 +580,36 @@ class _UserHomeScreenState extends State<UserHomeScreen> {
                               size: 22,
                             ),
                           ),
+                          // Pending badge for Yêu cầu tab (index 1)
+                          if (index == 1)
+                            Positioned(
+                              top: -2,
+                              right: -2,
+                              child: Consumer<RoommateRequestViewModel>(
+                                builder: (context, vm, _) {
+                                  final count = vm.pendingCount;
+                                  if (count == 0) return const SizedBox.shrink();
+                                  return Container(
+                                    width: 14,
+                                    height: 14,
+                                    decoration: const BoxDecoration(
+                                      color: AppColors.danger,
+                                      shape: BoxShape.circle,
+                                    ),
+                                    child: Center(
+                                      child: Text(
+                                        count > 9 ? '9+' : '$count',
+                                        style: const TextStyle(
+                                          color: Colors.white,
+                                          fontSize: 8,
+                                          fontWeight: FontWeight.w800,
+                                        ),
+                                      ),
+                                    ),
+                                  );
+                                },
+                              ),
+                            ),
                           // Unread badge for Nhắn tin tab (index 2)
                           if (index == 2)
                             Positioned(
