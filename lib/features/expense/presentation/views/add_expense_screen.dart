@@ -6,6 +6,7 @@ import 'package:provider/provider.dart';
 
 import '../../../../core/theme/app_colors.dart';
 import '../../../../core/theme/app_text_styles.dart';
+import '../../../../core/utils/format_utils.dart';
 import '../../../../core/widgets/app_avatar.dart';
 import '../../../../core/widgets/app_button.dart';
 import '../../../auth/presentation/viewmodels/auth_viewmodel.dart';
@@ -229,7 +230,7 @@ class _AddExpenseScreenState extends State<AddExpenseScreen> {
                             _selectedParticipants.isNotEmpty) ...[
                           const SizedBox(height: 8),
                           Text(
-                            'Mỗi người: ${_formatMoney(_parsedAmount / _selectedParticipants.length)}',
+                            'Mỗi người: ${FormatUtils.formatMoney(_parsedAmount / _selectedParticipants.length)}',
                             style: AppTextStyles.caption.copyWith(
                               color: AppColors.primary,
                             ),
@@ -326,7 +327,7 @@ class _AddExpenseScreenState extends State<AddExpenseScreen> {
                                 style: AppTextStyles.caption,
                               ),
                               Text(
-                                _formatMoney(_customTotal),
+                                FormatUtils.formatMoney(_customTotal),
                                 style: AppTextStyles.caption.copyWith(
                                   color: (_parsedAmount > 0 &&
                                           (_customTotal - _parsedAmount).abs() <=
@@ -345,7 +346,7 @@ class _AddExpenseScreenState extends State<AddExpenseScreen> {
                               children: [
                                 Text('Còn lại:', style: AppTextStyles.caption),
                                 Text(
-                                  _formatMoney(_parsedAmount - _customTotal),
+                                  FormatUtils.formatMoney(_parsedAmount - _customTotal),
                                   style: AppTextStyles.caption.copyWith(
                                     color: (_parsedAmount - _customTotal).abs() <=
                                             1
@@ -375,21 +376,6 @@ class _AddExpenseScreenState extends State<AddExpenseScreen> {
         },
       ),
     );
-  }
-
-  static String _formatMoney(double amount) {
-    final text = amount.toStringAsFixed(0);
-    final buffer = StringBuffer();
-    var count = 0;
-    for (var i = text.length - 1; i >= 0; i--) {
-      buffer.write(text[i]);
-      count++;
-      if (count == 3 && i != 0) {
-        buffer.write('.');
-        count = 0;
-      }
-    }
-    return '${buffer.toString().split('').reversed.join()}đ';
   }
 
   Widget _buildCard({required String title, required Widget child}) {

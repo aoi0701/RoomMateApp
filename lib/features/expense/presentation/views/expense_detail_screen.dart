@@ -5,6 +5,7 @@ import 'package:provider/provider.dart';
 
 import '../../../../core/theme/app_colors.dart';
 import '../../../../core/theme/app_text_styles.dart';
+import '../../../../core/utils/format_utils.dart';
 import '../../../../core/widgets/app_state_widgets.dart';
 import '../../../../core/widgets/status_badge.dart';
 import '../../../auth/presentation/viewmodels/auth_viewmodel.dart';
@@ -52,21 +53,6 @@ class _ExpenseDetailScreenState extends State<ExpenseDetailScreen> {
     if (updated != null && mounted) {
       setState(() => _expense = updated);
     }
-  }
-
-  static String _formatMoney(double amount) {
-    final text = amount.toStringAsFixed(0);
-    final buffer = StringBuffer();
-    var count = 0;
-    for (var i = text.length - 1; i >= 0; i--) {
-      buffer.write(text[i]);
-      count++;
-      if (count == 3 && i != 0) {
-        buffer.write('.');
-        count = 0;
-      }
-    }
-    return '${buffer.toString().split('').reversed.join()}đ';
   }
 
   static String _formatDate(DateTime? date) {
@@ -227,7 +213,7 @@ class _ExpenseDetailScreenState extends State<ExpenseDetailScreen> {
           ),
           const SizedBox(height: 12),
           Text(
-            _formatMoney(expense.amount),
+            FormatUtils.formatMoney(expense.amount),
             style: GoogleFonts.plusJakartaSans(
               fontSize: 32,
               fontWeight: FontWeight.w800,
@@ -355,21 +341,6 @@ class _ShareCard extends StatelessWidget {
 
   const _ShareCard({required this.share});
 
-  static String _formatMoney(double amount) {
-    final text = amount.toStringAsFixed(0);
-    final buffer = StringBuffer();
-    var count = 0;
-    for (var i = text.length - 1; i >= 0; i--) {
-      buffer.write(text[i]);
-      count++;
-      if (count == 3 && i != 0) {
-        buffer.write('.');
-        count = 0;
-      }
-    }
-    return '${buffer.toString().split('').reversed.join()}đ';
-  }
-
   @override
   Widget build(BuildContext context) {
     return Container(
@@ -408,7 +379,7 @@ class _ShareCard extends StatelessWidget {
                 ),
                 const SizedBox(height: 6),
                 Text(
-                  _formatMoney(share.amountOwed),
+                  FormatUtils.formatMoney(share.amountOwed),
                   style: AppTextStyles.h3.copyWith(color: AppColors.primary),
                 ),
               ],

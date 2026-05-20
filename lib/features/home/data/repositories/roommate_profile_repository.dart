@@ -1,5 +1,6 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
+import 'package:roommateapp/core/utils/format_utils.dart';
 
 import '../../../post/data/models/post_model.dart';
 import '../../../profile/data/models/profile_habit_model.dart';
@@ -140,24 +141,9 @@ class RoommateProfileRepository {
     final minPrice = validPrices.first;
     final maxPrice = validPrices.last;
     if (minPrice == maxPrice) {
-      return '${_formatMoney(minPrice)}đ/tháng';
+      return '${FormatUtils.formatMoney(minPrice)}/tháng';
     }
-    return '${_formatMoney(minPrice)} - ${_formatMoney(maxPrice)}đ/tháng';
-  }
-
-  String _formatMoney(int value) {
-    final text = value.toString();
-    final buffer = StringBuffer();
-    var count = 0;
-    for (var i = text.length - 1; i >= 0; i--) {
-      buffer.write(text[i]);
-      count++;
-      if (count == 3 && i != 0) {
-        buffer.write('.');
-        count = 0;
-      }
-    }
-    return buffer.toString().split('').reversed.join();
+    return '${FormatUtils.formatMoney(minPrice)} - ${FormatUtils.formatMoney(maxPrice)}/tháng';
   }
 
   Future<void> sendInvite({

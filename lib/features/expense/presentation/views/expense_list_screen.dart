@@ -4,6 +4,7 @@ import 'package:provider/provider.dart';
 
 import '../../../../core/theme/app_colors.dart';
 import '../../../../core/theme/app_text_styles.dart';
+import '../../../../core/utils/format_utils.dart';
 import '../../../../core/widgets/app_state_widgets.dart';
 import '../../../auth/presentation/viewmodels/auth_viewmodel.dart';
 import '../../../room_group/data/models/room_group_model.dart';
@@ -18,21 +19,6 @@ class ExpenseListScreen extends StatelessWidget {
   final RoomGroupModel roomGroup;
 
   const ExpenseListScreen({super.key, required this.roomGroup});
-
-  static String _formatMoney(double amount) {
-    final text = amount.toStringAsFixed(0);
-    final buffer = StringBuffer();
-    var count = 0;
-    for (var i = text.length - 1; i >= 0; i--) {
-      buffer.write(text[i]);
-      count++;
-      if (count == 3 && i != 0) {
-        buffer.write('.');
-        count = 0;
-      }
-    }
-    return '${buffer.toString().split('').reversed.join()}đ';
-  }
 
   static String _formatDate(DateTime? date) {
     if (date == null) return '';
@@ -267,7 +253,7 @@ class _ExpenseCard extends StatelessWidget {
                   children: [
                     Flexible(
                       child: Text(
-                        ExpenseListScreen._formatMoney(expense.amount),
+                        FormatUtils.formatMoney(expense.amount),
                         style: AppTextStyles.labelLg.copyWith(
                           color: AppColors.primary,
                         ),

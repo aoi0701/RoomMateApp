@@ -5,6 +5,7 @@ import 'package:provider/provider.dart';
 
 import '../../../../core/theme/app_colors.dart';
 import '../../../../core/theme/app_text_styles.dart';
+import '../../../../core/utils/format_utils.dart';
 import '../../../../core/widgets/app_button.dart';
 import '../../../../core/widgets/app_state_widgets.dart';
 import '../../../profile/presentation/viewmodels/user_profile_viewmodel.dart';
@@ -111,21 +112,6 @@ class _DebtScreenState extends State<DebtScreen> {
     }
   }
 
-  static String _formatMoney(double amount) {
-    final text = amount.toStringAsFixed(0);
-    final buffer = StringBuffer();
-    var count = 0;
-    for (var i = text.length - 1; i >= 0; i--) {
-      buffer.write(text[i]);
-      count++;
-      if (count == 3 && i != 0) {
-        buffer.write('.');
-        count = 0;
-      }
-    }
-    return '${buffer.toString().split('').reversed.join()}đ';
-  }
-
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -187,7 +173,7 @@ class _DebtScreenState extends State<DebtScreen> {
                     child: _NetDebtCard(
                       entry: entry,
                       currentUserId: widget.currentUserId,
-                      formatMoney: _formatMoney,
+                      formatMoney: FormatUtils.formatMoney,
                       onSettle: () => _settleAll(entry),
                       isLoading: vm.isLoading,
                     ),
@@ -207,7 +193,7 @@ class _DebtScreenState extends State<DebtScreen> {
                     padding: const EdgeInsets.only(bottom: 12),
                     child: _DebtCard(
                       share: share,
-                      formatMoney: _formatMoney,
+                      formatMoney: FormatUtils.formatMoney,
                       canPay: true,
                       onMarkAsPaid: () => _markAsPaid(share),
                       isActionLoading: vm.isLoading,
@@ -228,7 +214,7 @@ class _DebtScreenState extends State<DebtScreen> {
                     padding: const EdgeInsets.only(bottom: 12),
                     child: _DebtCard(
                       share: share,
-                      formatMoney: _formatMoney,
+                      formatMoney: FormatUtils.formatMoney,
                       canPay: false,
                       onMarkAsPaid: null,
                       isActionLoading: false,

@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
+import 'package:roommateapp/core/utils/format_utils.dart';
 
 import 'package:roommateapp/features/auth/presentation/viewmodels/auth_viewmodel.dart';
 import 'package:roommateapp/features/post/data/models/post_model.dart';
@@ -110,21 +111,6 @@ class MyPostsScreen extends StatelessWidget {
         ),
       );
     }
-  }
-
-  static String _formatMoney(int value) {
-    final text = value.toString();
-    final buffer = StringBuffer();
-    var count = 0;
-    for (var i = text.length - 1; i >= 0; i--) {
-      buffer.write(text[i]);
-      count++;
-      if (count == 3 && i != 0) {
-        buffer.write('.');
-        count = 0;
-      }
-    }
-    return '${buffer.toString().split('').reversed.join()}đ';
   }
 
   @override
@@ -257,7 +243,7 @@ class MyPostsScreen extends StatelessWidget {
                             crossAxisAlignment: CrossAxisAlignment.end,
                             children: [
                               Text(
-                                _formatMoney(post.price),
+                                FormatUtils.formatMoney(post.price),
                                 maxLines: 1,
                                 style: AppTextStyles.label.copyWith(
                                   color: AppColors.primary,

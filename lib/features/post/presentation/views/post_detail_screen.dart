@@ -1,6 +1,7 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
+import 'package:roommateapp/core/utils/format_utils.dart';
 
 import '../../../../core/theme/app_colors.dart';
 import '../../../../core/theme/app_text_styles.dart';
@@ -27,21 +28,6 @@ class PostDetailScreen extends StatelessWidget {
   });
 
   bool get _isOwner => currentUserId != null && currentUserId == post.ownerId;
-
-  String _formatMoney(int value) {
-    final text = value.toString();
-    final buffer = StringBuffer();
-    var count = 0;
-    for (var i = text.length - 1; i >= 0; i--) {
-      buffer.write(text[i]);
-      count++;
-      if (count == 3 && i != 0) {
-        buffer.write('.');
-        count = 0;
-      }
-    }
-    return buffer.toString().split('').reversed.join();
-  }
 
   String _formatDate(DateTime? value) {
     if (value == null) return 'Chưa cập nhật';
@@ -263,7 +249,7 @@ class PostDetailScreen extends StatelessWidget {
                   icon: Icons.payments_outlined,
                   label: 'Giá',
                   value: post.price > 0
-                      ? '${_formatMoney(post.price)}đ/tháng'
+                      ? '${FormatUtils.formatMoney(post.price)}/tháng'
                       : 'Thỏa thuận',
                 ),
               ),
