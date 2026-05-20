@@ -1,7 +1,7 @@
-import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:provider/provider.dart';
+import 'package:roommateapp/core/utils/format_utils.dart';
 
 import '../../../../core/theme/app_colors.dart';
 import '../../../../core/theme/app_text_styles.dart';
@@ -58,21 +58,6 @@ class _UserHomeScreenState extends State<UserHomeScreen> {
     RoomSearchFilterModel filter,
   ) {
     return posts.where(filter.matchesPost).toList();
-  }
-
-  static String formatMoney(int value) {
-    final text = value.toString();
-    final buffer = StringBuffer();
-    var count = 0;
-    for (var i = text.length - 1; i >= 0; i--) {
-      buffer.write(text[i]);
-      count++;
-      if (count == 3 && i != 0) {
-        buffer.write('.');
-        count = 0;
-      }
-    }
-    return buffer.toString().split('').reversed.join();
   }
 
   String _greetingText() {
@@ -141,34 +126,214 @@ class _UserHomeScreenState extends State<UserHomeScreen> {
 
   @override
   Widget build(BuildContext context) {
+    final screens = <Widget>[
+      _buildHomeFeedTab(),
+      const RoommateRequestTabScreen(),
+      const ChatListScreen(),
+      const UserProfileScreen(),
+    ];
+
+    return Scaffold(
+      backgroundColor: AppColors.background,
+      body: IndexedStack(index: _selectedIndex, children: screens),
+      bottomNavigationBar: buildBottomNavLegacy(),
+    );
+  }
+
+  Widget _buildHomeFeedTab() {
     final postVm = context.read<PostListViewModel>();
     final filterVm = context.watch<HomeSearchFilterViewModel>();
     final roommateVm = context.watch<RoommateProfileViewModel>();
     final activeFilter = filterVm.currentFilter;
 
-    return Scaffold(
-      backgroundColor: AppColors.background,
-      body: SafeArea(
+    return SafeArea(
+      child: SingleChildScrollView(
+        padding: const EdgeInsets.only(bottom: 100),
         child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            Expanded(
-              child: SingleChildScrollView(
-                padding: const EdgeInsets.only(bottom: 100),
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    _buildHeader(activeFilter),
-                    const SizedBox(height: 24),
-                    _buildSuggestedProfilesSection(roommateVm),
-                    const SizedBox(height: 32),
-                    _buildFeaturedPostsSection(postVm, activeFilter),
-                    const SizedBox(height: 16),
-                  ],
-                ),
-              ),
-            ),
-            _buildBottomNav(),
+            _buildHeader(activeFilter),
+            const SizedBox(height: 24),
+            _buildSuggestedProfilesSection(roommateVm),
+            const SizedBox(height: 32),
+            _buildFeaturedPostsSection(postVm, activeFilter),
+            const SizedBox(height: 16),
           ],
+        ),
+      ),
+    );
+  }
+
+  Widget _buildBottomNav() {
+    final items = const [
+      _NavItemData(
+        icon: Icons.home_outlined,
+        activeIcon: Icons.home_rounded,
+        label: 'Trang chá»§',
+      ),
+      _NavItemData(
+        icon: Icons.description_outlined,
+        activeIcon: Icons.description_rounded,
+        label: 'YÃªu cáº§u',
+      ),
+      _NavItemData(
+        icon: Icons.chat_bubble_outline_rounded,
+        activeIcon: Icons.chat_bubble_rounded,
+        label: 'Nháº¯n tin',
+      ),
+      _NavItemData(
+        icon: Icons.person_outline_rounded,
+        activeIcon: Icons.person_rounded,
+        label: 'CÃ¡ nhÃ¢n',
+      ),
+    ];
+
+    return Container(
+      decoration: const BoxDecoration(
+        color: AppColors.surface,
+        border: Border(top: BorderSide(color: AppColors.border)),
+        boxShadow: [
+          BoxShadow(
+            color: Color(0x08000000),
+            blurRadius: 20,
+            offset: Offset(0, -4),
+          ),
+        ],
+      ),
+      child: SafeArea(
+        top: false,
+        child: Padding(
+          padding: const EdgeInsets.symmetric(horizontal: 4, vertical: 8),
+          child: Row(
+            children: List.generate(items.length, (index) {
+              final item = items[index];
+              final isActive = _selectedIndex == index;
+              return Expanded(
+                child: GestureDetector(
+                  behavior: HitTestBehavior.opaque,
+                  onTap: () => setState(() => _selectedIndex = index),
+                  child: Column(
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      Stack(
+                        clipBehavior: Clip.none,
+                        children: [
+                          AnimatedContainer(
+                            duration: const Duration(milliseconds: 200),
+                            padding: const EdgeInsets.symmetric(
+                              horizontal: 10,
+                              vertical: 6,
+                            ),
+                            decoration: BoxDecoration(
+                              color: isActive
+                                  ? AppColors.accent
+                                  : Colors.transparent,
+                              borderRadius: BorderRadius.circular(12),
+                            ),
+                            child: Icon(
+                              isActive ? item.activeIcon : item.icon,
+                              color: isActive
+                                  ? AppColors.primary
+                                  : AppColors.textSecondary,
+                              size: 22,
+                            ),
+                          ),
+                          if (index == 1)
+                            Positioned(
+                              top: -2,
+                              right: -2,
+                              child: Consumer<RoommateRequestViewModel>(
+                                builder: (context, vm, _) {
+                                  final count = vm.pendingCount;
+                                  if (count == 0) return const SizedBox.shrink();
+                                  return Container(
+                                    width: 14,
+                                    height: 14,
+                                    decoration: const BoxDecoration(
+                                      color: AppColors.danger,
+                                      shape: BoxShape.circle,
+                                    ),
+                                    child: Center(
+                                      child: Text(
+                                        count > 9 ? '9+' : '$count',
+                                        style: const TextStyle(
+                                          color: Colors.white,
+                                          fontSize: 8,
+                                          fontWeight: FontWeight.w800,
+                                        ),
+                                      ),
+                                    ),
+                                  );
+                                },
+                              ),
+                            ),
+                          if (index == 2)
+                            Positioned(
+                              top: -2,
+                              right: -2,
+                              child: StreamBuilder<List<dynamic>>(
+                                stream: context
+                                    .read<ChatViewModel>()
+                                    .conversationsStream,
+                                builder: (context, snapshot) {
+                                  final convs = snapshot.data ?? [];
+                                  final totalUnread = convs.fold<int>(
+                                    0,
+                                    (acc, c) {
+                                      // ignore: avoid_dynamic_calls
+                                      final count = (c as dynamic).unreadCount
+                                              as int? ??
+                                          0;
+                                      return acc + count;
+                                    },
+                                  );
+                                  if (totalUnread == 0) {
+                                    return const SizedBox.shrink();
+                                  }
+                                  return Container(
+                                    width: 14,
+                                    height: 14,
+                                    decoration: const BoxDecoration(
+                                      color: AppColors.danger,
+                                      shape: BoxShape.circle,
+                                    ),
+                                    child: Center(
+                                      child: Text(
+                                        totalUnread > 9
+                                            ? '9+'
+                                            : '$totalUnread',
+                                        style: const TextStyle(
+                                          color: Colors.white,
+                                          fontSize: 8,
+                                          fontWeight: FontWeight.w800,
+                                        ),
+                                      ),
+                                    ),
+                                  );
+                                },
+                              ),
+                            ),
+                        ],
+                      ),
+                      const SizedBox(height: 2),
+                      Text(
+                        item.label,
+                        style: GoogleFonts.plusJakartaSans(
+                          fontSize: 10,
+                          fontWeight: isActive
+                              ? FontWeight.w700
+                              : FontWeight.w500,
+                          color: isActive
+                              ? AppColors.primary
+                              : AppColors.textSecondary,
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+              );
+            }),
+          ),
         ),
       ),
     );
@@ -461,7 +626,7 @@ class _UserHomeScreenState extends State<UserHomeScreen> {
     );
   }
 
-  Widget _buildBottomNav() {
+  Widget buildBottomNavLegacy() {
     final items = const [
       _NavItemData(
         icon: Icons.home_outlined,
@@ -951,13 +1116,12 @@ class _PostOwnerHeader extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final profileVm = context.read<UserProfileViewModel>();
+    final profileFuture = profileVm.getUserProfile(post.ownerId);
 
-    return StreamBuilder<DocumentSnapshot<Map<String, dynamic>>>(
-      stream: profileVm.getUserProfileStream(post.ownerId),
+    return FutureBuilder<UserModel?>(
+      future: profileFuture,
       builder: (context, snapshot) {
-        final user = snapshot.hasData && snapshot.data!.exists
-            ? UserModel.fromDocument(snapshot.data!)
-            : null;
+        final user = snapshot.data;
         final displayName = formatLastTwoWords(user?.fullName ?? '');
         final displayAddress = formatReadableAddress(
           fullAddress: user?.address ?? '',
@@ -1003,7 +1167,7 @@ class _PostOwnerHeader extends StatelessWidget {
               ),
               child: Text(
                 post.price > 0
-                    ? '${_UserHomeScreenState.formatMoney(post.price)}đ'
+                    ? '${FormatUtils.formatMoney(post.price)}đ'
                     : 'Thỏa thuận',
                 style: GoogleFonts.plusJakartaSans(
                   fontSize: 12,

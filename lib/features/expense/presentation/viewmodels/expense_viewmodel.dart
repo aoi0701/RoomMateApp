@@ -132,15 +132,8 @@ class ExpenseViewModel extends ChangeNotifier {
         splitType: splitType,
         customSplits: customSplits,
       );
-
-      final savedExpense = await _repository.addExpense(tempExpense);
-
-      if (savedExpense.id.isEmpty) {
-        throw Exception('Lưu khoản chi thất bại: không lấy được ID');
-      }
-
-      final sharesData = calculateSplit(
-        expenseId: savedExpense.id,
+      final pendingShares = calculateSplit(
+        expenseId: tempExpense.id,
         roomGroupId: roomGroupId,
         amount: amount,
         paidBy: paidBy,
@@ -148,9 +141,13 @@ class ExpenseViewModel extends ChangeNotifier {
         splitType: splitType,
         customSplits: customSplits,
       );
+      final savedExpense = await _repository.addExpenseWithShares(
+        tempExpense,
+        pendingShares,
+      );
 
-      if (sharesData.isNotEmpty) {
-        await _repository.addExpenseShares(sharesData);
+      if (savedExpense.id.isEmpty) {
+        throw Exception('Lưu khoản chi thất bại: không lấy được ID');
       }
 
       return true;

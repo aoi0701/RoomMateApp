@@ -137,8 +137,16 @@ class MyApp extends StatelessWidget {
   }
 }
 
-class AuthGate extends StatelessWidget {
+class AuthGate extends StatefulWidget {
   const AuthGate({super.key});
+
+  @override
+  State<AuthGate> createState() => _AuthGateState();
+}
+
+class _AuthGateState extends State<AuthGate> {
+  String? _cachedRole;
+  String? _cachedRoleUserId;
 
   @override
   Widget build(BuildContext context) {
@@ -157,7 +165,25 @@ class AuthGate extends StatelessWidget {
 
         final user = snapshot.data;
         if (user == null) {
+          _cachedRole = null;
+          _cachedRoleUserId = null;
           return const LoginScreen();
+        }
+
+        if (_cachedRoleUserId != user.uid) {
+          _cachedRole = null;
+          _cachedRoleUserId = user.uid;
+        }
+
+        if (_cachedRole != null) {
+          if (_cachedRole == 'banned') {
+            WidgetsBinding.instance.addPostFrameCallback((_) async {
+              await authRepository.logout();
+            });
+            return const LoginScreen();
+          }
+
+          return const UserHomeScreen();
         }
 
         return FutureBuilder<String>(
@@ -172,6 +198,8 @@ class AuthGate extends StatelessWidget {
             }
 
             final role = roleSnapshot.data ?? 'user';
+            _cachedRole = role;
+            _cachedRoleUserId = user.uid;
 
             if (role == 'banned') {
               WidgetsBinding.instance.addPostFrameCallback((_) async {

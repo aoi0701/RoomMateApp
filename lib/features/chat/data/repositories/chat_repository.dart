@@ -41,6 +41,11 @@ class ChatRepository {
     final user = _currentUser;
     if (user == null) throw Exception('Not authenticated');
 
+    final participantARef =
+        _db.ref('chats/$conversationId/participantAId');
+    final participantASnapshot = await participantARef.get();
+    if (participantASnapshot.exists) return;
+
     final participants = _getSortedParticipants(user.uid, otherUserId);
     await _db.ref().update({
       'chats/$conversationId/participantAId': participants[0],
@@ -162,7 +167,11 @@ class ChatRepository {
     if (user == null) return;
 
     final messagesSnap =
-        await _db.ref('chats/$conversationId/messages').get();
+        await _db
+            .ref('chats/$conversationId/messages')
+            .orderByChild('isRead')
+            .equalTo(false)
+            .get();
 
     final updates = <String, dynamic>{
       'user_conversations/${user.uid}/$conversationId/unreadCount': 0,

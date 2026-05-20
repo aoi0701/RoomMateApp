@@ -68,14 +68,5 @@ service cloud.firestore {
       allow delete: if isAuth() && isMemberOf(resource.data.roomGroupId);
     }
 
-    match /roommate_profile_invites/{inviteId} {
-      allow read: if isAuth() && (
-        resource.data.senderId == request.auth.uid ||
-        resource.data.targetUserId == request.auth.uid
-      );
-      allow create: if isAuth();
-      allow update: if false;
-      allow delete: if false;
-    }
   }
 }

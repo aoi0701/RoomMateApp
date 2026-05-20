@@ -6,6 +6,7 @@ import '../../data/repositories/user_profile_repository.dart';
 
 class UserProfileViewModel extends ChangeNotifier {
   final UserProfileRepository _repository;
+  final Map<String, UserModel> _profileCache = <String, UserModel>{};
 
   UserProfileViewModel({UserProfileRepository? repository})
       : _repository = repository ?? UserProfileRepository();
@@ -18,8 +19,15 @@ class UserProfileViewModel extends ChangeNotifier {
     return _repository.hasUserPostsStream(uid);
   }
 
-  Future<UserModel?> getUserProfile(String uid) {
-    return _repository.getUserProfile(uid);
+  Future<UserModel?> getUserProfile(String uid) async {
+    final cachedProfile = _profileCache[uid];
+    if (cachedProfile != null) return cachedProfile;
+
+    final profile = await _repository.getUserProfile(uid);
+    if (profile != null) {
+      _profileCache[uid] = profile;
+    }
+    return profile;
   }
 
   bool isSavingHabits = false;

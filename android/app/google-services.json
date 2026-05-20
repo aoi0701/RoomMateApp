@@ -1,6 +1,7 @@
 {
   "project_info": {
     "project_number": "787375402089",
+    "firebase_url": "https://roommateapp-fbb4f-default-rtdb.asia-southeast1.firebasedatabase.app",
     "project_id": "roommateapp-fbb4f",
     "storage_bucket": "roommateapp-fbb4f.firebasestorage.app"
   },
@@ -12,7 +13,20 @@
           "package_name": "com.example.roommateapp"
         }
       },
-      "oauth_client": [],
+      "oauth_client": [
+        {
+          "client_id": "787375402089-v6deu2lq7fasnqmd8p3if4gaelf0i9br.apps.googleusercontent.com",
+          "client_type": 1,
+          "android_info": {
+            "package_name": "com.example.roommateapp",
+            "certificate_hash": "4d8853ade07610fe6b4c7530a9e0b562c3237586"
+          }
+        },
+        {
+          "client_id": "787375402089-pla3jjuglqi1e1mfu5lpf8o4h0vktu9l.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
       "api_key": [
         {
           "current_key": "AIzaSyD1eJF6TKcEoYgyJRUMddZBp2qAdUzrN7o"
@@ -20,7 +34,19 @@
       ],
       "services": {
         "appinvite_service": {
-          "other_platform_oauth_client": []
+          "other_platform_oauth_client": [
+            {
+              "client_id": "787375402089-pla3jjuglqi1e1mfu5lpf8o4h0vktu9l.apps.googleusercontent.com",
+              "client_type": 3
+            },
+            {
+              "client_id": "787375402089-4b63d8tqs573tiq5idahr5a8ih82tdfg.apps.googleusercontent.com",
+              "client_type": 2,
+              "ios_info": {
+                "bundle_id": "com.example.roommateapp"
+              }
+            }
+          ]
         }
       }
     }

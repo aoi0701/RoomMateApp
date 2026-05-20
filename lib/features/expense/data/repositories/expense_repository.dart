@@ -35,6 +35,33 @@ class ExpenseRepository {
     }
   }
 
+  Future<ExpenseModel> addExpenseWithShares(
+    ExpenseModel expense,
+    List<ExpenseShareModel> shares,
+  ) async {
+    try {
+      final batch = _firestore.batch();
+      final expenseRef = _expenses.doc();
+      final savedExpense = expense.copyWith(id: expenseRef.id);
+
+      batch.set(expenseRef, savedExpense.toMap());
+
+      for (final share in shares) {
+        final shareRef = _shares.doc();
+        final savedShare = share.copyWith(
+          id: shareRef.id,
+          expenseId: savedExpense.id,
+        );
+        batch.set(shareRef, savedShare.toMap());
+      }
+
+      await batch.commit();
+      return savedExpense;
+    } catch (e) {
+      throw Exception('KhÃ´ng thá»ƒ thÃªm khoáº£n chi vÃ  phÃ¢n chia: $e');
+    }
+  }
+
   Future<void> addExpenseShares(List<ExpenseShareModel> shares) async {
     try {
       final batch = _firestore.batch();

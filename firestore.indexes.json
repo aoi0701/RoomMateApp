@@ -70,6 +70,25 @@
       "collectionGroup": "roommate_requests",
       "queryScope": "COLLECTION",
       "fields": [
+        { "fieldPath": "requesterId", "order": "ASCENDING" },
+        { "fieldPath": "postOwnerId", "order": "ASCENDING" },
+        { "fieldPath": "inviteType", "order": "ASCENDING" },
+        { "fieldPath": "status", "order": "ASCENDING" }
+      ]
+    },
+    {
+      "collectionGroup": "roommate_requests",
+      "queryScope": "COLLECTION",
+      "fields": [
+        { "fieldPath": "requesterId", "order": "ASCENDING" },
+        { "fieldPath": "inviteType", "order": "ASCENDING" },
+        { "fieldPath": "createdAt", "order": "DESCENDING" }
+      ]
+    },
+    {
+      "collectionGroup": "roommate_requests",
+      "queryScope": "COLLECTION",
+      "fields": [
         { "fieldPath": "postId", "order": "ASCENDING" },
         { "fieldPath": "requesterId", "order": "ASCENDING" },
         { "fieldPath": "status", "order": "ASCENDING" }
