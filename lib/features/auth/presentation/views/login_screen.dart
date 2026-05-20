@@ -10,7 +10,6 @@ import '../widgets/auth_text_field.dart';
 import '../widgets/social_login_button.dart';
 import 'forgot_password_screen.dart';
 import 'register_screen.dart';
-import '../../../home/presentation/views/user_home_screen.dart';
 
 class LoginScreen extends StatefulWidget {
   const LoginScreen({super.key});
@@ -55,11 +54,6 @@ class _LoginScreenState extends State<LoginScreen> {
       return;
     }
 
-    Navigator.pushAndRemoveUntil(
-      context,
-      MaterialPageRoute(builder: (_) => const UserHomeScreen()),
-      (route) => false,
-    );
   }
 
   Future<void> _handleLogin() async {
@@ -94,12 +88,6 @@ class _LoginScreenState extends State<LoginScreen> {
 
       ScaffoldMessenger.of(context).showSnackBar(
         const SnackBar(content: Text('Đăng nhập thành công')),
-      );
-
-      Navigator.pushAndRemoveUntil(
-        context,
-        MaterialPageRoute(builder: (_) => const UserHomeScreen()),
-        (route) => false,
       );
     } else {
       ScaffoldMessenger.of(context).showSnackBar(

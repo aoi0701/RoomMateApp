@@ -23,6 +23,7 @@ import '../../../post/presentation/views/create_post_screen.dart';
 import '../../../post/presentation/views/post_detail_screen.dart';
 import '../../../profile/data/models/user_model.dart';
 import '../../../profile/presentation/viewmodels/user_profile_viewmodel.dart';
+import '../../../profile/presentation/views/complete_profile_flow_screen.dart';
 import '../../../profile/presentation/views/user_profile_screen.dart';
 import '../../../room_group/presentation/views/room_group_screen.dart';
 
@@ -145,6 +146,7 @@ class _UserHomeScreenState extends State<UserHomeScreen> {
     final filterVm = context.watch<HomeSearchFilterViewModel>();
     final roommateVm = context.watch<RoommateProfileViewModel>();
     final activeFilter = filterVm.currentFilter;
+    final uid = context.read<AuthViewModel>().user?.uid;
 
     return SafeArea(
       child: SingleChildScrollView(
@@ -153,6 +155,10 @@ class _UserHomeScreenState extends State<UserHomeScreen> {
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             _buildHeader(activeFilter),
+            if (uid != null) ...[
+              const SizedBox(height: 16),
+              _buildProfileCompletionBanner(uid),
+            ],
             const SizedBox(height: 24),
             _buildSuggestedProfilesSection(roommateVm),
             const SizedBox(height: 32),
@@ -450,6 +456,84 @@ class _UserHomeScreenState extends State<UserHomeScreen> {
     return Padding(
       padding: const EdgeInsets.symmetric(horizontal: 20),
       child: Text(title, style: AppTextStyles.h2),
+    );
+  }
+
+  Widget _buildProfileCompletionBanner(String uid) {
+    return StreamBuilder<UserModel?>(
+      stream: context
+          .read<UserProfileViewModel>()
+          .getUserProfileStream(uid)
+          .map((snapshot) {
+        if (!snapshot.exists) return null;
+        return UserModel.fromDocument(snapshot);
+      }),
+      builder: (context, snapshot) {
+        final profile = snapshot.data;
+        if (profile == null || profile.profileCompleted) {
+          return const SizedBox.shrink();
+        }
+
+        return Padding(
+          padding: const EdgeInsets.symmetric(horizontal: 20),
+          child: Container(
+            width: double.infinity,
+            padding: const EdgeInsets.all(18),
+            decoration: BoxDecoration(
+              color: AppColors.surface,
+              borderRadius: BorderRadius.circular(20),
+              border: Border.all(color: AppColors.warning.withValues(alpha: 0.25)),
+              boxShadow: const [
+                BoxShadow(
+                  color: Color(0x08000000),
+                  blurRadius: 10,
+                  offset: Offset(0, 3),
+                ),
+              ],
+            ),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(
+                  'Hoàn thiện hồ sơ để nhận gợi ý chính xác hơn',
+                  style: AppTextStyles.h3,
+                ),
+                const SizedBox(height: 8),
+                Text(
+                  'Bổ sung thói quen và tiêu chí ở ghép để RoomMate tìm người phù hợp hơn cho bạn.',
+                  style: AppTextStyles.body.copyWith(
+                    color: AppColors.textSecondary,
+                  ),
+                ),
+                const SizedBox(height: 14),
+                SizedBox(
+                  width: 170,
+                  child: ElevatedButton(
+                    onPressed: () {
+                      Navigator.push(
+                        context,
+                        MaterialPageRoute(
+                          builder: (_) => const CompleteProfileFlowScreen(),
+                        ),
+                      );
+                    },
+                    style: ElevatedButton.styleFrom(
+                      backgroundColor: AppColors.primary,
+                      foregroundColor: Colors.white,
+                      elevation: 0,
+                      padding: const EdgeInsets.symmetric(vertical: 14),
+                      shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(14),
+                      ),
+                    ),
+                    child: Text('Cập nhật ngay', style: AppTextStyles.buttonSm),
+                  ),
+                ),
+              ],
+            ),
+          ),
+        );
+      },
     );
   }
 

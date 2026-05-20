@@ -53,6 +53,7 @@ class AuthRepository {
         'gender': gender.trim(),
         'habits': const <String>[],
         'roommateCriteria': const <String>[],
+        'profileCompleted': false,
         'role': 'user',
         'createdAt': FieldValue.serverTimestamp(),
       });
@@ -98,6 +99,7 @@ class AuthRepository {
         'gender': '',
         'habits': const <String>[],
         'roommateCriteria': const <String>[],
+        'profileCompleted': false,
         'role': 'user',
         'createdAt': FieldValue.serverTimestamp(),
       });

@@ -13,10 +13,12 @@ import 'features/home/data/repositories/roommate_profile_repository.dart';
 import 'features/home/presentation/viewmodels/home_search_filter_viewmodel.dart';
 import 'features/home/presentation/viewmodels/roommate_profile_viewmodel.dart';
 import 'features/post/data/repositories/post_repository.dart';
+import 'features/profile/data/models/user_model.dart';
 import 'features/profile/data/repositories/user_profile_repository.dart';
 import 'features/post/presentation/viewmodels/post_list_viewmodel.dart';
 import 'features/post/presentation/viewmodels/post_viewmodel.dart';
 import 'features/profile/presentation/viewmodels/user_profile_viewmodel.dart';
+import 'features/profile/presentation/views/complete_profile_intro_screen.dart';
 import 'features/roommate/data/repositories/roommate_request_repository.dart';
 import 'features/roommate/presentation/viewmodels/roommate_request_viewmodel.dart';
 import 'features/room_group/data/repositories/room_group_repository.dart';
@@ -208,7 +210,25 @@ class _AuthGateState extends State<AuthGate> {
               return const LoginScreen();
             }
 
-            return const UserHomeScreen();
+            return FutureBuilder<UserModel?>(
+              future: context.read<UserProfileViewModel>().getUserProfile(user.uid),
+              builder: (context, profileSnapshot) {
+                if (profileSnapshot.connectionState == ConnectionState.waiting) {
+                  return const Scaffold(
+                    body: Center(
+                      child: CircularProgressIndicator(),
+                    ),
+                  );
+                }
+
+                final profile = profileSnapshot.data;
+                if (profile != null && !profile.profileCompleted) {
+                  return const CompleteProfileIntroScreen();
+                }
+
+                return const UserHomeScreen();
+              },
+            );
           },
         );
       },

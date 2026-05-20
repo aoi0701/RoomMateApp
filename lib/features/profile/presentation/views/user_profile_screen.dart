@@ -22,6 +22,7 @@ import '../../../home/presentation/viewmodels/roommate_profile_viewmodel.dart';
 import '../../data/models/profile_habit_model.dart';
 import '../../data/models/user_model.dart';
 import '../viewmodels/user_profile_viewmodel.dart';
+import 'complete_profile_flow_screen.dart';
 import 'edit_habits_screen.dart';
 
 class UserProfileScreen extends StatefulWidget {
@@ -173,6 +174,10 @@ class _UserProfileScreenState extends State<UserProfileScreen> {
                         address: address,
                         gender: gender,
                       ),
+                      if (isCurrentUserProfile && !user.profileCompleted) ...[
+                        const SizedBox(height: 18),
+                        _buildProfileCompletionCard(),
+                      ],
                       const SizedBox(height: 18),
                       _buildLifestyleSection(user.habits, canEdit: isCurrentUserProfile),
                       const SizedBox(height: 18),
@@ -573,6 +578,37 @@ class _UserProfileScreenState extends State<UserProfileScreen> {
               .toList(),
         ),
       ],
+    );
+  }
+
+  Widget _buildProfileCompletionCard() {
+    return _ProfileCard(
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Text('Hồ sơ chưa hoàn thiện', style: AppTextStyles.h2),
+          const SizedBox(height: 10),
+          Text(
+            'Bổ sung thông tin cơ bản, thói quen và tiêu chí ở ghép để tăng chất lượng gợi ý bạn cùng phòng.',
+            style: AppTextStyles.body.copyWith(
+              color: AppColors.textSecondary,
+              height: 1.45,
+            ),
+          ),
+          const SizedBox(height: 16),
+          AppPrimaryButton(
+            label: 'Hoàn thiện hồ sơ',
+            onTap: () {
+              Navigator.push(
+                context,
+                MaterialPageRoute(
+                  builder: (_) => const CompleteProfileFlowScreen(),
+                ),
+              );
+            },
+          ),
+        ],
+      ),
     );
   }
 
