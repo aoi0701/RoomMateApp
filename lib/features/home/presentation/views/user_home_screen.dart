@@ -136,7 +136,7 @@ class _UserHomeScreenState extends State<UserHomeScreen> {
     return Scaffold(
       backgroundColor: AppColors.background,
       body: IndexedStack(index: _selectedIndex, children: screens),
-      bottomNavigationBar: buildBottomNavLegacy(),
+      bottomNavigationBar: _buildBottomNav(),
     );
   }
 
@@ -164,27 +164,29 @@ class _UserHomeScreenState extends State<UserHomeScreen> {
     );
   }
 
-  Widget _buildBottomNav() {
+  Widget _buildBottomNav() => buildBottomNavLegacy();
+
+  Widget buildBottomNavBroken() {
     final items = const [
       _NavItemData(
         icon: Icons.home_outlined,
         activeIcon: Icons.home_rounded,
-        label: 'Trang chá»§',
+        label: 'Trang ch\u1ee7',
       ),
       _NavItemData(
         icon: Icons.description_outlined,
         activeIcon: Icons.description_rounded,
-        label: 'YÃªu cáº§u',
+        label: 'Y\u00eau c\u1ea7u',
       ),
       _NavItemData(
         icon: Icons.chat_bubble_outline_rounded,
         activeIcon: Icons.chat_bubble_rounded,
-        label: 'Nháº¯n tin',
+        label: 'Nh\u1eafn tin',
       ),
       _NavItemData(
         icon: Icons.person_outline_rounded,
         activeIcon: Icons.person_rounded,
-        label: 'CÃ¡ nhÃ¢n',
+        label: 'C\u00e1 nh\u00e2n',
       ),
     ];
 
@@ -631,32 +633,32 @@ class _UserHomeScreenState extends State<UserHomeScreen> {
       _NavItemData(
         icon: Icons.home_outlined,
         activeIcon: Icons.home_rounded,
-        label: 'Trang chủ',
+        label: 'Trang ch\u1ee7',
       ),
       _NavItemData(
         icon: Icons.description_outlined,
         activeIcon: Icons.description_rounded,
-        label: 'Yêu cầu',
+        label: 'Y\u00eau c\u1ea7u',
       ),
       _NavItemData(
         icon: Icons.chat_bubble_outline_rounded,
         activeIcon: Icons.chat_bubble_rounded,
-        label: 'Nhắn tin',
+        label: 'Nh\u1eafn tin',
       ),
       _NavItemData(
         icon: Icons.wallet_outlined,
         activeIcon: Icons.wallet_rounded,
-        label: 'Chi tiêu',
+        label: 'Chi ti\u00eau',
       ),
       _NavItemData(
         icon: Icons.add_box_outlined,
         activeIcon: Icons.add_box_rounded,
-        label: 'Đăng bài',
+        label: '\u0110\u0103ng b\u00e0i',
       ),
       _NavItemData(
         icon: Icons.person_outline_rounded,
         activeIcon: Icons.person_rounded,
-        label: 'Cá nhân',
+        label: 'C\u00e1 nh\u00e2n',
       ),
     ];
 
@@ -1692,3 +1694,5 @@ class _InviteSheetState extends State<_InviteSheet> {
     );
   }
 }
+
+
