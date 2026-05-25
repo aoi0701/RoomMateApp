@@ -33,4 +33,22 @@ class RoomGroupViewModel extends ChangeNotifier {
       _setLoading(false);
     }
   }
+
+  Future<bool> disbandGroup(String groupId) async {
+    try {
+      _setLoading(true);
+      _errorMessage = null;
+      await _repository.disbandGroup(groupId);
+      _roomGroups = _roomGroups
+          .map((g) => g.id == groupId ? g.copyWith(status: 'disbanded') : g)
+          .toList();
+      return true;
+    } catch (e) {
+      _errorMessage = e.toString().replaceFirst('Exception: ', '');
+      notifyListeners();
+      return false;
+    } finally {
+      _setLoading(false);
+    }
+  }
 }

@@ -150,6 +150,14 @@ class RoommateRequestRepository {
     );
   }
 
+  Future<void> undoAcceptRequest(String requestId) async {
+    await _requestRef.doc(requestId).update({
+      'status': RoommateRequestStatus.pending.name,
+      'updatedAt': FieldValue.serverTimestamp(),
+      'respondedAt': null,
+    });
+  }
+
   Future<void> rejectRequest(String requestId) async {
     final user = currentUser;
     if (user == null) throw Exception('Chưa đăng nhập');

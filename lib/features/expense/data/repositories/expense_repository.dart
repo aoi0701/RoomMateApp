@@ -58,7 +58,7 @@ class ExpenseRepository {
       await batch.commit();
       return savedExpense;
     } catch (e) {
-      throw Exception('KhÃ´ng thá»ƒ thÃªm khoáº£n chi vÃ  phÃ¢n chia: $e');
+      throw Exception('Không thể thêm khoản chi và phân chia: $e');
     }
   }
 

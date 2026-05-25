@@ -13,7 +13,6 @@ import '../../../profile/presentation/viewmodels/user_profile_viewmodel.dart';
 import '../../../room_group/data/models/room_group_model.dart';
 import '../../data/models/expense_model.dart';
 import '../../data/models/expense_share_model.dart';
-import '../../data/repositories/expense_repository.dart';
 import '../viewmodels/expense_viewmodel.dart';
 import 'edit_expense_screen.dart';
 
@@ -48,8 +47,7 @@ class _ExpenseDetailScreenState extends State<ExpenseDetailScreen> {
   }
 
   Future<void> _reloadExpense() async {
-    final repo = ExpenseRepository();
-    final updated = await repo.getExpenseById(_expense.id);
+    final updated = await context.read<ExpenseViewModel>().getExpenseById(_expense.id);
     if (updated != null && mounted) {
       setState(() => _expense = updated);
     }

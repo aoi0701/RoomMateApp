@@ -33,13 +33,9 @@ class _DebtScreenState extends State<DebtScreen> {
     WidgetsBinding.instance.addPostFrameCallback((_) {
       if (!mounted) return;
       final vm = context.read<ExpenseViewModel>();
-      vm.loadDebts(
+      vm.loadDebtScreenData(
         userId: widget.currentUserId,
         roomGroupId: widget.roomGroupId,
-      );
-      vm.loadNetDebtSummary(
-        roomGroupId: widget.roomGroupId,
-        currentUserId: widget.currentUserId,
       );
     });
   }
@@ -133,16 +129,10 @@ class _DebtScreenState extends State<DebtScreen> {
             return AppErrorState(
               title: 'Không tải được công nợ',
               message: vm.errorMessage!,
-              onRetry: () {
-                vm.loadDebts(
-                  userId: widget.currentUserId,
-                  roomGroupId: widget.roomGroupId,
-                );
-                vm.loadNetDebtSummary(
-                  roomGroupId: widget.roomGroupId,
-                  currentUserId: widget.currentUserId,
-                );
-              },
+              onRetry: () => vm.loadDebtScreenData(
+                userId: widget.currentUserId,
+                roomGroupId: widget.roomGroupId,
+              ),
             );
           }
 

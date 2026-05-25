@@ -94,12 +94,31 @@ class RoommateRequestViewModel extends ChangeNotifier {
   Stream<List<RoommateRequestModel>> get sentProfileInvitesStream =>
       _repository.getSentProfileInvitesStream();
 
+  Future<void> resetSession() async {
+    await _receivedSubscription?.cancel();
+    await _sentSubscription?.cancel();
+    _receivedSubscription = null;
+    _sentSubscription = null;
+    _receivedListeningUserId = null;
+    _sentListeningUserId = null;
+    _receivedRequests = [];
+    _sentRequests = [];
+    _isReceivedRequestsLoading = false;
+    _isSentRequestsLoading = false;
+    _isLoading = false;
+    _errorMessage = null;
+    notifyListeners();
+  }
+
   void ensureReceivedRequestsListening() {
     final currentUid = _repository.currentUser?.uid;
 
     if (currentUid == null) {
+      _receivedSubscription?.cancel();
+      _receivedSubscription = null;
       _receivedRequests = [];
       _receivedListeningUserId = null;
+      _isReceivedRequestsLoading = false;
       notifyListeners();
       return;
     }
@@ -120,8 +139,11 @@ class RoommateRequestViewModel extends ChangeNotifier {
     final currentUid = _repository.currentUser?.uid;
 
     if (currentUid == null) {
+      _sentSubscription?.cancel();
+      _sentSubscription = null;
       _sentRequests = [];
       _sentListeningUserId = null;
+      _isSentRequestsLoading = false;
       notifyListeners();
       return;
     }
@@ -194,7 +216,7 @@ class RoommateRequestViewModel extends ChangeNotifier {
         );
       } catch (groupError) {
         try {
-          await _repository.rejectRequest(requestId);
+          await _repository.undoAcceptRequest(requestId);
         } catch (_) {}
         throw Exception(
           'Không thể tạo nhóm phòng. Yêu cầu đã được hoàn tác. Vui lòng thử lại.',

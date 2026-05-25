@@ -1,5 +1,7 @@
 {
   "rules": {
+    ".read": false,
+    ".write": false,
     "chats": {
       "$conversationId": {
         ".read": "auth != null && (data.child('participantAId').val() === auth.uid || data.child('participantBId').val() === auth.uid)",

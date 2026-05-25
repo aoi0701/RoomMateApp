@@ -57,6 +57,10 @@ class ExpenseViewModel extends ChangeNotifier {
     return _repository.getExpensesByRoomGroup(roomGroupId);
   }
 
+  Future<ExpenseModel?> getExpenseById(String expenseId) {
+    return _repository.getExpenseById(expenseId);
+  }
+
   void _setLoading(bool value) {
     _isLoading = value;
     notifyListeners();
@@ -233,6 +237,74 @@ class ExpenseViewModel extends ChangeNotifier {
         expenseId: expenseId,
         roomGroupId: roomGroupId,
       );
+    } catch (e) {
+      _errorMessage = e.toString().replaceFirst('Exception: ', '');
+    } finally {
+      _setLoading(false);
+    }
+  }
+
+  Future<void> loadDebtScreenData({
+    required String userId,
+    required String roomGroupId,
+  }) async {
+    try {
+      _setLoading(true);
+      _errorMessage = null;
+
+      await Future.wait<void>([
+        () async {
+          final results = await Future.wait([
+            _repository.getDebtsOwedByUser(
+              userId: userId,
+              roomGroupId: roomGroupId,
+            ),
+            _repository.getDebtsOwedToUser(
+              userId: userId,
+              roomGroupId: roomGroupId,
+            ),
+          ]);
+          _myDebts = results[0];
+          _othersDebts = results[1];
+        }(),
+        () async {
+          final allShares =
+              await _repository.getAllUnpaidSharesByGroup(roomGroupId);
+
+          final Map<String, Map<String, double>> gross = {};
+          for (final share in allShares) {
+            gross.putIfAbsent(share.fromUserId, () => {})[share.toUserId] =
+                (gross[share.fromUserId]?[share.toUserId] ?? 0) +
+                    share.amountOwed;
+          }
+
+          final Set<String> processed = {};
+          final List<NetDebtEntry> entries = [];
+
+          for (final from in gross.keys) {
+            for (final to in (gross[from] ?? {}).keys) {
+              final key = [from, to]..sort();
+              final pairKey = key.join('_');
+              if (processed.contains(pairKey)) continue;
+              processed.add(pairKey);
+
+              final aOwesB = gross[from]?[to] ?? 0;
+              final bOwesA = gross[to]?[from] ?? 0;
+              final net = aOwesB - bOwesA;
+
+              if (net > 0.01) {
+                entries.add(
+                    NetDebtEntry(fromUserId: from, toUserId: to, netAmount: net));
+              } else if (net < -0.01) {
+                entries.add(
+                    NetDebtEntry(fromUserId: to, toUserId: from, netAmount: -net));
+              }
+            }
+          }
+
+          _netDebts = entries;
+        }(),
+      ]);
     } catch (e) {
       _errorMessage = e.toString().replaceFirst('Exception: ', '');
     } finally {

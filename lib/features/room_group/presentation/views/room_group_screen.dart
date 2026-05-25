@@ -37,6 +37,44 @@ class _RoomGroupScreenState extends State<RoomGroupScreen> {
     );
   }
 
+  Future<void> _confirmDisband(
+      RoomGroupViewModel vm, RoomGroupModel group) async {
+    final confirmed = await showDialog<bool>(
+      context: context,
+      builder: (ctx) => AlertDialog(
+        title: const Text('Giải tán nhóm'),
+        content: Text(
+          'Bạn có chắc muốn giải tán nhóm "${group.name}"?\nHành động này không thể hoàn tác.',
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(ctx, false),
+            child: const Text('Huỷ'),
+          ),
+          TextButton(
+            onPressed: () => Navigator.pop(ctx, true),
+            child: const Text(
+              'Giải tán',
+              style: TextStyle(color: AppColors.danger),
+            ),
+          ),
+        ],
+      ),
+    );
+
+    if (confirmed != true || !mounted) return;
+
+    final success = await vm.disbandGroup(group.id);
+    if (!mounted) return;
+    if (!success) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text(vm.errorMessage ?? 'Không thể giải tán nhóm'),
+        ),
+      );
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -55,16 +93,19 @@ class _RoomGroupScreenState extends State<RoomGroupScreen> {
   }
 
   Widget _buildBody(RoomGroupViewModel vm) {
+    final currentUserId = context.read<AuthViewModel>().user?.uid;
+
     if (vm.isLoading) {
       return const AppLoadingState(message: 'Đang tải nhóm phòng...');
     }
 
     if (vm.errorMessage != null) {
-      final userId = context.read<AuthViewModel>().user?.uid;
       return AppErrorState(
         title: 'Không tải được dữ liệu',
         message: vm.errorMessage!,
-        onRetry: userId != null ? () => vm.loadUserRoomGroups(userId) : null,
+        onRetry: currentUserId != null
+            ? () => vm.loadUserRoomGroups(currentUserId)
+            : null,
       );
     }
 
@@ -80,12 +121,16 @@ class _RoomGroupScreenState extends State<RoomGroupScreen> {
     return ListView.separated(
       padding: const EdgeInsets.all(20),
       itemCount: vm.roomGroups.length,
-      separatorBuilder: (_, index) => const SizedBox(height: 12),
+      separatorBuilder: (_, __) => const SizedBox(height: 12),
       itemBuilder: (context, index) {
         final group = vm.roomGroups[index];
+        final isDisbanded = group.status == 'disbanded';
         return _RoomGroupCard(
           group: group,
-          onTap: () => _openExpenseList(group),
+          onTap: isDisbanded ? null : () => _openExpenseList(group),
+          onDisband: (!isDisbanded && group.ownerId == currentUserId)
+              ? () => _confirmDisband(vm, group)
+              : null,
         );
       },
     );
@@ -94,13 +139,19 @@ class _RoomGroupScreenState extends State<RoomGroupScreen> {
 
 class _RoomGroupCard extends StatelessWidget {
   final RoomGroupModel group;
-  final VoidCallback onTap;
+  final VoidCallback? onTap;
+  final VoidCallback? onDisband;
 
-  const _RoomGroupCard({required this.group, required this.onTap});
+  const _RoomGroupCard({
+    required this.group,
+    required this.onTap,
+    this.onDisband,
+  });
 
   @override
   Widget build(BuildContext context) {
     final isActive = group.status == 'active';
+    final isDisbanded = group.status == 'disbanded';
 
     return GestureDetector(
       onTap: onTap,
@@ -124,8 +175,10 @@ class _RoomGroupCard extends StatelessWidget {
               width: 48,
               height: 48,
               decoration: BoxDecoration(
-                gradient: const LinearGradient(
-                  colors: [AppColors.primary, AppColors.primaryDark],
+                gradient: LinearGradient(
+                  colors: isDisbanded
+                      ? [AppColors.textSecondary, AppColors.textSecondary]
+                      : [AppColors.primary, AppColors.primaryDark],
                   begin: Alignment.topLeft,
                   end: Alignment.bottomRight,
                 ),
@@ -152,16 +205,33 @@ class _RoomGroupCard extends StatelessWidget {
               ),
             ),
             StatusBadge(
-              label: isActive ? 'Hoạt động' : group.status,
+              label: isActive
+                  ? 'Hoạt động'
+                  : (isDisbanded ? 'Đã giải tán' : group.status),
               type: isActive ? BadgeType.success : BadgeType.neutral,
               icon: isActive ? Icons.circle : null,
             ),
-            const SizedBox(width: 8),
-            const Icon(
-              Icons.chevron_right_rounded,
-              color: AppColors.textSecondary,
-              size: 20,
-            ),
+            if (onDisband != null) ...[
+              const SizedBox(width: 4),
+              IconButton(
+                icon: const Icon(
+                  Icons.group_off_rounded,
+                  color: AppColors.danger,
+                  size: 20,
+                ),
+                onPressed: onDisband,
+                tooltip: 'Giải tán nhóm',
+                padding: EdgeInsets.zero,
+                constraints: const BoxConstraints(),
+              ),
+            ] else if (!isDisbanded) ...[
+              const SizedBox(width: 8),
+              const Icon(
+                Icons.chevron_right_rounded,
+                color: AppColors.textSecondary,
+                size: 20,
+              ),
+            ],
           ],
         ),
       ),

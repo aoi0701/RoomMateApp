@@ -209,7 +209,7 @@ class _ReceivedTabState extends State<_ReceivedTab>
     return ListView.separated(
       padding: const EdgeInsets.all(20),
       itemCount: vm.receivedRequests.length,
-      separatorBuilder: (_, _) => const SizedBox(height: 14),
+      separatorBuilder: (_, __) => const SizedBox(height: 14),
       itemBuilder: (context, index) {
         final request = vm.receivedRequests[index];
         return _ReceivedRequestCard(
@@ -527,7 +527,7 @@ class _SentTabState extends State<_SentTab>
     return ListView.separated(
       padding: const EdgeInsets.all(20),
       itemCount: vm.sentRequests.length,
-      separatorBuilder: (_, _) => const SizedBox(height: 14),
+      separatorBuilder: (_, __) => const SizedBox(height: 14),
       itemBuilder: (context, index) {
         final request = vm.sentRequests[index];
         final name = request.targetName.isNotEmpty

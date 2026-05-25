@@ -65,4 +65,22 @@ class RoomGroupRepository {
       throw Exception('Không thể tải nhóm phòng: $e');
     }
   }
+
+  Future<void> disbandGroup(String groupId) async {
+    final user = currentUser;
+    if (user == null) throw Exception('Chưa đăng nhập');
+
+    final doc = await _collection.doc(groupId).get();
+    if (!doc.exists) throw Exception('Nhóm không tồn tại');
+
+    final data = doc.data()!;
+    if (data['ownerId'] != user.uid) {
+      throw Exception('Chỉ trưởng nhóm mới có thể giải tán nhóm');
+    }
+    if (data['status'] == 'disbanded') {
+      throw Exception('Nhóm đã được giải tán rồi');
+    }
+
+    await _collection.doc(groupId).update({'status': 'disbanded'});
+  }
 }

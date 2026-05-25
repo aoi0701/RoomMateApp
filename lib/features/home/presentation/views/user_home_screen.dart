@@ -13,6 +13,7 @@ import '../viewmodels/home_search_filter_viewmodel.dart';
 import '../viewmodels/roommate_profile_viewmodel.dart';
 import 'room_search_filter_screen.dart';
 import '../../../auth/presentation/viewmodels/auth_viewmodel.dart';
+import '../../../chat/data/models/chat_conversation_model.dart';
 import '../../../chat/presentation/viewmodels/chat_viewmodel.dart';
 import '../../../chat/presentation/views/chat_list_screen.dart';
 import '../../../roommate/presentation/viewmodels/roommate_request_viewmodel.dart';
@@ -23,6 +24,7 @@ import '../../../post/presentation/views/create_post_screen.dart';
 import '../../../post/presentation/views/post_detail_screen.dart';
 import '../../../profile/data/models/user_model.dart';
 import '../../../profile/presentation/viewmodels/user_profile_viewmodel.dart';
+import '../../../profile/presentation/views/complete_profile_flow_screen.dart';
 import '../../../profile/presentation/views/user_profile_screen.dart';
 import '../../../room_group/presentation/views/room_group_screen.dart';
 
@@ -34,7 +36,6 @@ class UserHomeScreen extends StatefulWidget {
 }
 
 class _UserHomeScreenState extends State<UserHomeScreen> {
-  final TextEditingController _searchController = TextEditingController();
   int _selectedIndex = 0;
 
   @override
@@ -49,7 +50,6 @@ class _UserHomeScreenState extends State<UserHomeScreen> {
 
   @override
   void dispose() {
-    _searchController.dispose();
     super.dispose();
   }
 
@@ -126,16 +126,9 @@ class _UserHomeScreenState extends State<UserHomeScreen> {
 
   @override
   Widget build(BuildContext context) {
-    final screens = <Widget>[
-      _buildHomeFeedTab(),
-      const RoommateRequestTabScreen(),
-      const ChatListScreen(),
-      const UserProfileScreen(),
-    ];
-
     return Scaffold(
       backgroundColor: AppColors.background,
-      body: IndexedStack(index: _selectedIndex, children: screens),
+      body: _buildHomeFeedTab(),
       bottomNavigationBar: _buildBottomNav(),
     );
   }
@@ -145,6 +138,7 @@ class _UserHomeScreenState extends State<UserHomeScreen> {
     final filterVm = context.watch<HomeSearchFilterViewModel>();
     final roommateVm = context.watch<RoommateProfileViewModel>();
     final activeFilter = filterVm.currentFilter;
+    final uid = context.read<AuthViewModel>().user?.uid;
 
     return SafeArea(
       child: SingleChildScrollView(
@@ -153,6 +147,10 @@ class _UserHomeScreenState extends State<UserHomeScreen> {
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             _buildHeader(activeFilter),
+            if (uid != null) ...[
+              const SizedBox(height: 16),
+              _buildProfileCompletionBanner(uid),
+            ],
             const SizedBox(height: 24),
             _buildSuggestedProfilesSection(roommateVm),
             const SizedBox(height: 32),
@@ -166,189 +164,7 @@ class _UserHomeScreenState extends State<UserHomeScreen> {
 
   Widget _buildBottomNav() => buildBottomNavLegacy();
 
-  Widget buildBottomNavBroken() {
-    final items = const [
-      _NavItemData(
-        icon: Icons.home_outlined,
-        activeIcon: Icons.home_rounded,
-        label: 'Trang ch\u1ee7',
-      ),
-      _NavItemData(
-        icon: Icons.description_outlined,
-        activeIcon: Icons.description_rounded,
-        label: 'Y\u00eau c\u1ea7u',
-      ),
-      _NavItemData(
-        icon: Icons.chat_bubble_outline_rounded,
-        activeIcon: Icons.chat_bubble_rounded,
-        label: 'Nh\u1eafn tin',
-      ),
-      _NavItemData(
-        icon: Icons.person_outline_rounded,
-        activeIcon: Icons.person_rounded,
-        label: 'C\u00e1 nh\u00e2n',
-      ),
-    ];
-
-    return Container(
-      decoration: const BoxDecoration(
-        color: AppColors.surface,
-        border: Border(top: BorderSide(color: AppColors.border)),
-        boxShadow: [
-          BoxShadow(
-            color: Color(0x08000000),
-            blurRadius: 20,
-            offset: Offset(0, -4),
-          ),
-        ],
-      ),
-      child: SafeArea(
-        top: false,
-        child: Padding(
-          padding: const EdgeInsets.symmetric(horizontal: 4, vertical: 8),
-          child: Row(
-            children: List.generate(items.length, (index) {
-              final item = items[index];
-              final isActive = _selectedIndex == index;
-              return Expanded(
-                child: GestureDetector(
-                  behavior: HitTestBehavior.opaque,
-                  onTap: () => setState(() => _selectedIndex = index),
-                  child: Column(
-                    mainAxisSize: MainAxisSize.min,
-                    children: [
-                      Stack(
-                        clipBehavior: Clip.none,
-                        children: [
-                          AnimatedContainer(
-                            duration: const Duration(milliseconds: 200),
-                            padding: const EdgeInsets.symmetric(
-                              horizontal: 10,
-                              vertical: 6,
-                            ),
-                            decoration: BoxDecoration(
-                              color: isActive
-                                  ? AppColors.accent
-                                  : Colors.transparent,
-                              borderRadius: BorderRadius.circular(12),
-                            ),
-                            child: Icon(
-                              isActive ? item.activeIcon : item.icon,
-                              color: isActive
-                                  ? AppColors.primary
-                                  : AppColors.textSecondary,
-                              size: 22,
-                            ),
-                          ),
-                          if (index == 1)
-                            Positioned(
-                              top: -2,
-                              right: -2,
-                              child: Consumer<RoommateRequestViewModel>(
-                                builder: (context, vm, _) {
-                                  final count = vm.pendingCount;
-                                  if (count == 0) return const SizedBox.shrink();
-                                  return Container(
-                                    width: 14,
-                                    height: 14,
-                                    decoration: const BoxDecoration(
-                                      color: AppColors.danger,
-                                      shape: BoxShape.circle,
-                                    ),
-                                    child: Center(
-                                      child: Text(
-                                        count > 9 ? '9+' : '$count',
-                                        style: const TextStyle(
-                                          color: Colors.white,
-                                          fontSize: 8,
-                                          fontWeight: FontWeight.w800,
-                                        ),
-                                      ),
-                                    ),
-                                  );
-                                },
-                              ),
-                            ),
-                          if (index == 2)
-                            Positioned(
-                              top: -2,
-                              right: -2,
-                              child: StreamBuilder<List<dynamic>>(
-                                stream: context
-                                    .read<ChatViewModel>()
-                                    .conversationsStream,
-                                builder: (context, snapshot) {
-                                  final convs = snapshot.data ?? [];
-                                  final totalUnread = convs.fold<int>(
-                                    0,
-                                    (acc, c) {
-                                      // ignore: avoid_dynamic_calls
-                                      final count = (c as dynamic).unreadCount
-                                              as int? ??
-                                          0;
-                                      return acc + count;
-                                    },
-                                  );
-                                  if (totalUnread == 0) {
-                                    return const SizedBox.shrink();
-                                  }
-                                  return Container(
-                                    width: 14,
-                                    height: 14,
-                                    decoration: const BoxDecoration(
-                                      color: AppColors.danger,
-                                      shape: BoxShape.circle,
-                                    ),
-                                    child: Center(
-                                      child: Text(
-                                        totalUnread > 9
-                                            ? '9+'
-                                            : '$totalUnread',
-                                        style: const TextStyle(
-                                          color: Colors.white,
-                                          fontSize: 8,
-                                          fontWeight: FontWeight.w800,
-                                        ),
-                                      ),
-                                    ),
-                                  );
-                                },
-                              ),
-                            ),
-                        ],
-                      ),
-                      const SizedBox(height: 2),
-                      Text(
-                        item.label,
-                        style: GoogleFonts.plusJakartaSans(
-                          fontSize: 10,
-                          fontWeight: isActive
-                              ? FontWeight.w700
-                              : FontWeight.w500,
-                          color: isActive
-                              ? AppColors.primary
-                              : AppColors.textSecondary,
-                        ),
-                      ),
-                    ],
-                  ),
-                ),
-              );
-            }),
-          ),
-        ),
-      ),
-    );
-  }
-
   Widget _buildHeader(RoomSearchFilterModel filter) {
-    _searchController.value = TextEditingValue(
-      text: filter.hasActiveFilters ? filter.summaryText : '',
-      selection: TextSelection.collapsed(
-        offset: filter.hasActiveFilters ? filter.summaryText.length : 0,
-      ),
-    );
-
     return Container(
       width: double.infinity,
       padding: const EdgeInsets.fromLTRB(20, 24, 20, 32),
@@ -452,6 +268,84 @@ class _UserHomeScreenState extends State<UserHomeScreen> {
     return Padding(
       padding: const EdgeInsets.symmetric(horizontal: 20),
       child: Text(title, style: AppTextStyles.h2),
+    );
+  }
+
+  Widget _buildProfileCompletionBanner(String uid) {
+    return StreamBuilder<UserModel?>(
+      stream: context
+          .read<UserProfileViewModel>()
+          .getUserProfileStream(uid)
+          .map((snapshot) {
+        if (!snapshot.exists) return null;
+        return UserModel.fromDocument(snapshot);
+      }),
+      builder: (context, snapshot) {
+        final profile = snapshot.data;
+        if (profile == null || profile.profileCompleted) {
+          return const SizedBox.shrink();
+        }
+
+        return Padding(
+          padding: const EdgeInsets.symmetric(horizontal: 20),
+          child: Container(
+            width: double.infinity,
+            padding: const EdgeInsets.all(18),
+            decoration: BoxDecoration(
+              color: AppColors.surface,
+              borderRadius: BorderRadius.circular(20),
+              border: Border.all(color: AppColors.warning.withValues(alpha: 0.25)),
+              boxShadow: const [
+                BoxShadow(
+                  color: Color(0x08000000),
+                  blurRadius: 10,
+                  offset: Offset(0, 3),
+                ),
+              ],
+            ),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(
+                  'Hoàn thiện hồ sơ để nhận gợi ý chính xác hơn',
+                  style: AppTextStyles.h3,
+                ),
+                const SizedBox(height: 8),
+                Text(
+                  'Bổ sung thói quen và tiêu chí ở ghép để RoomMate tìm người phù hợp hơn cho bạn.',
+                  style: AppTextStyles.body.copyWith(
+                    color: AppColors.textSecondary,
+                  ),
+                ),
+                const SizedBox(height: 14),
+                SizedBox(
+                  width: 170,
+                  child: ElevatedButton(
+                    onPressed: () {
+                      Navigator.push(
+                        context,
+                        MaterialPageRoute(
+                          builder: (_) => const CompleteProfileFlowScreen(),
+                        ),
+                      );
+                    },
+                    style: ElevatedButton.styleFrom(
+                      backgroundColor: AppColors.primary,
+                      foregroundColor: Colors.white,
+                      elevation: 0,
+                      padding: const EdgeInsets.symmetric(vertical: 14),
+                      shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(14),
+                      ),
+                    ),
+                    child: Text('Cập nhật ngay', style: AppTextStyles.buttonSm),
+                  ),
+                ),
+              ],
+            ),
+          ),
+        );
+      },
     );
   }
 
@@ -573,7 +467,7 @@ class _UserHomeScreenState extends State<UserHomeScreen> {
               physics: const NeverScrollableScrollPhysics(),
               padding: const EdgeInsets.symmetric(horizontal: 20),
               itemCount: posts.length,
-              separatorBuilder: (_, _) => const SizedBox(height: 16),
+              separatorBuilder: (_, __) => const SizedBox(height: 16),
               itemBuilder: (context, index) {
                 final post = posts[index];
                 return _FeaturedPostCard(
@@ -687,7 +581,6 @@ class _UserHomeScreenState extends State<UserHomeScreen> {
                   behavior: HitTestBehavior.opaque,
                   onTap: () {
                     if (index == 0) {
-                      _searchController.clear();
                       setState(() => _selectedIndex = index);
                     } else if (index == 1) {
                       Navigator.push(
@@ -782,7 +675,7 @@ class _UserHomeScreenState extends State<UserHomeScreen> {
                             Positioned(
                               top: -2,
                               right: -2,
-                              child: StreamBuilder<List<dynamic>>(
+                              child: StreamBuilder<List<ChatConversationModel>>(
                                 stream: context
                                     .read<ChatViewModel>()
                                     .conversationsStream,
@@ -790,13 +683,7 @@ class _UserHomeScreenState extends State<UserHomeScreen> {
                                   final convs = snapshot.data ?? [];
                                   final totalUnread = convs.fold<int>(
                                     0,
-                                    (acc, c) {
-                                      // ignore: avoid_dynamic_calls
-                                      final count = (c as dynamic).unreadCount
-                                          as int? ??
-                                          0;
-                                      return acc + count;
-                                    },
+                                    (acc, c) => acc + c.unreadCount,
                                   );
                                   if (totalUnread == 0) {
                                     return const SizedBox.shrink();

@@ -74,8 +74,7 @@ class _EditExpenseScreenState extends State<EditExpenseScreen> {
   double get _parsedAmount =>
       double.tryParse(_amountController.text.trim().replaceAll('.', '')) ?? 0;
 
-  double get _customTotal {
-    final currentUserId = context.read<AuthViewModel>().user?.uid ?? '';
+  double _calculateCustomTotal(String currentUserId) {
     double total = 0;
     for (final uid in _selectedParticipants) {
       if (uid == currentUserId) continue;
@@ -214,7 +213,7 @@ class _EditExpenseScreenState extends State<EditExpenseScreen> {
                           controller: _titleController,
                           style: GoogleFonts.plusJakartaSans(fontSize: 14),
                           decoration: _fieldDecoration(
-                            'VD: Tiền điện tháng 5',
+                            'Nội dung',
                             prefixIcon: Icons.receipt_outlined,
                           ),
                           validator: (v) =>
@@ -232,7 +231,7 @@ class _EditExpenseScreenState extends State<EditExpenseScreen> {
                           ],
                           onChanged: (_) => setState(() {}),
                           decoration: _fieldDecoration(
-                            'VD: 300000',
+                            'Số tiền',
                             prefixIcon: Icons.payments_outlined,
                           ),
                           validator: (v) {
@@ -346,10 +345,10 @@ class _EditExpenseScreenState extends State<EditExpenseScreen> {
                                 style: AppTextStyles.caption,
                               ),
                               Text(
-                                FormatUtils.formatMoney(_customTotal),
+                                FormatUtils.formatMoney(_calculateCustomTotal(currentUserId)),
                                 style: AppTextStyles.caption.copyWith(
                                   color: (_parsedAmount > 0 &&
-                                          (_customTotal - _parsedAmount).abs() <=
+                                          (_calculateCustomTotal(currentUserId) - _parsedAmount).abs() <=
                                               1)
                                       ? AppColors.success
                                       : AppColors.danger,
@@ -365,10 +364,10 @@ class _EditExpenseScreenState extends State<EditExpenseScreen> {
                               children: [
                                 Text('Còn lại:', style: AppTextStyles.caption),
                                 Text(
-                                  FormatUtils.formatMoney(_parsedAmount - _customTotal),
+                                  FormatUtils.formatMoney(_parsedAmount - _calculateCustomTotal(currentUserId)),
                                   style: AppTextStyles.caption.copyWith(
                                     color:
-                                        (_parsedAmount - _customTotal).abs() <=
+                                        (_parsedAmount - _calculateCustomTotal(currentUserId)).abs() <=
                                                 1
                                             ? AppColors.success
                                             : AppColors.warning,

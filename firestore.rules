@@ -7,11 +7,11 @@ service cloud.firestore {
     }
 
     function isOwner(uid) {
-      return request.auth.uid == uid;
+      return isAuth() && request.auth.uid == uid;
     }
 
     function isMemberOf(groupId) {
-      return request.auth.uid in
+      return isAuth() && request.auth.uid in
         get(/databases/$(database)/documents/room_groups/$(groupId)).data.memberIds;
     }
 

@@ -1,3 +1,4 @@
+import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:provider/provider.dart';
@@ -6,7 +7,6 @@ import '../../../../core/theme/app_colors.dart';
 import '../../../../core/theme/app_text_styles.dart';
 import '../../../../core/widgets/app_avatar.dart';
 import '../../../../core/widgets/app_state_widgets.dart';
-import '../../../auth/presentation/viewmodels/auth_viewmodel.dart';
 import '../../data/models/chat_message_model.dart';
 import '../viewmodels/chat_viewmodel.dart';
 
@@ -29,19 +29,25 @@ class ChatDetailScreen extends StatefulWidget {
 class _ChatDetailScreenState extends State<ChatDetailScreen> {
   final _textController = TextEditingController();
   final _scrollController = ScrollController();
-  late final String _conversationId;
-  late final String _currentUserId;
+  String? _conversationId;
+  String? _currentUserId;
   bool _isAtBottom = true;
   bool _isConversationReady = false;
+  String? _screenError;
 
   @override
   void initState() {
     super.initState();
-    final authVm = context.read<AuthViewModel>();
-    _currentUserId = authVm.user?.uid ?? '';
+    final user = FirebaseAuth.instance.currentUser;
+    if (user == null) {
+      _screenError = 'Phiên đăng nhập đã hết. Vui lòng đăng nhập lại.';
+      return;
+    }
+
+    _currentUserId = user.uid;
     final chatVm = context.read<ChatViewModel>();
     _conversationId =
-        chatVm.getConversationId(_currentUserId, widget.otherUserId);
+        chatVm.getConversationId(user.uid, widget.otherUserId);
     _initializeConversation();
     _scrollController.addListener(() {
       if (!_scrollController.hasClients) return;
@@ -51,12 +57,15 @@ class _ChatDetailScreenState extends State<ChatDetailScreen> {
   }
 
   Future<void> _initializeConversation() async {
+    final conversationId = _conversationId;
+    if (conversationId == null) return;
+
     final chatVm = context.read<ChatViewModel>();
     await chatVm.ensureConversation(
-      conversationId: _conversationId,
+      conversationId: conversationId,
       otherUserId: widget.otherUserId,
     );
-    await chatVm.markAsRead(_conversationId);
+    await chatVm.markAsRead(conversationId);
     if (!mounted) return;
     setState(() {
       _isConversationReady = true;
@@ -82,12 +91,13 @@ class _ChatDetailScreenState extends State<ChatDetailScreen> {
 
   Future<void> _sendMessage() async {
     final text = _textController.text.trim();
-    if (text.isEmpty) return;
+    final conversationId = _conversationId;
+    if (text.isEmpty || conversationId == null) return;
 
     _textController.clear();
     final vm = context.read<ChatViewModel>();
     await vm.sendMessage(
-      conversationId: _conversationId,
+      conversationId: conversationId,
       receiverId: widget.otherUserId,
       text: text,
       receiverName: widget.otherUserName,
@@ -100,6 +110,8 @@ class _ChatDetailScreenState extends State<ChatDetailScreen> {
   @override
   Widget build(BuildContext context) {
     final chatVm = context.read<ChatViewModel>();
+    final currentUserId = _currentUserId;
+    final conversationId = _conversationId;
 
     return Scaffold(
       backgroundColor: AppColors.background,
@@ -129,7 +141,7 @@ class _ChatDetailScreenState extends State<ChatDetailScreen> {
               child: Text(
                 widget.otherUserName.isNotEmpty
                     ? widget.otherUserName
-                    : 'Nguoi dung',
+                    : 'Người dùng',
                 style: AppTextStyles.labelLg,
                 maxLines: 1,
                 overflow: TextOverflow.ellipsis,
@@ -141,22 +153,32 @@ class _ChatDetailScreenState extends State<ChatDetailScreen> {
       body: Column(
         children: [
           Expanded(
-            child: !_isConversationReady
+            child: _screenError != null
+                ? AppErrorState(
+                    title: 'Không thể mở cuộc trò chuyện',
+                    message: _screenError!,
+                  )
+                : !_isConversationReady
                 ? const AppLoadingState(
-                    message: 'Dang chuan bi cuoc tro chuyen...',
+                    message: 'Đang chuẩn bị cuộc trò chuyện...',
+                  )
+                : currentUserId == null || conversationId == null
+                ? const AppErrorState(
+                    title: 'Không thể mở cuộc trò chuyện',
+                    message: 'Thiếu thông tin người dùng hiện tại.',
                   )
                 : StreamBuilder<List<ChatMessageModel>>(
-                    stream: chatVm.getMessagesStream(_conversationId),
+                    stream: chatVm.getMessagesStream(conversationId),
                     builder: (context, snapshot) {
                       if (snapshot.connectionState == ConnectionState.waiting) {
                         return const AppLoadingState(
-                          message: 'Dang tai tin nhan...',
+                          message: 'Đang tải tin nhắn...',
                         );
                       }
 
                       if (snapshot.hasError) {
                         return AppErrorState(
-                          title: 'Loi tai tin nhan',
+                          title: 'Lỗi tải tin nhắn',
                           message: snapshot.error.toString(),
                         );
                       }
@@ -166,14 +188,14 @@ class _ChatDetailScreenState extends State<ChatDetailScreen> {
                       if (messages.isEmpty) {
                         return const AppEmptyState(
                           icon: Icons.chat_bubble_outline_rounded,
-                          title: 'Chua co tin nhan',
-                          message: 'Hay gui loi nhan dau tien!',
+                          title: 'Chưa có tin nhắn',
+                          message: 'Hãy gửi lời nhắn đầu tiên!',
                         );
                       }
 
                       final lastMessage =
                           messages.isNotEmpty ? messages.last : null;
-                      final isMine = lastMessage?.senderId == _currentUserId;
+                      final isMine = lastMessage?.senderId == currentUserId;
                       if (_isAtBottom || isMine) {
                         WidgetsBinding.instance
                             .addPostFrameCallback((_) => _scrollToBottom());
@@ -185,7 +207,7 @@ class _ChatDetailScreenState extends State<ChatDetailScreen> {
                         itemCount: messages.length,
                         itemBuilder: (context, index) {
                           final msg = messages[index];
-                          final isMine = msg.senderId == _currentUserId;
+                          final isMine = msg.senderId == currentUserId;
                           final showTimestamp = index == 0 ||
                               messages[index].createdAt
                                       .difference(messages[index - 1].createdAt)
@@ -239,7 +261,7 @@ class _ChatDetailScreenState extends State<ChatDetailScreen> {
               textCapitalization: TextCapitalization.sentences,
               style: AppTextStyles.body,
               decoration: InputDecoration(
-                hintText: 'Nhap tin nhan...',
+                hintText: 'Nhập tin nhắn...',
                 hintStyle:
                     AppTextStyles.body.copyWith(color: AppColors.textHint),
                 filled: true,
@@ -389,8 +411,8 @@ class _MessageItem extends StatelessWidget {
 
     final timeStr =
         '${dt.hour.toString().padLeft(2, '0')}:${dt.minute.toString().padLeft(2, '0')}';
-    if (diff == 0) return 'Hom nay $timeStr';
-    if (diff == 1) return 'Hom qua $timeStr';
+    if (diff == 0) return 'Hôm nay $timeStr';
+    if (diff == 1) return 'Hôm qua $timeStr';
     return '${dt.day}/${dt.month}/${dt.year} $timeStr';
   }
 }

@@ -9,6 +9,7 @@ import '../../data/repositories/auth_repository.dart';
 class AuthViewModel extends ChangeNotifier {
   final AuthRepository _repository;
   late final StreamSubscription<User?> _authSubscription;
+  bool _isLoggingOut = false;
 
   AuthViewModel({AuthRepository? repository})
       : _repository = repository ?? AuthRepository() {
@@ -19,6 +20,7 @@ class AuthViewModel extends ChangeNotifier {
 
   bool isLoading = false;
   String? errorMessage;
+  bool get isLoggingOut => _isLoggingOut;
 
   User? get user => _repository.currentUser;
 
@@ -141,16 +143,21 @@ class AuthViewModel extends ChangeNotifier {
   }
 
   Future<void> logout() async {
+    if (_isLoggingOut) return;
+
     try {
       isLoading = true;
+      _isLoggingOut = true;
       errorMessage = null;
       notifyListeners();
 
+      await WidgetsBinding.instance.endOfFrame;
       await _repository.logout();
     } catch (e) {
       errorMessage = 'Đăng xuất thất bại: $e';
     } finally {
       isLoading = false;
+      _isLoggingOut = false;
       notifyListeners();
     }
   }

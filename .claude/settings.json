@@ -5,7 +5,11 @@
       "Bash(Get-ChildItem -Path \"e:\\\\RoomMateApp\\\\roommateapp\" -Recurse -Include \"*.dart\", \"*.json\", \"*.rules\" -Force)",
       "Bash(Select-Object -ExpandProperty FullName)",
       "Bash(Sort-Object)",
-      "Bash(flutter test *)"
+      "Bash(flutter test *)",
+      "PowerShell(Get-ChildItem -Path \"e:\\\\RoomMateApp\\\\roommateapp\\\\ios\" -Recurse -Filter \"GoogleService-Info.plist\" -File | ForEach-Object { $_.FullName })",
+      "Bash(sed -n '13,18p' e:/RoomMateApp/roommateapp/lib/features/roommate/presentation/viewmodels/roommate_request_viewmodel.dart)",
+      "Bash(sed -n '9,14p' e:/RoomMateApp/roommateapp/lib/features/home/presentation/viewmodels/roommate_profile_viewmodel.dart)",
+      "Bash(Remove-Item \"e:\\\\RoomMateApp\\\\roommateapp\\\\lib\\\\features\\\\home\\\\data\\\\models\\\\roommate_invite_model.dart\")"
     ]
   }
 }

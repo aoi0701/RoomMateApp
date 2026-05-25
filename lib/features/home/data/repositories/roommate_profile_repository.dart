@@ -13,6 +13,9 @@ class RoommateProfileRepository {
   final FirebaseFirestore _firestore;
   final FirebaseAuth _auth;
 
+  List<PostModel> _cachedPosts = [];
+  DateTime? _postsCachedAt;
+
   RoommateProfileRepository({
     FirebaseFirestore? firestore,
     FirebaseAuth? auth,
@@ -26,11 +29,19 @@ class RoommateProfileRepository {
     }
 
     return _firestore.collection('users').snapshots().asyncMap((snapshot) async {
-      final postSnapshot = await _firestore.collection('posts').get();
-      final postsByOwner = <String, List<PostModel>>{};
+      final cacheAge = _postsCachedAt == null
+          ? null
+          : DateTime.now().difference(_postsCachedAt!).inMinutes;
+      if (_cachedPosts.isEmpty || cacheAge == null || cacheAge >= 5) {
+        final postSnapshot = await _firestore.collection('posts').get();
+        _cachedPosts = postSnapshot.docs
+            .map((doc) => PostModel.fromDocument(doc))
+            .toList();
+        _postsCachedAt = DateTime.now();
+      }
 
-      for (final doc in postSnapshot.docs) {
-        final post = PostModel.fromDocument(doc);
+      final postsByOwner = <String, List<PostModel>>{};
+      for (final post in _cachedPosts) {
         postsByOwner.putIfAbsent(post.ownerId, () => <PostModel>[]).add(post);
       }
 
