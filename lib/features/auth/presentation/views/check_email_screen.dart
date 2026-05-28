@@ -9,7 +9,10 @@ import 'login_screen.dart';
 class CheckEmailScreen extends StatelessWidget {
   final String email;
 
-  const CheckEmailScreen({super.key, required this.email});
+  const CheckEmailScreen({
+    super.key,
+    required this.email,
+  });
 
   void _goToLogin(BuildContext context) {
     Navigator.pushAndRemoveUntil(
@@ -55,36 +58,61 @@ class CheckEmailScreen extends StatelessWidget {
               ),
               const SizedBox(height: 28),
               Text(
-                'Kiểm tra email!',
+                'Kiểm tra Gmail',
                 style: AppTextStyles.display,
                 textAlign: TextAlign.center,
               ),
               const SizedBox(height: 16),
-              RichText(
+              Text(
+                'Chúng tôi đã gửi liên kết đặt lại mật khẩu đến email bên dưới. Hãy mở Gmail, bấm vào link Reset password và đổi mật khẩu mới trên trang của Firebase.',
                 textAlign: TextAlign.center,
-                text: TextSpan(
+                style: AppTextStyles.body.copyWith(
+                  color: AppColors.textSecondary,
+                  height: 1.6,
+                ),
+              ),
+              const SizedBox(height: 20),
+              Container(
+                width: double.infinity,
+                padding: const EdgeInsets.symmetric(
+                  horizontal: 18,
+                  vertical: 16,
+                ),
+                decoration: BoxDecoration(
+                  color: AppColors.surface,
+                  borderRadius: BorderRadius.circular(18),
+                  border: Border.all(color: AppColors.border),
+                ),
+                child: Text(
+                  email,
+                  textAlign: TextAlign.center,
+                  style: GoogleFonts.plusJakartaSans(
+                    fontSize: 15,
+                    fontWeight: FontWeight.w700,
+                    color: AppColors.primary,
+                  ),
+                ),
+              ),
+              const SizedBox(height: 16),
+              Container(
+                width: double.infinity,
+                padding: const EdgeInsets.all(16),
+                decoration: BoxDecoration(
+                  color: AppColors.accent,
+                  borderRadius: BorderRadius.circular(18),
+                ),
+                child: Text(
+                  'Sau khi đổi mật khẩu thành công, quay lại app và đăng nhập bằng mật khẩu mới.',
+                  textAlign: TextAlign.center,
                   style: AppTextStyles.body.copyWith(
                     color: AppColors.textSecondary,
-                    height: 1.6,
+                    height: 1.5,
                   ),
-                  children: [
-                    const TextSpan(
-                      text: 'Chúng tôi đã gửi liên kết đặt lại mật khẩu đến\n',
-                    ),
-                    TextSpan(
-                      text: email,
-                      style: GoogleFonts.plusJakartaSans(
-                        fontSize: 14,
-                        fontWeight: FontWeight.w700,
-                        color: AppColors.primary,
-                      ),
-                    ),
-                  ],
                 ),
               ),
               const Spacer(),
               AppPrimaryButton(
-                label: 'Quay về đăng nhập',
+                label: 'Back to Login',
                 onTap: () => _goToLogin(context),
               ),
               const SizedBox(height: 12),

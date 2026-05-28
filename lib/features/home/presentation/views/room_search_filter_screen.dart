@@ -21,11 +21,19 @@ class RoomSearchFilterScreen extends StatefulWidget {
 
 class _RoomSearchFilterScreenState extends State<RoomSearchFilterScreen> {
   late RoomSearchFilterModel _draft;
+  late final TextEditingController _searchController;
 
   @override
   void initState() {
     super.initState();
     _draft = widget.initialFilter;
+    _searchController = TextEditingController(text: _draft.keyword);
+  }
+
+  @override
+  void dispose() {
+    _searchController.dispose();
+    super.dispose();
   }
 
   Future<void> _pickSingleOption({
@@ -97,6 +105,67 @@ class _RoomSearchFilterScreenState extends State<RoomSearchFilterScreen> {
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
+                    TextField(
+                      controller: _searchController,
+                      onChanged: (value) {
+                        setState(() {
+                          _draft = _draft.copyWith(keyword: value);
+                        });
+                      },
+                      style: AppTextStyles.body,
+                      decoration: InputDecoration(
+                        hintText: 'Tìm theo tên phòng hoặc địa chỉ...',
+                        hintStyle: AppTextStyles.body.copyWith(
+                          color: AppColors.textHint,
+                        ),
+                        prefixIcon: const Icon(
+                          Icons.search_rounded,
+                          color: AppColors.textSecondary,
+                          size: 20,
+                        ),
+                        suffixIcon: _searchController.text.trim().isNotEmpty
+                            ? IconButton(
+                                icon: const Icon(
+                                  Icons.close_rounded,
+                                  color: AppColors.textSecondary,
+                                  size: 20,
+                                ),
+                                onPressed: () {
+                                  _searchController.clear();
+                                  setState(() {
+                                    _draft = _draft.copyWith(keyword: '');
+                                  });
+                                },
+                              )
+                            : null,
+                        filled: true,
+                        fillColor: AppColors.surface,
+                        contentPadding: const EdgeInsets.symmetric(
+                          horizontal: 16,
+                          vertical: 14,
+                        ),
+                        border: OutlineInputBorder(
+                          borderRadius: BorderRadius.circular(18),
+                          borderSide: const BorderSide(
+                            color: AppColors.inputBorder,
+                          ),
+                        ),
+                        enabledBorder: OutlineInputBorder(
+                          borderRadius: BorderRadius.circular(18),
+                          borderSide: const BorderSide(
+                            color: AppColors.inputBorder,
+                          ),
+                        ),
+                        focusedBorder: OutlineInputBorder(
+                          borderRadius: BorderRadius.circular(18),
+                          borderSide: const BorderSide(
+                            color: AppColors.primary,
+                            width: 1.5,
+                          ),
+                        ),
+                      ),
+                    ),
+                    const SizedBox(height: 24),
                     _FilterField(
                       label: 'Tỉnh/Thành phố',
                       value: _draft.province.isEmpty

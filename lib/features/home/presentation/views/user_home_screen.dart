@@ -37,8 +37,6 @@ class UserHomeScreen extends StatefulWidget {
 
 class _UserHomeScreenState extends State<UserHomeScreen> {
   int _selectedIndex = 0;
-  String _searchText = '';
-  final TextEditingController _searchController = TextEditingController();
   Stream<List<ChatConversationModel>>? _unreadConversationsStream;
 
   @override
@@ -51,12 +49,6 @@ class _UserHomeScreenState extends State<UserHomeScreen> {
     });
   }
 
-  @override
-  void dispose() {
-    _searchController.dispose();
-    super.dispose();
-  }
-
   Stream<List<ChatConversationModel>> _getUnreadConversationsStream() {
     return _unreadConversationsStream ??=
         context.read<ChatViewModel>().getConversationsStream();
@@ -67,17 +59,6 @@ class _UserHomeScreenState extends State<UserHomeScreen> {
     RoomSearchFilterModel filter,
   ) {
     return posts.where(filter.matchesPost).toList();
-  }
-
-  List<PostModel> _applySearch(List<PostModel> posts, String query) {
-    if (query.isEmpty) return posts;
-    final q = query.toLowerCase();
-    return posts.where((post) {
-      return post.title.toLowerCase().contains(q) ||
-          post.location.toLowerCase().contains(q) ||
-          post.district.toLowerCase().contains(q) ||
-          post.province.toLowerCase().contains(q);
-    }).toList();
   }
 
   String _greetingText() {
@@ -447,55 +428,6 @@ class _UserHomeScreenState extends State<UserHomeScreen> {
       children: [
         _buildSectionHeader('Bài đăng nổi bật'),
         const SizedBox(height: 16),
-        Padding(
-          padding: const EdgeInsets.symmetric(horizontal: 20),
-          child: TextField(
-            controller: _searchController,
-            onChanged: (value) => setState(() => _searchText = value),
-            style: AppTextStyles.body,
-            decoration: InputDecoration(
-              hintText: 'Tìm theo tên phòng hoặc địa chỉ...',
-              hintStyle:
-                  AppTextStyles.body.copyWith(color: AppColors.textHint),
-              prefixIcon: const Icon(
-                Icons.search_rounded,
-                color: AppColors.textSecondary,
-                size: 20,
-              ),
-              suffixIcon: _searchText.isNotEmpty
-                  ? IconButton(
-                      icon: const Icon(
-                        Icons.close_rounded,
-                        color: AppColors.textSecondary,
-                        size: 20,
-                      ),
-                      onPressed: () {
-                        _searchController.clear();
-                        setState(() => _searchText = '');
-                      },
-                    )
-                  : null,
-              filled: true,
-              fillColor: AppColors.inputFill,
-              contentPadding:
-                  const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
-              border: OutlineInputBorder(
-                borderRadius: BorderRadius.circular(16),
-                borderSide: const BorderSide(color: AppColors.border),
-              ),
-              enabledBorder: OutlineInputBorder(
-                borderRadius: BorderRadius.circular(16),
-                borderSide: const BorderSide(color: AppColors.border),
-              ),
-              focusedBorder: OutlineInputBorder(
-                borderRadius: BorderRadius.circular(16),
-                borderSide:
-                    const BorderSide(color: AppColors.primary, width: 1.5),
-              ),
-            ),
-          ),
-        ),
-        const SizedBox(height: 16),
         StreamBuilder<List<PostModel>>(
           stream: postVm.postsStream,
           builder: (context, snapshot) {
@@ -518,8 +450,7 @@ class _UserHomeScreenState extends State<UserHomeScreen> {
             }
 
             final allPosts = snapshot.data ?? const <PostModel>[];
-            final filtered = _applyFilters(allPosts, activeFilter);
-            final posts = _applySearch(filtered, _searchText);
+            final posts = _applyFilters(allPosts, activeFilter);
 
             if (posts.isEmpty) {
               return Padding(
@@ -1445,14 +1376,6 @@ class _InviteSheet extends StatefulWidget {
 }
 
 class _InviteSheetState extends State<_InviteSheet> {
-  final _msgController = TextEditingController();
-
-  @override
-  void dispose() {
-    _msgController.dispose();
-    super.dispose();
-  }
-
   Future<void> _submit() async {
     final vm = context.read<RoommateProfileViewModel>();
     final messenger = ScaffoldMessenger.of(context);
@@ -1462,7 +1385,7 @@ class _InviteSheetState extends State<_InviteSheet> {
       targetUserId: widget.profile.userId,
       targetName: widget.profile.fullName,
       targetAvatar: widget.profile.avatarUrl,
-      message: _msgController.text.trim(),
+      message: '',
     );
 
     if (!mounted) return;
@@ -1569,39 +1492,6 @@ class _InviteSheetState extends State<_InviteSheet> {
                 ],
               ),
               const SizedBox(height: 20),
-              Text('Lời nhắn (tuỳ chọn)', style: AppTextStyles.label),
-              const SizedBox(height: 10),
-              TextField(
-                controller: _msgController,
-                enabled: !isLoading,
-                maxLines: 3,
-                maxLength: 200,
-                style: AppTextStyles.body,
-                decoration: InputDecoration(
-                  hintText:
-                      'Xin chào! Mình muốn tìm bạn ở ghép cùng...',
-                  hintStyle:
-                      AppTextStyles.body.copyWith(color: AppColors.textHint),
-                  filled: true,
-                  fillColor: AppColors.inputFill,
-                  border: OutlineInputBorder(
-                    borderRadius: BorderRadius.circular(16),
-                    borderSide: const BorderSide(color: AppColors.inputBorder),
-                  ),
-                  enabledBorder: OutlineInputBorder(
-                    borderRadius: BorderRadius.circular(16),
-                    borderSide: const BorderSide(color: AppColors.inputBorder),
-                  ),
-                  focusedBorder: OutlineInputBorder(
-                    borderRadius: BorderRadius.circular(16),
-                    borderSide: const BorderSide(
-                        color: AppColors.primary, width: 1.5),
-                  ),
-                  contentPadding: const EdgeInsets.all(14),
-                  counterStyle: AppTextStyles.caption,
-                ),
-              ),
-              const SizedBox(height: 16),
               SizedBox(
                 width: double.infinity,
                 height: 52,

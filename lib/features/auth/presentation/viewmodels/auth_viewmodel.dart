@@ -128,10 +128,10 @@ class AuthViewModel extends ChangeNotifier {
       errorMessage = null;
       notifyListeners();
 
-      await _repository.resetPassword(email);
+      await _repository.resetPassword(email.trim());
       return true;
     } on FirebaseAuthException catch (e) {
-      errorMessage = _mapFirebaseAuthError(e);
+      errorMessage = '[${e.code}] ${e.message ?? _mapFirebaseAuthError(e)}';
       return false;
     } catch (e) {
       errorMessage = 'Đã có lỗi xảy ra: $e';
@@ -141,6 +141,8 @@ class AuthViewModel extends ChangeNotifier {
       notifyListeners();
     }
   }
+
+  bool get hasError => errorMessage != null;
 
   Future<void> logout() async {
     if (_isLoggingOut) return;
@@ -172,6 +174,8 @@ class AuthViewModel extends ChangeNotifier {
         return 'Email hoặc mật khẩu không đúng';
       case 'invalid-email':
         return 'Email không hợp lệ';
+      case 'too-many-requests':
+        return 'Bạn thao tác quá nhiều lần. Vui lòng thử lại sau';
       case 'email-already-in-use':
         return 'Email đã được sử dụng';
       case 'weak-password':

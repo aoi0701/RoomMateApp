@@ -13,8 +13,10 @@ class HomeSearchFilterRepository {
   })  : _firestore = firestore ?? FirebaseFirestore.instance,
         _auth = auth ?? FirebaseAuth.instance;
 
+  String? get currentUserId => _auth.currentUser?.uid;
+
   Future<RoomSearchFilterModel> getSavedFilter() async {
-    final uid = _auth.currentUser?.uid;
+    final uid = currentUserId;
     if (uid == null) return const RoomSearchFilterModel();
 
     final doc = await _firestore.collection('users').doc(uid).get();
@@ -22,7 +24,7 @@ class HomeSearchFilterRepository {
   }
 
   Future<void> saveFilter(RoomSearchFilterModel filter) async {
-    final uid = _auth.currentUser?.uid;
+    final uid = currentUserId;
     if (uid == null) {
       throw Exception('Người dùng chưa đăng nhập');
     }
@@ -33,7 +35,7 @@ class HomeSearchFilterRepository {
     }, SetOptions(merge: true));
   }
   Future<void> clearSavedFilter() async {
-    final uid = _auth.currentUser?.uid;
+    final uid = currentUserId;
     if (uid == null) return;
 
     await _firestore.collection('users').doc(uid).set({

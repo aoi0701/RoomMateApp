@@ -3,15 +3,22 @@ import 'package:provider/provider.dart';
 
 import '../../../../core/theme/app_colors.dart';
 import '../../../../core/theme/app_text_styles.dart';
+import '../../../../core/widgets/app_avatar.dart';
 import '../../../../core/widgets/app_button.dart';
 import '../viewmodels/roommate_request_viewmodel.dart';
 
 class SendRequestScreen extends StatefulWidget {
   final String postId;
+  final String ownerName;
+  final String ownerAvatar;
+  final String ownerAddress;
 
   const SendRequestScreen({
     super.key,
     required this.postId,
+    required this.ownerName,
+    required this.ownerAvatar,
+    required this.ownerAddress,
   });
 
   @override
@@ -19,31 +26,14 @@ class SendRequestScreen extends StatefulWidget {
 }
 
 class _SendRequestScreenState extends State<SendRequestScreen> {
-  final TextEditingController _messageController = TextEditingController();
-
-  @override
-  void dispose() {
-    _messageController.dispose();
-    super.dispose();
-  }
-
   Future<void> _submitRequest() async {
     final viewModel = context.read<RoommateRequestViewModel>();
     final messenger = ScaffoldMessenger.of(context);
     final navigator = Navigator.of(context);
 
-    final message = _messageController.text.trim();
-
-    if (message.isEmpty) {
-      messenger.showSnackBar(
-        const SnackBar(content: Text('Vui lòng nhập lời nhắn')),
-      );
-      return;
-    }
-
     final success = await viewModel.sendRequest(
       postId: widget.postId,
-      message: message,
+      message: '',
     );
 
     if (!mounted) return;
@@ -66,99 +56,92 @@ class _SendRequestScreenState extends State<SendRequestScreen> {
   Widget build(BuildContext context) {
     return Consumer<RoommateRequestViewModel>(
       builder: (context, viewModel, _) {
-        return Scaffold(
-          backgroundColor: AppColors.background,
-          appBar: AppBar(
-            title: const Text('Gửi yêu cầu ở ghép'),
-            leading: IconButton(
-              icon: const Icon(Icons.arrow_back_ios_new_rounded, size: 18),
-              onPressed: () => Navigator.pop(context),
-            ),
+        return Container(
+          decoration: const BoxDecoration(
+            color: AppColors.surface,
+            borderRadius: BorderRadius.vertical(top: Radius.circular(28)),
           ),
-          body: SafeArea(
-            child: Padding(
-              padding: const EdgeInsets.all(20),
-              child: Column(
+          padding: EdgeInsets.only(
+            left: 24,
+            right: 24,
+            top: 24,
+            bottom: MediaQuery.of(context).viewInsets.bottom + 24,
+          ),
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Center(
+                child: Container(
+                  width: 40,
+                  height: 4,
+                  decoration: BoxDecoration(
+                    color: AppColors.border,
+                    borderRadius: BorderRadius.circular(2),
+                  ),
+                ),
+              ),
+              const SizedBox(height: 24),
+              Row(
                 children: [
-                  Container(
-                    width: double.infinity,
-                    padding: const EdgeInsets.all(20),
-                    decoration: BoxDecoration(
-                      color: AppColors.surface,
-                      borderRadius: BorderRadius.circular(24),
-                      border: Border.all(color: AppColors.border),
-                      boxShadow: const [
-                        BoxShadow(
-                          color: Color(0x08000000),
-                          blurRadius: 12,
-                          offset: Offset(0, 2),
-                        ),
-                      ],
-                    ),
+                  AppAvatar(
+                    name: widget.ownerName,
+                    avatarUrl: widget.ownerAvatar.isNotEmpty
+                        ? widget.ownerAvatar
+                        : null,
+                    size: 52,
+                  ),
+                  const SizedBox(width: 14),
+                  Expanded(
                     child: Column(
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
-                        Container(
-                          padding: const EdgeInsets.symmetric(
-                            horizontal: 12,
-                            vertical: 6,
-                          ),
-                          decoration: BoxDecoration(
-                            color: AppColors.accent,
-                            borderRadius: BorderRadius.circular(999),
-                          ),
-                          child: Text(
-                            'Lời nhắn đến chủ bài đăng',
-                            style: AppTextStyles.labelSm.copyWith(
-                              color: AppColors.primary,
-                            ),
-                          ),
+                        Text(
+                          widget.ownerName.isNotEmpty
+                              ? widget.ownerName
+                              : 'Chủ bài đăng',
+                          style: AppTextStyles.labelLg,
                         ),
-                        const SizedBox(height: 16),
-                        TextField(
-                          controller: _messageController,
-                          maxLines: 6,
-                          textInputAction: TextInputAction.newline,
-                          style: AppTextStyles.body,
-                          decoration: InputDecoration(
-                            hintText: 'Nhập lời nhắn của bạn...',
-                            hintStyle: AppTextStyles.body.copyWith(
-                              color: AppColors.textHint,
-                            ),
-                            filled: true,
-                            fillColor: AppColors.inputFill,
-                            contentPadding: const EdgeInsets.all(16),
-                            border: OutlineInputBorder(
-                              borderRadius: BorderRadius.circular(16),
-                              borderSide:
-                                  const BorderSide(color: AppColors.inputBorder),
-                            ),
-                            enabledBorder: OutlineInputBorder(
-                              borderRadius: BorderRadius.circular(16),
-                              borderSide:
-                                  const BorderSide(color: AppColors.inputBorder),
-                            ),
-                            focusedBorder: OutlineInputBorder(
-                              borderRadius: BorderRadius.circular(16),
-                              borderSide: const BorderSide(
-                                color: AppColors.primary,
-                                width: 1.5,
-                              ),
-                            ),
-                          ),
+                        const SizedBox(height: 2),
+                        Text(
+                          widget.ownerAddress.isNotEmpty
+                              ? widget.ownerAddress
+                              : 'Chưa cập nhật',
+                          style: AppTextStyles.caption,
+                          maxLines: 1,
+                          overflow: TextOverflow.ellipsis,
                         ),
                       ],
                     ),
                   ),
-                  const Spacer(),
-                  AppPrimaryButton(
-                    label: 'Gửi yêu cầu',
-                    isLoading: viewModel.isLoading,
-                    onTap: viewModel.isLoading ? null : _submitRequest,
-                  ),
                 ],
               ),
-            ),
+              const SizedBox(height: 20),
+              AppPrimaryButton(
+                label: 'Gửi yêu cầu',
+                isLoading: viewModel.isLoading,
+                onTap: viewModel.isLoading ? null : _submitRequest,
+              ),
+              const SizedBox(height: 10),
+              SizedBox(
+                width: double.infinity,
+                child: TextButton(
+                  onPressed: viewModel.isLoading
+                      ? null
+                      : () => Navigator.pop(context),
+                  style: TextButton.styleFrom(
+                    foregroundColor: AppColors.textSecondary,
+                    padding: const EdgeInsets.symmetric(vertical: 12),
+                  ),
+                  child: Text(
+                    'Huỷ',
+                    style: AppTextStyles.button.copyWith(
+                      color: AppColors.textSecondary,
+                    ),
+                  ),
+                ),
+              ),
+            ],
           ),
         );
       },

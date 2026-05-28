@@ -226,6 +226,10 @@ class _AuthGateState extends State<AuthGate> {
               );
             }
 
+            if (roleSnapshot.hasError) {
+              return const UserHomeScreen();
+            }
+
             final role = roleSnapshot.data ?? 'user';
             _cachedRole = role;
             _cachedRoleUserId = user.uid;
@@ -246,6 +250,10 @@ class _AuthGateState extends State<AuthGate> {
                       child: CircularProgressIndicator(),
                     ),
                   );
+                }
+
+                if (profileSnapshot.hasError) {
+                  return const UserHomeScreen();
                 }
 
                 final profile = profileSnapshot.data;

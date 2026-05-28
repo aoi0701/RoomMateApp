@@ -16,6 +16,7 @@ class PriceRangeOption {
 }
 
 class RoomSearchFilterModel {
+  final String keyword;
   final String province;
   final String district;
   final String roomType;
@@ -23,6 +24,7 @@ class RoomSearchFilterModel {
   final List<String> amenities;
 
   const RoomSearchFilterModel({
+    this.keyword = '',
     this.province = '',
     this.district = '',
     this.roomType = '',
@@ -94,6 +96,7 @@ class RoomSearchFilterModel {
   }
 
   bool get hasActiveFilters =>
+      keyword.isNotEmpty ||
       province.isNotEmpty ||
       district.isNotEmpty ||
       roomType.isNotEmpty ||
@@ -106,6 +109,7 @@ class RoomSearchFilterModel {
     }
 
     final parts = <String>[];
+    if (keyword.isNotEmpty) parts.add(keyword);
     if (province.isNotEmpty) parts.add(province);
     if (district.isNotEmpty) parts.add(district);
     if (roomType.isNotEmpty) parts.add(roomType);
@@ -116,6 +120,7 @@ class RoomSearchFilterModel {
   }
 
   RoomSearchFilterModel copyWith({
+    String? keyword,
     String? province,
     String? district,
     String? roomType,
@@ -123,6 +128,7 @@ class RoomSearchFilterModel {
     List<String>? amenities,
   }) {
     return RoomSearchFilterModel(
+      keyword: keyword ?? this.keyword,
       province: province ?? this.province,
       district: district ?? this.district,
       roomType: roomType ?? this.roomType,
@@ -133,6 +139,7 @@ class RoomSearchFilterModel {
 
   Map<String, dynamic> toMap() {
     return {
+      'keyword': keyword,
       'province': province,
       'district': district,
       'roomType': roomType,
@@ -144,6 +151,7 @@ class RoomSearchFilterModel {
   factory RoomSearchFilterModel.fromMap(Map<String, dynamic>? map) {
     final data = map ?? {};
     return RoomSearchFilterModel(
+      keyword: data['keyword'] ?? '',
       province: data['province'] ?? '',
       district: data['district'] ?? '',
       roomType: data['roomType'] ?? '',
@@ -153,11 +161,21 @@ class RoomSearchFilterModel {
   }
 
   bool matchesPost(PostModel post) {
+    final normalizedKeyword = keyword.trim().toLowerCase();
+    final postTitle = post.title.trim().toLowerCase();
+    final postLocation = post.location.trim().toLowerCase();
     final normalizedProvince = post.province.trim().toLowerCase();
     final normalizedDistrict = post.district.trim().toLowerCase();
     final normalizedRoomType = post.roomType.trim().toLowerCase();
     final postAmenities =
         post.amenities.map((item) => item.trim().toLowerCase()).toSet();
+
+    final matchesKeyword = normalizedKeyword.isEmpty
+        ? true
+        : postTitle.contains(normalizedKeyword) ||
+            postLocation.contains(normalizedKeyword) ||
+            normalizedDistrict.contains(normalizedKeyword) ||
+            normalizedProvince.contains(normalizedKeyword);
 
     final matchesProvince = province.isEmpty
         ? true
@@ -184,7 +202,8 @@ class RoomSearchFilterModel {
               (item) => postAmenities.contains(item.trim().toLowerCase()),
             ));
 
-    return matchesProvince &&
+    return matchesKeyword &&
+        matchesProvince &&
         matchesDistrict &&
         matchesRoomType &&
         matchesPrice &&

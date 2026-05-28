@@ -13,6 +13,8 @@ class AuthRepository {
         _firestore = firestore ?? FirebaseFirestore.instance;
 
   User? get currentUser => _auth.currentUser;
+  CollectionReference<Map<String, dynamic>> get _users =>
+      _firestore.collection('users');
 
   Stream<User?> authStateChanges() => _auth.authStateChanges();
 
@@ -63,8 +65,17 @@ class AuthRepository {
   }
 
   Future<String> getUserRole(String uid) async {
-    final doc = await _firestore.collection('users').doc(uid).get();
-    return doc.data()?['role'] ?? 'user';
+    final user = currentUser;
+    if (user != null && user.uid == uid) {
+      await ensureUserDocument(user);
+    }
+
+    try {
+      final doc = await _users.doc(uid).get();
+      return doc.data()?['role'] ?? 'user';
+    } on FirebaseException {
+      return 'user';
+    }
   }
 
   Future<String> signInWithGoogle() async {
@@ -85,7 +96,7 @@ class AuthRepository {
       throw Exception('Không lấy được thông tin người dùng từ Google');
     }
 
-    final docRef = _firestore.collection('users').doc(user.uid);
+    final docRef = _users.doc(user.uid);
     final doc = await docRef.get();
 
     if (!doc.exists) {
@@ -110,7 +121,38 @@ class AuthRepository {
   }
 
   Future<void> resetPassword(String email) {
-    return _auth.sendPasswordResetEmail(email: email.trim());
+    final normalizedEmail = email.trim();
+    return _auth.sendPasswordResetEmail(email: normalizedEmail);
+  }
+
+  Future<void> ensureUserDocument(User user) async {
+    final docRef = _users.doc(user.uid);
+
+    try {
+      final doc = await docRef.get();
+      if (doc.exists) return;
+    } on FirebaseException {
+      // Ignore Firestore read issues here so auth flows can continue.
+    }
+
+    try {
+      await docRef.set({
+        'uid': user.uid,
+        'fullName': user.displayName ?? '',
+        'email': user.email ?? '',
+        'avatarUrl': user.photoURL ?? '',
+        'phone': '',
+        'address': '',
+        'gender': '',
+        'habits': const <String>[],
+        'roommateCriteria': const <String>[],
+        'profileCompleted': false,
+        'role': 'user',
+        'createdAt': FieldValue.serverTimestamp(),
+      }, SetOptions(merge: true));
+    } on FirebaseException {
+      // Ignore Firestore write issues here so auth flows can continue.
+    }
   }
 
   Future<void> logout() {

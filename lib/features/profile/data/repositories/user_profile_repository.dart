@@ -15,11 +15,15 @@ class UserProfileRepository {
   }
 
   Future<UserModel?> getUserProfile(String uid) async {
-    final doc = await _firestore.collection('users').doc(uid).get();
+    try {
+      final doc = await _firestore.collection('users').doc(uid).get();
 
-    if (!doc.exists) return null;
+      if (!doc.exists) return null;
 
-    return UserModel.fromDocument(doc);
+      return UserModel.fromDocument(doc);
+    } on FirebaseException {
+      return null;
+    }
   }
 
   Future<bool> isProfileComplete(String uid) async {

@@ -13,13 +13,15 @@ class HomeSearchFilterViewModel extends ChangeNotifier {
   bool isLoading = false;
   bool isSaving = false;
   bool _hasLoaded = false;
+  String? _loadedUserId;
   String? errorMessage;
 
   RoomSearchFilterModel get currentFilter => _currentFilter;
   bool get hasLoaded => _hasLoaded;
 
   Future<void> loadSavedFilter() async {
-    if (_hasLoaded) return;
+    final currentUserId = _repository.currentUserId;
+    if (_hasLoaded && _loadedUserId == currentUserId) return;
     try {
       isLoading = true;
       errorMessage = null;
@@ -27,6 +29,7 @@ class HomeSearchFilterViewModel extends ChangeNotifier {
 
       _currentFilter = await _repository.getSavedFilter();
       _hasLoaded = true;
+      _loadedUserId = currentUserId;
     } catch (e) {
       errorMessage = 'Không tải được bộ lọc: $e';
     } finally {
@@ -60,7 +63,8 @@ class HomeSearchFilterViewModel extends ChangeNotifier {
 
   Future<void> resetFilter({bool clearSaved = false}) async {
     _currentFilter = const RoomSearchFilterModel();
-    _hasLoaded = true;
+    _hasLoaded = clearSaved;
+    _loadedUserId = clearSaved ? _repository.currentUserId : null;
     errorMessage = null;
     notifyListeners();
 

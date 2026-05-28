@@ -529,9 +529,15 @@ class PostDetailScreen extends StatelessWidget {
 
                     if (!context.mounted) return;
 
-                    navigator.push(
-                      MaterialPageRoute(
-                        builder: (_) => SendRequestScreen(postId: post.id),
+                    showModalBottomSheet<void>(
+                      context: context,
+                      isScrollControlled: true,
+                      backgroundColor: Colors.transparent,
+                      builder: (_) => SendRequestScreen(
+                        postId: post.id,
+                        ownerName: owner?.fullName ?? '',
+                        ownerAvatar: owner?.avatarUrl ?? '',
+                        ownerAddress: owner?.address ?? '',
                       ),
                     );
                   },
