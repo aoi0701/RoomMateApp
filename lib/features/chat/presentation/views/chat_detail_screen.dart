@@ -34,6 +34,9 @@ class _ChatDetailScreenState extends State<ChatDetailScreen> {
   bool _isAtBottom = true;
   bool _isConversationReady = false;
   String? _screenError;
+  // Cached stream - created once so Firebase never opens more than one listener
+  // on the same path regardless of how many times the widget rebuilds.
+  Stream<List<ChatMessageModel>>? _messagesStream;
 
   @override
   void initState() {
@@ -46,8 +49,7 @@ class _ChatDetailScreenState extends State<ChatDetailScreen> {
 
     _currentUserId = user.uid;
     final chatVm = context.read<ChatViewModel>();
-    _conversationId =
-        chatVm.getConversationId(user.uid, widget.otherUserId);
+    _conversationId = chatVm.getConversationId(user.uid, widget.otherUserId);
     _initializeConversation();
     _scrollController.addListener(() {
       if (!_scrollController.hasClients) return;
@@ -61,15 +63,28 @@ class _ChatDetailScreenState extends State<ChatDetailScreen> {
     if (conversationId == null) return;
 
     final chatVm = context.read<ChatViewModel>();
-    await chatVm.ensureConversation(
-      conversationId: conversationId,
-      otherUserId: widget.otherUserId,
-    );
-    await chatVm.markAsRead(conversationId);
-    if (!mounted) return;
-    setState(() {
-      _isConversationReady = true;
-    });
+    try {
+      await chatVm.ensureConversation(
+        conversationId: conversationId,
+        otherUserId: widget.otherUserId,
+      );
+      // markAsRead runs once here, not inside any repeating listener callback.
+      await chatVm.markAsRead(conversationId);
+      if (!mounted) return;
+      setState(() {
+        // Create the stream exactly once. StreamBuilder keeps this subscription
+        // alive for the lifetime of the screen and cancels it on dispose.
+        _messagesStream = chatVm
+            .getMessagesStream(conversationId)
+            .asBroadcastStream();
+        _isConversationReady = true;
+      });
+    } catch (e) {
+      if (!mounted) return;
+      setState(() {
+        _screenError = e.toString().replaceFirst('Exception: ', '');
+      });
+    }
   }
 
   @override
@@ -96,7 +111,7 @@ class _ChatDetailScreenState extends State<ChatDetailScreen> {
 
     _textController.clear();
     final vm = context.read<ChatViewModel>();
-    await vm.sendMessage(
+    final success = await vm.sendMessage(
       conversationId: conversationId,
       receiverId: widget.otherUserId,
       text: text,
@@ -104,12 +119,22 @@ class _ChatDetailScreenState extends State<ChatDetailScreen> {
       receiverAvatar: widget.otherUserAvatar,
     );
 
+    if (!mounted) return;
+    if (!success) {
+      _textController.text = text;
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text(vm.errorMessage ?? 'Không gửi được tin nhắn'),
+        ),
+      );
+      return;
+    }
+
     WidgetsBinding.instance.addPostFrameCallback((_) => _scrollToBottom());
   }
 
   @override
   Widget build(BuildContext context) {
-    final chatVm = context.read<ChatViewModel>();
     final currentUserId = _currentUserId;
     final conversationId = _conversationId;
 
@@ -168,7 +193,9 @@ class _ChatDetailScreenState extends State<ChatDetailScreen> {
                     message: 'Thiếu thông tin người dùng hiện tại.',
                   )
                 : StreamBuilder<List<ChatMessageModel>>(
-                    stream: chatVm.getMessagesStream(conversationId),
+                    // Use the cached stream - same object reference every rebuild
+                    // means StreamBuilder never opens a second Firebase listener.
+                    stream: _messagesStream,
                     builder: (context, snapshot) {
                       if (snapshot.connectionState == ConnectionState.waiting) {
                         return const AppLoadingState(
@@ -193,12 +220,14 @@ class _ChatDetailScreenState extends State<ChatDetailScreen> {
                         );
                       }
 
-                      final lastMessage =
-                          messages.isNotEmpty ? messages.last : null;
+                      final lastMessage = messages.isNotEmpty
+                          ? messages.last
+                          : null;
                       final isMine = lastMessage?.senderId == currentUserId;
                       if (_isAtBottom || isMine) {
-                        WidgetsBinding.instance
-                            .addPostFrameCallback((_) => _scrollToBottom());
+                        WidgetsBinding.instance.addPostFrameCallback(
+                          (_) => _scrollToBottom(),
+                        );
                       }
 
                       return ListView.builder(
@@ -208,7 +237,8 @@ class _ChatDetailScreenState extends State<ChatDetailScreen> {
                         itemBuilder: (context, index) {
                           final msg = messages[index];
                           final isMine = msg.senderId == currentUserId;
-                          final showTimestamp = index == 0 ||
+                          final showTimestamp =
+                              index == 0 ||
                               messages[index].createdAt
                                       .difference(messages[index - 1].createdAt)
                                       .inMinutes
@@ -262,8 +292,9 @@ class _ChatDetailScreenState extends State<ChatDetailScreen> {
               style: AppTextStyles.body,
               decoration: InputDecoration(
                 hintText: 'Nhập tin nhắn...',
-                hintStyle:
-                    AppTextStyles.body.copyWith(color: AppColors.textHint),
+                hintStyle: AppTextStyles.body.copyWith(
+                  color: AppColors.textHint,
+                ),
                 filled: true,
                 fillColor: AppColors.inputFill,
                 contentPadding: const EdgeInsets.symmetric(
@@ -280,8 +311,10 @@ class _ChatDetailScreenState extends State<ChatDetailScreen> {
                 ),
                 focusedBorder: OutlineInputBorder(
                   borderRadius: BorderRadius.circular(20),
-                  borderSide:
-                      const BorderSide(color: AppColors.primary, width: 1.5),
+                  borderSide: const BorderSide(
+                    color: AppColors.primary,
+                    width: 1.5,
+                  ),
                 ),
               ),
               onSubmitted: (_) => _sendMessage(),
@@ -339,8 +372,9 @@ class _MessageItem extends StatelessWidget {
             padding: const EdgeInsets.symmetric(vertical: 10),
             child: Text(
               _buildTimestampLabel(message.createdAt),
-              style: AppTextStyles.caption
-                  .copyWith(color: AppColors.textSecondary),
+              style: AppTextStyles.caption.copyWith(
+                color: AppColors.textSecondary,
+              ),
             ),
           ),
         Align(
@@ -351,17 +385,18 @@ class _MessageItem extends StatelessWidget {
             ),
             child: Container(
               margin: const EdgeInsets.only(bottom: 4),
-              padding:
-                  const EdgeInsets.symmetric(horizontal: 14, vertical: 10),
+              padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 10),
               decoration: BoxDecoration(
                 color: isMine ? AppColors.primary : AppColors.surface,
                 borderRadius: BorderRadius.only(
                   topLeft: const Radius.circular(18),
                   topRight: const Radius.circular(18),
-                  bottomLeft:
-                      isMine ? const Radius.circular(18) : const Radius.circular(4),
-                  bottomRight:
-                      isMine ? const Radius.circular(4) : const Radius.circular(18),
+                  bottomLeft: isMine
+                      ? const Radius.circular(18)
+                      : const Radius.circular(4),
+                  bottomRight: isMine
+                      ? const Radius.circular(4)
+                      : const Radius.circular(18),
                 ),
                 border: isMine ? null : Border.all(color: AppColors.border),
                 boxShadow: const [

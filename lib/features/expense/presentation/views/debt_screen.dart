@@ -97,11 +97,7 @@ class _DebtScreenState extends State<DebtScreen> {
     );
     if (!mounted) return;
     if (success) {
-      vm.loadNetDebtSummary(
-        roomGroupId: widget.roomGroupId,
-        currentUserId: widget.currentUserId,
-      );
-      vm.loadDebts(
+      await vm.loadDebtScreenData(
         userId: widget.currentUserId,
         roomGroupId: widget.roomGroupId,
       );

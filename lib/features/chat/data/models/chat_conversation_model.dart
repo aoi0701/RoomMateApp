@@ -18,6 +18,9 @@ class ChatConversationModel {
   });
 
   factory ChatConversationModel.fromMap(String id, Map<dynamic, dynamic> map) {
+    final lastMessageAt = map['lastMessageAt'];
+    final unreadCount = map['unreadCount'];
+
     return ChatConversationModel(
       id: id,
       otherUserId: (map['otherUserId'] as String?) ?? '',
@@ -25,9 +28,9 @@ class ChatConversationModel {
       otherUserAvatar: (map['otherUserAvatar'] as String?) ?? '',
       lastMessage: (map['lastMessage'] as String?) ?? '',
       lastMessageAt: DateTime.fromMillisecondsSinceEpoch(
-        (map['lastMessageAt'] as int?) ?? 0,
+        lastMessageAt is num ? lastMessageAt.toInt() : 0,
       ),
-      unreadCount: (map['unreadCount'] as int?) ?? 0,
+      unreadCount: unreadCount is num ? unreadCount.toInt() : 0,
     );
   }
 }

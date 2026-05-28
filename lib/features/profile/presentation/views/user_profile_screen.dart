@@ -1,16 +1,11 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
-import 'package:google_fonts/google_fonts.dart';
 import 'package:provider/provider.dart';
 import 'package:roommateapp/features/chat/presentation/viewmodels/chat_viewmodel.dart';
 import 'package:roommateapp/features/chat/presentation/views/chat_detail_screen.dart';
-import 'package:roommateapp/features/chat/presentation/views/chat_list_screen.dart';
-import 'package:roommateapp/features/home/presentation/views/user_home_screen.dart';
-import 'package:roommateapp/features/post/presentation/views/create_post_screen.dart';
 import 'package:roommateapp/features/post/presentation/views/my_posts_screen.dart';
-import 'package:roommateapp/features/room_group/presentation/views/room_group_screen.dart';
 import 'package:roommateapp/features/roommate/presentation/viewmodels/roommate_request_viewmodel.dart';
-import 'package:roommateapp/features/roommate/presentation/views/roommate_request_tab_screen.dart';
+
 
 import '../../../../core/theme/app_colors.dart';
 import '../../../../core/theme/app_text_styles.dart';
@@ -136,8 +131,8 @@ class _UserProfileScreenState extends State<UserProfileScreen> {
             final email = user.email.trim().isNotEmpty
                 ? user.email.trim()
                 : (isCurrentUserProfile
-                    ? (currentUser.email ?? 'Chưa cập nhật')
-                    : 'Chưa cập nhật');
+                      ? (currentUser.email ?? 'Chưa cập nhật')
+                      : 'Chưa cập nhật');
             final phone = user.phone.trim().isNotEmpty
                 ? user.phone.trim()
                 : 'Chưa cập nhật';
@@ -154,8 +149,8 @@ class _UserProfileScreenState extends State<UserProfileScreen> {
             final subtitle = user.role == 'admin'
                 ? 'Quản trị viên'
                 : subtitleParts.isNotEmpty
-                    ? subtitleParts.join(', ')
-                    : '';
+                ? subtitleParts.join(', ')
+                : '';
 
             return StreamBuilder<bool>(
               stream: profileVm.hasUserPostsStream(viewedUserId),
@@ -178,9 +173,12 @@ class _UserProfileScreenState extends State<UserProfileScreen> {
                       _buildHeroProfile(
                         fullName: fullName,
                         subtitle: subtitle,
-                        avatarUrl: user.avatarUrl.isNotEmpty ? user.avatarUrl : null,
+                        avatarUrl: user.avatarUrl.isNotEmpty
+                            ? user.avatarUrl
+                            : null,
                       ),
-                      if (!isCurrentUserProfile && widget.matchPercentage != null) ...[
+                      if (!isCurrentUserProfile &&
+                          widget.matchPercentage != null) ...[
                         const SizedBox(height: 14),
                         _buildMatchBanner(widget.matchPercentage!),
                       ],
@@ -196,7 +194,10 @@ class _UserProfileScreenState extends State<UserProfileScreen> {
                         _buildProfileCompletionCard(),
                       ],
                       const SizedBox(height: 18),
-                      _buildLifestyleSection(user.habits, canEdit: isCurrentUserProfile),
+                      _buildLifestyleSection(
+                        user.habits,
+                        canEdit: isCurrentUserProfile,
+                      ),
                       const SizedBox(height: 18),
                       _buildRoommateCriteriaSection(user.roommateCriteria),
                       if (isCurrentUserProfile) ...[
@@ -233,10 +234,13 @@ class _UserProfileScreenState extends State<UserProfileScreen> {
                                 : () async {
                                     await performLogout(context);
                                     if (!context.mounted) return;
-                                    final error =
-                                        context.read<AuthViewModel>().errorMessage;
+                                    final error = context
+                                        .read<AuthViewModel>()
+                                        .errorMessage;
                                     if (error != null) {
-                                      ScaffoldMessenger.of(context).showSnackBar(
+                                      ScaffoldMessenger.of(
+                                        context,
+                                      ).showSnackBar(
                                         SnackBar(content: Text(error)),
                                       );
                                     }
@@ -244,8 +248,11 @@ class _UserProfileScreenState extends State<UserProfileScreen> {
                             style: ElevatedButton.styleFrom(
                               backgroundColor: AppColors.danger,
                               foregroundColor: Colors.white,
-                              disabledBackgroundColor: AppColors.danger.withValues(alpha: 0.45),
-                              disabledForegroundColor: Colors.white.withValues(alpha: 0.7),
+                              disabledBackgroundColor: AppColors.danger
+                                  .withValues(alpha: 0.45),
+                              disabledForegroundColor: Colors.white.withValues(
+                                alpha: 0.7,
+                              ),
                               elevation: 0,
                               shape: RoundedRectangleBorder(
                                 borderRadius: BorderRadius.circular(18),
@@ -260,7 +267,10 @@ class _UserProfileScreenState extends State<UserProfileScreen> {
                                       color: Colors.white,
                                     ),
                                   )
-                                : Text('Đăng xuất', style: AppTextStyles.button),
+                                : Text(
+                                    'Đăng xuất',
+                                    style: AppTextStyles.button,
+                                  ),
                           ),
                         ),
                       ],
@@ -272,96 +282,9 @@ class _UserProfileScreenState extends State<UserProfileScreen> {
           },
         ),
       ),
-      bottomNavigationBar: isCurrentUserProfile
-          ? BottomNavigationBar(
-              currentIndex: 5,
-              type: BottomNavigationBarType.fixed,
-              selectedItemColor: AppColors.primary,
-              unselectedItemColor: AppColors.textSecondary,
-              backgroundColor: AppColors.surface,
-              elevation: 0,
-              selectedLabelStyle: GoogleFonts.plusJakartaSans(
-                fontSize: 10,
-                fontWeight: FontWeight.w700,
-              ),
-              unselectedLabelStyle: GoogleFonts.plusJakartaSans(
-                fontSize: 10,
-                fontWeight: FontWeight.w500,
-              ),
-              onTap: (index) {
-                if (index == 5) return;
-                switch (index) {
-                  case 0:
-                    Navigator.pushAndRemoveUntil(
-                      context,
-                      MaterialPageRoute(builder: (_) => const UserHomeScreen()),
-                      (route) => false,
-                    );
-                    break;
-                  case 1:
-                    Navigator.push(
-                      context,
-                      MaterialPageRoute(
-                        builder: (_) => const RoommateRequestTabScreen(),
-                      ),
-                    );
-                    break;
-                  case 2:
-                    Navigator.push(
-                      context,
-                      MaterialPageRoute(builder: (_) => const ChatListScreen()),
-                    );
-                    break;
-                  case 3:
-                    Navigator.push(
-                      context,
-                      MaterialPageRoute(builder: (_) => const RoomGroupScreen()),
-                    );
-                    break;
-                  case 4:
-                    Navigator.push(
-                      context,
-                      MaterialPageRoute(builder: (_) => const CreatePostScreen()),
-                    );
-                    break;
-                }
-              },
-              items: const [
-                BottomNavigationBarItem(
-                  icon: Icon(Icons.home_outlined),
-                  activeIcon: Icon(Icons.home),
-                  label: 'Trang chủ',
-                ),
-                BottomNavigationBarItem(
-                  icon: Icon(Icons.description_outlined),
-                  activeIcon: Icon(Icons.description),
-                  label: 'Yêu cầu',
-                ),
-                BottomNavigationBarItem(
-                  icon: Icon(Icons.chat_bubble_outline_rounded),
-                  activeIcon: Icon(Icons.chat_bubble_rounded),
-                  label: 'Nhắn tin',
-                ),
-                BottomNavigationBarItem(
-                  icon: Icon(Icons.wallet_outlined),
-                  activeIcon: Icon(Icons.wallet),
-                  label: 'Chi tiêu',
-                ),
-                BottomNavigationBarItem(
-                  icon: Icon(Icons.add_box_outlined),
-                  activeIcon: Icon(Icons.add_box),
-                  label: 'Đăng bài',
-                ),
-                BottomNavigationBarItem(
-                  icon: Icon(Icons.person_outline),
-                  activeIcon: Icon(Icons.person),
-                  label: 'Cá nhân',
-                ),
-              ],
-            )
-          : widget.showInviteAction
-              ? _buildInviteActionBar(viewedUserId)
-              : null,
+      bottomNavigationBar: (!isCurrentUserProfile && widget.showInviteAction)
+          ? _buildInviteActionBar(viewedUserId)
+          : null,
     );
   }
 
@@ -672,7 +595,11 @@ class _UserProfileScreenState extends State<UserProfileScreen> {
                         color: AppColors.success,
                         shape: BoxShape.circle,
                       ),
-                      child: const Icon(Icons.check, size: 18, color: Colors.white),
+                      child: const Icon(
+                        Icons.check,
+                        size: 18,
+                        color: Colors.white,
+                      ),
                     ),
                     const SizedBox(width: 12),
                     Expanded(child: Text(item, style: AppTextStyles.label)),
@@ -697,9 +624,8 @@ class _UserProfileScreenState extends State<UserProfileScreen> {
     await Navigator.push(
       context,
       MaterialPageRoute(
-        builder: (_) => EditHabitsScreen(
-          initialHabits: user?.habits ?? const [],
-        ),
+        builder: (_) =>
+            EditHabitsScreen(initialHabits: user?.habits ?? const []),
       ),
     );
   }
@@ -750,8 +676,7 @@ class _UserProfileScreenState extends State<UserProfileScreen> {
               icon: const Icon(Icons.chat_bubble_outline_rounded, size: 18),
               onTap: () {
                 final chatVm = context.read<ChatViewModel>();
-                final _ = chatVm.getConversationId(
-                    currentUserId, viewedUserId);
+                final _ = chatVm.getConversationId(currentUserId, viewedUserId);
                 Navigator.push(
                   context,
                   MaterialPageRoute(
@@ -770,7 +695,9 @@ class _UserProfileScreenState extends State<UserProfileScreen> {
             child: AppPrimaryButton(
               label: 'Gửi lời mời ở ghép',
               isLoading: inviteVm.isInviting,
-              onTap: inviteVm.isInviting ? null : () => _sendInvite(viewedUserId),
+              onTap: inviteVm.isInviting
+                  ? null
+                  : () => _sendInvite(viewedUserId),
             ),
           ),
         ],
@@ -802,8 +729,10 @@ class _UserProfileScreenState extends State<UserProfileScreen> {
           return Column(
             children: [
               ListTile(
-                contentPadding:
-                    const EdgeInsets.symmetric(horizontal: 18, vertical: 8),
+                contentPadding: const EdgeInsets.symmetric(
+                  horizontal: 18,
+                  vertical: 8,
+                ),
                 leading: Container(
                   width: 48,
                   height: 48,

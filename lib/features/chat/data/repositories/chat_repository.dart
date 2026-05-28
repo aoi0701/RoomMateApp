@@ -1,3 +1,5 @@
+import 'dart:async';
+
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:firebase_core/firebase_core.dart';
 import 'package:firebase_database/firebase_database.dart';
@@ -41,16 +43,14 @@ class ChatRepository {
     final user = _currentUser;
     if (user == null) throw Exception('Not authenticated');
 
-    final participantARef =
-        _db.ref('chats/$conversationId/participantAId');
-    final participantASnapshot = await participantARef.get();
-    if (participantASnapshot.exists) return;
-
     final participants = _getSortedParticipants(user.uid, otherUserId);
     await _db.ref().update({
       'chats/$conversationId/participantAId': participants[0],
       'chats/$conversationId/participantBId': participants[1],
-    });
+    }).timeout(
+      const Duration(seconds: 10),
+      onTimeout: () => throw Exception('Timed out while creating chat'),
+    );
   }
 
   Future<void> sendMessage({
@@ -108,7 +108,10 @@ class ChatRepository {
     };
 
     try {
-      await _db.ref().update(updates);
+      await _db.ref().update(updates).timeout(
+            const Duration(seconds: 15),
+            onTimeout: () => throw Exception('Timed out while sending message'),
+          );
     } on FirebaseException catch (e) {
       throw Exception(
         'Failed to update chat conversation metadata for both participants: ${e.message ?? e.code}',
@@ -117,7 +120,7 @@ class ChatRepository {
   }
 
   Stream<List<ChatMessageModel>> getMessagesStream(String conversationId) {
-    return _db
+    final source = _db
         .ref('chats/$conversationId/messages')
         .orderByChild('createdAt')
         .onValue
@@ -134,13 +137,23 @@ class ChatRepository {
       messages.sort((a, b) => a.createdAt.compareTo(b.createdAt));
       return messages;
     });
+
+    return _withInitialFallback(
+      source: source,
+      fallback: const <ChatMessageModel>[],
+      timeoutError: Exception('Timed out while loading chat messages'),
+    );
   }
 
   Stream<List<ChatConversationModel>> getConversationsStream() {
     final user = _currentUser;
-    if (user == null) return const Stream.empty();
+    if (user == null) {
+      return Stream<List<ChatConversationModel>>.error(
+        Exception('Not authenticated'),
+      );
+    }
 
-    return _db
+    final source = _db
         .ref('user_conversations/${user.uid}')
         .orderByChild('lastMessageAt')
         .onValue
@@ -160,29 +173,92 @@ class ChatRepository {
       conversations.sort((a, b) => b.lastMessageAt.compareTo(a.lastMessageAt));
       return conversations;
     });
+
+    return _withInitialFallback(
+      source: source,
+      fallback: const <ChatConversationModel>[],
+      timeoutError: Exception('Timed out while loading chat conversations'),
+    );
+  }
+
+  Stream<List<T>> _withInitialFallback<T>({
+    required Stream<List<T>> source,
+    required List<T> fallback,
+    required Object timeoutError,
+  }) {
+    var receivedFirstEvent = false;
+    StreamSubscription<List<T>>? subscription;
+    Timer? emptyTimer;
+    Timer? errorTimer;
+
+    late final StreamController<List<T>> controller;
+    controller = StreamController<List<T>>(
+      onListen: () {
+        emptyTimer = Timer(const Duration(seconds: 2), () {
+          if (!receivedFirstEvent && !controller.isClosed) {
+            controller.add(fallback);
+          }
+        });
+        errorTimer = Timer(const Duration(seconds: 12), () {
+          if (!receivedFirstEvent && !controller.isClosed) {
+            controller.addError(timeoutError);
+          }
+        });
+        subscription = source.listen(
+          (value) {
+            receivedFirstEvent = true;
+            emptyTimer?.cancel();
+            errorTimer?.cancel();
+            if (!controller.isClosed) {
+              controller.add(value);
+            }
+          },
+          onError: (Object error, StackTrace stackTrace) {
+            receivedFirstEvent = true;
+            emptyTimer?.cancel();
+            errorTimer?.cancel();
+            if (!controller.isClosed) {
+              controller.addError(error, stackTrace);
+            }
+          },
+          onDone: () {
+            emptyTimer?.cancel();
+            errorTimer?.cancel();
+            if (!controller.isClosed) {
+              controller.close();
+            }
+          },
+        );
+      },
+      onCancel: () async {
+        emptyTimer?.cancel();
+        errorTimer?.cancel();
+        await subscription?.cancel();
+      },
+    );
+
+    return controller.stream;
   }
 
   Future<void> markAsRead(String conversationId) async {
     final user = _currentUser;
     if (user == null) return;
 
-    final messagesSnap =
-        await _db
-            .ref('chats/$conversationId/messages')
-            .orderByChild('isRead')
-            .equalTo(false)
-            .get();
+    final messagesSnap = await _db
+        .ref('chats/$conversationId/messages')
+        .orderByChild('isRead')
+        .equalTo(false)
+        .get()
+        .timeout(const Duration(seconds: 10));
 
     final updates = <String, dynamic>{
       'user_conversations/${user.uid}/$conversationId/unreadCount': 0,
     };
 
     if (messagesSnap.exists && messagesSnap.value != null) {
-      final map =
-          Map<dynamic, dynamic>.from(messagesSnap.value as Map);
+      final map = Map<dynamic, dynamic>.from(messagesSnap.value as Map);
       for (final entry in map.entries) {
-        final msgData =
-            Map<dynamic, dynamic>.from(entry.value as Map);
+        final msgData = Map<dynamic, dynamic>.from(entry.value as Map);
         final senderId = msgData['senderId'] as String? ?? '';
         final isRead = msgData['isRead'] as bool? ?? false;
         if (senderId != user.uid && !isRead) {
@@ -192,6 +268,6 @@ class ChatRepository {
       }
     }
 
-    await _db.ref().update(updates);
+    await _db.ref().update(updates).timeout(const Duration(seconds: 10));
   }
 }

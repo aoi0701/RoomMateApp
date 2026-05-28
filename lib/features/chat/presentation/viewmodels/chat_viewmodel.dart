@@ -19,7 +19,7 @@ class ChatViewModel extends ChangeNotifier {
   String getConversationId(String uid1, String uid2) =>
       _repository.getConversationId(uid1, uid2);
 
-  Stream<List<ChatConversationModel>> get conversationsStream =>
+  Stream<List<ChatConversationModel>> getConversationsStream() =>
       _repository.getConversationsStream();
 
   Stream<List<ChatMessageModel>> getMessagesStream(String conversationId) =>

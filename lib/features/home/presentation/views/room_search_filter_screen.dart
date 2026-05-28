@@ -519,7 +519,7 @@ class _SelectionSheetState extends State<_SelectionSheet> {
                           : null,
                       onTap: () {
                         if (!widget.multiSelect) {
-                          Navigator.pop(context, option);
+                          Navigator.pop(context, selected ? '' : option);
                           return;
                         }
                         setState(() {

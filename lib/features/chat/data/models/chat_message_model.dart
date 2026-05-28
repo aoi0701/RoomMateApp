@@ -18,6 +18,8 @@ class ChatMessageModel {
   });
 
   factory ChatMessageModel.fromMap(String id, Map<dynamic, dynamic> map) {
+    final createdAt = map['createdAt'];
+
     return ChatMessageModel(
       id: id,
       senderId: (map['senderId'] as String?) ?? '',
@@ -25,7 +27,7 @@ class ChatMessageModel {
       senderAvatar: (map['senderAvatar'] as String?) ?? '',
       text: (map['text'] as String?) ?? '',
       createdAt: DateTime.fromMillisecondsSinceEpoch(
-        (map['createdAt'] as int?) ?? 0,
+        createdAt is num ? createdAt.toInt() : 0,
       ),
       isRead: (map['isRead'] as bool?) ?? false,
     );

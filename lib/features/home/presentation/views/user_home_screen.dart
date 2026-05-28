@@ -37,6 +37,9 @@ class UserHomeScreen extends StatefulWidget {
 
 class _UserHomeScreenState extends State<UserHomeScreen> {
   int _selectedIndex = 0;
+  String _searchText = '';
+  final TextEditingController _searchController = TextEditingController();
+  Stream<List<ChatConversationModel>>? _unreadConversationsStream;
 
   @override
   void initState() {
@@ -50,7 +53,13 @@ class _UserHomeScreenState extends State<UserHomeScreen> {
 
   @override
   void dispose() {
+    _searchController.dispose();
     super.dispose();
+  }
+
+  Stream<List<ChatConversationModel>> _getUnreadConversationsStream() {
+    return _unreadConversationsStream ??=
+        context.read<ChatViewModel>().getConversationsStream();
   }
 
   List<PostModel> _applyFilters(
@@ -58,6 +67,17 @@ class _UserHomeScreenState extends State<UserHomeScreen> {
     RoomSearchFilterModel filter,
   ) {
     return posts.where(filter.matchesPost).toList();
+  }
+
+  List<PostModel> _applySearch(List<PostModel> posts, String query) {
+    if (query.isEmpty) return posts;
+    final q = query.toLowerCase();
+    return posts.where((post) {
+      return post.title.toLowerCase().contains(q) ||
+          post.location.toLowerCase().contains(q) ||
+          post.district.toLowerCase().contains(q) ||
+          post.province.toLowerCase().contains(q);
+    }).toList();
   }
 
   String _greetingText() {
@@ -427,6 +447,55 @@ class _UserHomeScreenState extends State<UserHomeScreen> {
       children: [
         _buildSectionHeader('Bài đăng nổi bật'),
         const SizedBox(height: 16),
+        Padding(
+          padding: const EdgeInsets.symmetric(horizontal: 20),
+          child: TextField(
+            controller: _searchController,
+            onChanged: (value) => setState(() => _searchText = value),
+            style: AppTextStyles.body,
+            decoration: InputDecoration(
+              hintText: 'Tìm theo tên phòng hoặc địa chỉ...',
+              hintStyle:
+                  AppTextStyles.body.copyWith(color: AppColors.textHint),
+              prefixIcon: const Icon(
+                Icons.search_rounded,
+                color: AppColors.textSecondary,
+                size: 20,
+              ),
+              suffixIcon: _searchText.isNotEmpty
+                  ? IconButton(
+                      icon: const Icon(
+                        Icons.close_rounded,
+                        color: AppColors.textSecondary,
+                        size: 20,
+                      ),
+                      onPressed: () {
+                        _searchController.clear();
+                        setState(() => _searchText = '');
+                      },
+                    )
+                  : null,
+              filled: true,
+              fillColor: AppColors.inputFill,
+              contentPadding:
+                  const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
+              border: OutlineInputBorder(
+                borderRadius: BorderRadius.circular(16),
+                borderSide: const BorderSide(color: AppColors.border),
+              ),
+              enabledBorder: OutlineInputBorder(
+                borderRadius: BorderRadius.circular(16),
+                borderSide: const BorderSide(color: AppColors.border),
+              ),
+              focusedBorder: OutlineInputBorder(
+                borderRadius: BorderRadius.circular(16),
+                borderSide:
+                    const BorderSide(color: AppColors.primary, width: 1.5),
+              ),
+            ),
+          ),
+        ),
+        const SizedBox(height: 16),
         StreamBuilder<List<PostModel>>(
           stream: postVm.postsStream,
           builder: (context, snapshot) {
@@ -449,7 +518,8 @@ class _UserHomeScreenState extends State<UserHomeScreen> {
             }
 
             final allPosts = snapshot.data ?? const <PostModel>[];
-            final posts = _applyFilters(allPosts, activeFilter);
+            final filtered = _applyFilters(allPosts, activeFilter);
+            final posts = _applySearch(filtered, _searchText);
 
             if (posts.isEmpty) {
               return Padding(
@@ -582,6 +652,9 @@ class _UserHomeScreenState extends State<UserHomeScreen> {
                   onTap: () {
                     if (index == 0) {
                       setState(() => _selectedIndex = index);
+                      context
+                          .read<HomeSearchFilterViewModel>()
+                          .resetFilter(clearSaved: false);
                     } else if (index == 1) {
                       Navigator.push(
                         context,
@@ -676,9 +749,7 @@ class _UserHomeScreenState extends State<UserHomeScreen> {
                               top: -2,
                               right: -2,
                               child: StreamBuilder<List<ChatConversationModel>>(
-                                stream: context
-                                    .read<ChatViewModel>()
-                                    .conversationsStream,
+                                stream: _getUnreadConversationsStream(),
                                 builder: (context, snapshot) {
                                   final convs = snapshot.data ?? [];
                                   final totalUnread = convs.fold<int>(

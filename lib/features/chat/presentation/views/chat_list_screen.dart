@@ -10,8 +10,16 @@ import '../../data/models/chat_conversation_model.dart';
 import '../viewmodels/chat_viewmodel.dart';
 import 'chat_detail_screen.dart';
 
-class ChatListScreen extends StatelessWidget {
+class ChatListScreen extends StatefulWidget {
   const ChatListScreen({super.key});
+
+  @override
+  State<ChatListScreen> createState() => _ChatListScreenState();
+}
+
+class _ChatListScreenState extends State<ChatListScreen> {
+  int _retryCount = 0;
+  Stream<List<ChatConversationModel>>? _conversationsStream;
 
   String _formatTime(DateTime time) {
     final now = DateTime.now();
@@ -28,6 +36,8 @@ class ChatListScreen extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final vm = context.read<ChatViewModel>();
+    final conversationsStream = _conversationsStream ??=
+        vm.getConversationsStream();
 
     return Scaffold(
       backgroundColor: AppColors.background,
@@ -45,7 +55,8 @@ class ChatListScreen extends StatelessWidget {
         ),
       ),
       body: StreamBuilder<List<ChatConversationModel>>(
-        stream: vm.conversationsStream,
+        key: ValueKey(_retryCount),
+        stream: conversationsStream,
         builder: (context, snapshot) {
           if (snapshot.connectionState == ConnectionState.waiting) {
             return const AppLoadingState(message: 'Đang tải tin nhắn...');
@@ -55,6 +66,12 @@ class ChatListScreen extends StatelessWidget {
             return AppErrorState(
               title: 'Không tải được tin nhắn',
               message: snapshot.error.toString(),
+              onRetry: () {
+                setState(() {
+                  _conversationsStream = null;
+                  _retryCount++;
+                });
+              },
             );
           }
 

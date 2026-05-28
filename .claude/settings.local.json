@@ -5,7 +5,8 @@
       "Bash(Select-Object FullName)",
       "Bash(Sort-Object FullName)",
       "Bash(flutter pub *)",
-      "Bash(Get-ChildItem -Path \"e:\\\\RoomMateApp\\\\roommateapp\\\\lib\\\\features\\\\roommate\\\\presentation\\\\views\\\\\" -File | Select-Object Name)"
+      "Bash(Get-ChildItem -Path \"e:\\\\RoomMateApp\\\\roommateapp\\\\lib\\\\features\\\\roommate\\\\presentation\\\\views\\\\\" -File | Select-Object Name)",
+      "Bash(dart format *)"
     ]
   }
 }

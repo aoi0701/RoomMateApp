@@ -174,6 +174,7 @@ class PostRepository {
     final relatedRequests = await _firestore
         .collection('roommate_requests')
         .where('postId', isEqualTo: postId)
+        .where('postOwnerId', isEqualTo: user.uid)
         .get();
 
     final batch = _firestore.batch();
