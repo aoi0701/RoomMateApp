@@ -182,7 +182,7 @@ class _RegisterScreenState extends State<RegisterScreen> {
                 Padding(
                   padding: const EdgeInsets.only(bottom: 20),
                   child: Text(
-                    'Điền thông tin để bắt đầu tìm bạn ở ghép.',
+                    'Điền thông tin đăng ký.',
                     style: AppTextStyles.body.copyWith(
                       color: AppColors.textSecondary,
                     ),

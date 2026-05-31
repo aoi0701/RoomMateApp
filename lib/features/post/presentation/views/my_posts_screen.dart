@@ -7,7 +7,7 @@ import 'package:roommateapp/features/post/data/models/post_model.dart';
 import 'package:roommateapp/features/post/presentation/viewmodels/post_list_viewmodel.dart';
 import 'package:roommateapp/features/post/presentation/viewmodels/post_viewmodel.dart';
 import 'package:roommateapp/features/post/presentation/views/post_detail_screen.dart';
-import 'package:roommateapp/features/post/presentation/views/edit_post_screen.dart';
+import 'package:roommateapp/features/post/presentation/views/post_form_screen.dart';
 
 import '../../../../core/theme/app_colors.dart';
 import '../../../../core/theme/app_text_styles.dart';
@@ -65,7 +65,7 @@ class MyPostsScreen extends StatelessWidget {
     if (action == 'edit') {
       Navigator.push(
         context,
-        MaterialPageRoute(builder: (_) => EditPostScreen(post: post)),
+        MaterialPageRoute(builder: (_) => PostFormScreen(post: post)),
       );
     }
 
@@ -145,15 +145,14 @@ class MyPostsScreen extends StatelessWidget {
             );
           }
 
-          if (!snapshot.hasData || snapshot.data!.isEmpty) {
+          final posts = snapshot.data;
+          if (posts == null || posts.isEmpty) {
             return const AppEmptyState(
               title: 'Chưa có bài đăng',
               message: 'Các bài đăng của bạn sẽ hiển thị ở đây.',
               icon: Icons.article_outlined,
             );
           }
-
-          final posts = snapshot.data!;
 
           return ListView.separated(
             padding: const EdgeInsets.all(20),

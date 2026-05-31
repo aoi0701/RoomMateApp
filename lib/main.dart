@@ -1,35 +1,43 @@
-import 'package:firebase_core/firebase_core.dart';
+import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
+import 'package:firebase_core/firebase_core.dart';
+import 'package:firebase_database/firebase_database.dart';
 import 'package:flutter/material.dart';
+import 'package:google_sign_in/google_sign_in.dart';
 import 'package:provider/provider.dart';
 
 import 'app/navigation/app_navigator.dart';
+import 'core/services/user_name_cache.dart';
+import 'app/session/user_session.dart';
+import 'app/session/user_session_repository.dart';
 import 'app/session/user_session_scope.dart';
 import 'core/theme/app_theme.dart';
 import 'features/auth/data/repositories/auth_repository.dart';
 import 'features/auth/presentation/viewmodels/auth_viewmodel.dart';
+import 'features/chat/data/repositories/chat_repository.dart';
 import 'features/chat/presentation/viewmodels/chat_viewmodel.dart';
+import 'features/expense/data/repositories/expense_repository.dart';
 import 'features/expense/presentation/viewmodels/expense_viewmodel.dart';
+import 'features/home/data/repositories/home_search_filter_repository.dart';
+import 'features/home/data/repositories/roommate_profile_repository.dart';
 import 'features/home/presentation/viewmodels/home_search_filter_viewmodel.dart';
 import 'features/home/presentation/viewmodels/roommate_profile_viewmodel.dart';
+import 'features/post/data/repositories/post_repository.dart';
 import 'features/post/presentation/viewmodels/post_list_viewmodel.dart';
 import 'features/post/presentation/viewmodels/post_viewmodel.dart';
+import 'features/profile/data/repositories/user_profile_repository.dart';
 import 'features/profile/presentation/viewmodels/user_profile_viewmodel.dart';
+import 'features/profile/presentation/views/complete_profile_intro_screen.dart';
+import 'features/room_group/data/repositories/room_group_repository.dart';
 import 'features/room_group/presentation/viewmodels/room_group_viewmodel.dart';
+import 'features/roommate/data/repositories/roommate_request_repository.dart';
 import 'features/roommate/presentation/viewmodels/roommate_request_viewmodel.dart';
 import 'features/auth/presentation/views/login_screen.dart';
 import 'features/home/presentation/views/user_home_screen.dart';
-import 'features/home/data/repositories/home_search_filter_repository.dart';
-import 'features/home/data/repositories/roommate_profile_repository.dart';
-import 'features/post/data/repositories/post_repository.dart';
-import 'features/profile/data/models/user_model.dart';
-import 'features/profile/data/repositories/user_profile_repository.dart';
-import 'features/profile/presentation/views/complete_profile_intro_screen.dart';
-import 'features/roommate/data/repositories/roommate_request_repository.dart';
-import 'features/room_group/data/repositories/room_group_repository.dart';
-import 'features/expense/data/repositories/expense_repository.dart';
-import 'features/chat/data/repositories/chat_repository.dart';
 import 'firebase_options.dart';
+
+const _dbUrl =
+    'https://roommateapp-fbb4f-default-rtdb.asia-southeast1.firebasedatabase.app';
 
 Future<void> main() async {
   WidgetsFlutterBinding.ensureInitialized();
@@ -42,18 +50,51 @@ Future<void> main() async {
     if (e.code != 'duplicate-app') rethrow;
   }
 
-  runApp(const MyApp());
+  final auth = FirebaseAuth.instance;
+  final firestore = FirebaseFirestore.instance;
+  final database = FirebaseDatabase.instanceFor(
+    app: Firebase.app(),
+    databaseURL: _dbUrl,
+  );
+  final googleSignIn = GoogleSignIn();
+  final navigationService = NavigationService();
+
+  runApp(MyApp(
+    auth: auth,
+    firestore: firestore,
+    database: database,
+    googleSignIn: googleSignIn,
+    navigationService: navigationService,
+  ));
 }
 
 class MyApp extends StatelessWidget {
-  const MyApp({super.key});
+  final FirebaseAuth auth;
+  final FirebaseFirestore firestore;
+  final FirebaseDatabase database;
+  final GoogleSignIn googleSignIn;
+  final NavigationService navigationService;
+
+  const MyApp({
+    super.key,
+    required this.auth,
+    required this.firestore,
+    required this.database,
+    required this.googleSignIn,
+    required this.navigationService,
+  });
 
   @override
   Widget build(BuildContext context) {
     return MultiProvider(
       providers: [
+        Provider<NavigationService>.value(value: navigationService),
         Provider<AuthRepository>(
-          create: (_) => AuthRepository(),
+          create: (_) => AuthRepository(
+            auth: auth,
+            firestore: firestore,
+            googleSignIn: googleSignIn,
+          ),
         ),
         ChangeNotifierProvider<AuthViewModel>(
           create: (context) => AuthViewModel(
@@ -61,28 +102,48 @@ class MyApp extends StatelessWidget {
           ),
         ),
         Provider<PostRepository>(
-          create: (_) => PostRepository(),
+          create: (_) => PostRepository(auth: auth, firestore: firestore),
         ),
         Provider<HomeSearchFilterRepository>(
-          create: (_) => HomeSearchFilterRepository(),
+          create: (_) => HomeSearchFilterRepository(
+            auth: auth,
+            firestore: firestore,
+          ),
         ),
         Provider<RoommateProfileRepository>(
-          create: (_) => RoommateProfileRepository(),
+          create: (_) => RoommateProfileRepository(
+            auth: auth,
+            firestore: firestore,
+          ),
         ),
         Provider<UserProfileRepository>(
-          create: (_) => UserProfileRepository(),
+          create: (_) => UserProfileRepository(firestore: firestore),
+        ),
+        Provider<UserNameCache>(
+          create: (context) => UserNameCache(
+            repository: context.read<UserProfileRepository>(),
+          ),
+        ),
+        Provider<UserSessionRepository>(
+          create: (context) => UserSessionRepository(
+            authRepository: context.read<AuthRepository>(),
+            profileRepository: context.read<UserProfileRepository>(),
+          ),
         ),
         Provider<RoommateRequestRepository>(
-          create: (_) => RoommateRequestRepository(),
+          create: (_) => RoommateRequestRepository(
+            auth: auth,
+            firestore: firestore,
+          ),
         ),
         Provider<RoomGroupRepository>(
-          create: (_) => RoomGroupRepository(),
+          create: (_) => RoomGroupRepository(auth: auth, firestore: firestore),
         ),
         Provider<ExpenseRepository>(
-          create: (_) => ExpenseRepository(),
+          create: (_) => ExpenseRepository(auth: auth, firestore: firestore),
         ),
         Provider<ChatRepository>(
-          create: (_) => ChatRepository(),
+          create: (_) => ChatRepository(auth: auth, db: database),
         ),
         ChangeNotifierProvider<ChatViewModel>(
           create: (context) => ChatViewModel(
@@ -132,7 +193,7 @@ class MyApp extends StatelessWidget {
         ),
       ],
       child: MaterialApp(
-        navigatorKey: appNavigatorKey,
+        navigatorKey: navigationService.navigatorKey,
         debugShowCheckedModeBanner: false,
         title: 'RoomMate',
         theme: AppTheme.light,
@@ -165,107 +226,38 @@ class AuthGate extends StatefulWidget {
 }
 
 class _AuthGateState extends State<AuthGate> {
-  String? _cachedRole;
-  String? _cachedRoleUserId;
-
   @override
   Widget build(BuildContext context) {
-    final authRepository = context.read<AuthRepository>();
     final authVm = context.watch<AuthViewModel>();
 
-    return StreamBuilder<User?>(
-      stream: authRepository.authStateChanges(),
+    return StreamBuilder<UserSession?>(
+      stream: context.read<UserSessionRepository>().sessionStream,
       builder: (context, snapshot) {
-        if (authVm.isLoggingOut) {
+        if (authVm.isLoggingOut ||
+            snapshot.connectionState == ConnectionState.waiting) {
           return const Scaffold(
-            body: Center(
-              child: CircularProgressIndicator(),
-            ),
+            body: Center(child: CircularProgressIndicator()),
           );
         }
 
-        if (snapshot.connectionState == ConnectionState.waiting) {
-          return const Scaffold(
-            body: Center(
-              child: CircularProgressIndicator(),
-            ),
-          );
-        }
-
-        final user = snapshot.data;
-        if (user == null) {
-          _cachedRole = null;
-          _cachedRoleUserId = null;
+        final session = snapshot.data;
+        if (session == null) {
           return const LoginScreen();
         }
 
-        if (_cachedRoleUserId != user.uid) {
-          _cachedRole = null;
-          _cachedRoleUserId = user.uid;
+        if (session.role == 'banned') {
+          WidgetsBinding.instance.addPostFrameCallback((_) async {
+            await context.read<AuthViewModel>().logout();
+          });
+          return const LoginScreen();
         }
 
-        if (_cachedRole != null) {
-          if (_cachedRole == 'banned') {
-            WidgetsBinding.instance.addPostFrameCallback((_) async {
-              await context.read<AuthViewModel>().logout();
-            });
-            return const LoginScreen();
-          }
-
-          return const UserHomeScreen();
+        final profile = session.profile;
+        if (profile != null && !profile.profileCompleted) {
+          return const CompleteProfileIntroScreen();
         }
 
-        return FutureBuilder<String>(
-          future: authRepository.getUserRole(user.uid),
-          builder: (context, roleSnapshot) {
-            if (roleSnapshot.connectionState == ConnectionState.waiting) {
-              return const Scaffold(
-                body: Center(
-                  child: CircularProgressIndicator(),
-                ),
-              );
-            }
-
-            if (roleSnapshot.hasError) {
-              return const UserHomeScreen();
-            }
-
-            final role = roleSnapshot.data ?? 'user';
-            _cachedRole = role;
-            _cachedRoleUserId = user.uid;
-
-            if (role == 'banned') {
-              WidgetsBinding.instance.addPostFrameCallback((_) async {
-                await context.read<AuthViewModel>().logout();
-              });
-              return const LoginScreen();
-            }
-
-            return FutureBuilder<UserModel?>(
-              future: context.read<UserProfileRepository>().getUserProfile(user.uid),
-              builder: (context, profileSnapshot) {
-                if (profileSnapshot.connectionState == ConnectionState.waiting) {
-                  return const Scaffold(
-                    body: Center(
-                      child: CircularProgressIndicator(),
-                    ),
-                  );
-                }
-
-                if (profileSnapshot.hasError) {
-                  return const UserHomeScreen();
-                }
-
-                final profile = profileSnapshot.data;
-                if (profile != null && !profile.profileCompleted) {
-                  return const CompleteProfileIntroScreen();
-                }
-
-                return const UserHomeScreen();
-              },
-            );
-          },
-        );
+        return const UserHomeScreen();
       },
     );
   }

@@ -8,10 +8,10 @@ class RoomGroupRepository {
   final FirebaseFirestore _firestore;
 
   RoomGroupRepository({
-    FirebaseAuth? auth,
-    FirebaseFirestore? firestore,
-  })  : _auth = auth ?? FirebaseAuth.instance,
-        _firestore = firestore ?? FirebaseFirestore.instance;
+    required FirebaseAuth auth,
+    required FirebaseFirestore firestore,
+  })  : _auth = auth,
+        _firestore = firestore;
 
   User? get currentUser => _auth.currentUser;
 

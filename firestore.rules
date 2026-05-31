@@ -23,10 +23,87 @@ service cloud.firestore {
       allow delete: if false;
     }
 
+    // ---------------------------------------------------------------------------
+    // Mirrors the validation in PostViewModel.createPost / updatePost so that
+    // a user with direct Firebase SDK access cannot bypass the app and write
+    // an invalid or spoofed document.
+    // ---------------------------------------------------------------------------
+
+    function isValidPost() {
+      let d = request.resource.data;
+      return d.title is string
+        && d.title.size() > 0
+        && d.title.size() <= 200
+
+        && d.location is string
+        && d.location.size() > 0
+        && d.location.size() <= 500
+
+        && d.province is string
+        && d.province.size() > 0
+        && d.province.size() <= 100
+
+        // district is optional but must be a string within length
+        && d.district is string
+        && d.district.size() <= 100
+
+        // must be one of the values in RoomFilterData.roomTypes
+        && d.roomType in [
+             'Phòng trọ',
+             'Phòng trong nhà nguyên căn',
+             'Căn hộ / Chung cư',
+             'Phòng master',
+             'Phòng thường',
+             'Phòng có gác',
+             'Phòng không gác',
+             'Phòng có nội thất',
+             'Phòng không nội thất',
+             'Studio (Phòng có nội thất)',
+             'Duplex (Phòng có gác và nội thất)'
+           ]
+
+        && d.price is int && d.price > 0 && d.price <= 1000000000
+        && d.area is int  && d.area  > 0 && d.area  <= 10000
+        && d.capacity is int && d.capacity > 0 && d.capacity <= 100
+
+        && d.description is string
+        && d.description.size() > 0
+        && d.description.size() <= 5000
+
+        && d.imageUrl is string
+
+        // at least one image URL, at most 5
+        && d.imageUrls is list
+        && d.imageUrls.size() > 0
+        && d.imageUrls.size() <= 5
+
+        && d.amenities is list && d.amenities.size() <= 20
+        && d.lifestyleHabits is list && d.lifestyleHabits.size() <= 20;
+    }
+
     match /posts/{postId} {
       allow read: if isAuth();
-      allow create: if isAuth() && request.resource.data.ownerId == request.auth.uid;
-      allow update: if isAuth() && resource.data.ownerId == request.auth.uid;
+
+      allow create: if isAuth()
+        // ownerId must be the caller's uid
+        && request.resource.data.ownerId == request.auth.uid
+        // all required fields must be present
+        && request.resource.data.keys().hasAll([
+             'title', 'location', 'province', 'district',
+             'roomType', 'amenities', 'lifestyleHabits',
+             'price', 'area', 'capacity', 'description',
+             'imageUrl', 'imageUrls', 'ownerId', 'createdAt', 'updatedAt'
+           ])
+        && isValidPost();
+
+      allow update: if isAuth()
+        // caller must be the existing owner
+        && resource.data.ownerId == request.auth.uid
+        // ownerId and createdAt are immutable after creation
+        && !request.resource.data.diff(resource.data)
+               .affectedKeys().hasAny(['ownerId', 'createdAt'])
+        && isValidPost();
+
       allow delete: if isAuth() && resource.data.ownerId == request.auth.uid;
     }
 

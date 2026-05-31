@@ -88,7 +88,7 @@ class _ChatListScreenState extends State<ChatListScreen> {
           return ListView.separated(
             padding: const EdgeInsets.symmetric(vertical: 8),
             itemCount: convs.length,
-            separatorBuilder: (_, __) => const Divider(
+            separatorBuilder: (_, _) => const Divider(
               height: 1,
               indent: 82,
               endIndent: 20,

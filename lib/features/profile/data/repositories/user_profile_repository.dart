@@ -7,8 +7,8 @@ class UserProfileRepository {
   final FirebaseFirestore _firestore;
 
   UserProfileRepository({
-    FirebaseFirestore? firestore,
-  }) : _firestore = firestore ?? FirebaseFirestore.instance;
+    required FirebaseFirestore firestore,
+  }) : _firestore = firestore;
 
   Stream<DocumentSnapshot<Map<String, dynamic>>> getUserProfileStream(String uid) {
     return _firestore.collection('users').doc(uid).snapshots();

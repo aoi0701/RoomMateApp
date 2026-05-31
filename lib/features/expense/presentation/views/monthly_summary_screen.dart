@@ -1,4 +1,3 @@
-import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:provider/provider.dart';
@@ -7,7 +6,7 @@ import '../../../../core/theme/app_colors.dart';
 import '../../../../core/theme/app_text_styles.dart';
 import '../../../../core/utils/format_utils.dart';
 import '../../../../core/widgets/app_state_widgets.dart';
-import '../../../profile/presentation/viewmodels/user_profile_viewmodel.dart';
+import '../../../../core/widgets/user_name_widgets.dart';
 import '../../../room_group/data/models/room_group_model.dart';
 import '../../data/models/expense_model.dart';
 import '../viewmodels/expense_viewmodel.dart';
@@ -260,7 +259,7 @@ class _MonthlySummaryScreenState extends State<MonthlySummaryScreen> {
                     child: Row(
                       children: [
                         Expanded(
-                          child: _UserNameWidget(userId: uid),
+                          child: UserNameText(userId: uid),
                         ),
                         const SizedBox(width: 12),
                         Text(
@@ -367,26 +366,3 @@ class _MonthlySummaryScreenState extends State<MonthlySummaryScreen> {
   }
 }
 
-class _UserNameWidget extends StatelessWidget {
-  final String userId;
-  const _UserNameWidget({required this.userId});
-
-  @override
-  Widget build(BuildContext context) {
-    return StreamBuilder<DocumentSnapshot<Map<String, dynamic>>>(
-      stream: context.read<UserProfileViewModel>().getUserProfileStream(userId),
-      builder: (context, snapshot) {
-        String name = 'Người dùng';
-        if (snapshot.hasData && snapshot.data!.exists) {
-          name = snapshot.data!.data()?['fullName'] ?? 'Người dùng';
-        }
-        return Text(
-          name,
-          style: AppTextStyles.label,
-          overflow: TextOverflow.ellipsis,
-          maxLines: 1,
-        );
-      },
-    );
-  }
-}

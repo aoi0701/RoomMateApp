@@ -13,23 +13,17 @@ class RoommateProfileRepository {
   final FirebaseFirestore _firestore;
   final FirebaseAuth _auth;
 
-  final Map<String, List<PostModel>> _cachedPostsByOwner =
-      <String, List<PostModel>>{};
-  DateTime? _postsCachedAt;
-
-  RoommateProfileRepository({FirebaseFirestore? firestore, FirebaseAuth? auth})
-    : _firestore = firestore ?? FirebaseFirestore.instance,
-      _auth = auth ?? FirebaseAuth.instance;
+  RoommateProfileRepository({
+    required FirebaseFirestore firestore,
+    required FirebaseAuth auth,
+  })  : _firestore = firestore,
+        _auth = auth;
 
   Stream<List<RoommateProfileModel>> getSuggestedProfilesStream() {
     final currentUserId = _auth.currentUser?.uid;
     if (currentUserId == null) {
       return const Stream<List<RoommateProfileModel>>.empty();
     }
-
-    // Keep caching scoped to this stream subscription.
-    _cachedPostsByOwner.clear();
-    _postsCachedAt = null;
 
     return _firestore.collection('users').snapshots().asyncMap((
       snapshot,
@@ -39,39 +33,31 @@ class RoommateProfileRepository {
           .where((user) => user.role != 'admin')
           .toList();
 
-      final cacheAge = _postsCachedAt == null
-          ? null
-          : DateTime.now().difference(_postsCachedAt!).inMinutes;
+      // Fetch posts for the users currently in the snapshot. Firestore's
+      // built-in offline cache handles repeated reads without a manual layer.
+      final postsByOwner = <String, List<PostModel>>{};
+      final userIds = users.map((u) => u.uid).toList();
+      const chunkSize = 10; // Firestore whereIn limit.
 
-      // Only fetch posts for the users currently in the snapshot (not the entire collection).
-      if (_cachedPostsByOwner.isEmpty || cacheAge == null || cacheAge >= 5) {
-        _cachedPostsByOwner.clear();
+      for (var i = 0; i < userIds.length; i += chunkSize) {
+        final chunk = userIds.sublist(
+          i,
+          (i + chunkSize) > userIds.length ? userIds.length : (i + chunkSize),
+        );
 
-        final userIds = users.map((u) => u.uid).toList();
-        const chunkSize = 10; // Firestore whereIn supports up to 10 values.
+        final postSnapshot = await _firestore
+            .collection('posts')
+            .where('ownerId', whereIn: chunk)
+            .orderBy('createdAt', descending: true)
+            .limit(3)
+            .get();
 
-        for (var i = 0; i < userIds.length; i += chunkSize) {
-          final chunk = userIds.sublist(
-            i,
-            (i + chunkSize) > userIds.length ? userIds.length : (i + chunkSize),
-          );
-
-          final postSnapshot = await _firestore
-              .collection('posts')
-              .where('ownerId', whereIn: chunk)
-              .orderBy('createdAt', descending: true)
-              .limit(3)
-              .get();
-
-          for (final doc in postSnapshot.docs) {
-            final post = PostModel.fromDocument(doc);
-            _cachedPostsByOwner
-                .putIfAbsent(post.ownerId, () => <PostModel>[])
-                .add(post);
-          }
+        for (final doc in postSnapshot.docs) {
+          final post = PostModel.fromDocument(doc);
+          postsByOwner
+              .putIfAbsent(post.ownerId, () => <PostModel>[])
+              .add(post);
         }
-
-        _postsCachedAt = DateTime.now();
       }
 
       final currentUser = users.cast<UserModel?>().firstWhere(
@@ -83,7 +69,7 @@ class RoommateProfileRepository {
       final currentCriteria = currentUser?.roommateCriteria ?? const <String>[];
       final currentPosts = currentUser == null
           ? const <PostModel>[]
-          : (_cachedPostsByOwner[currentUser.uid] ?? const <PostModel>[]);
+          : (postsByOwner[currentUser.uid] ?? const <PostModel>[]);
       final currentResolvedAddress = currentUser == null
           ? ''
           : _resolveSuggestedAddress(currentUser, currentPosts);
@@ -93,8 +79,7 @@ class RoommateProfileRepository {
 
       final suggestions =
           users.where((user) => user.uid != currentUserId).map((user) {
-            final userPosts =
-                _cachedPostsByOwner[user.uid] ?? const <PostModel>[];
+            final userPosts = postsByOwner[user.uid] ?? const <PostModel>[];
             final resolvedAddress = _resolveSuggestedAddress(user, userPosts);
             final resolvedBudgetRange = _resolveBudgetRange(user, userPosts);
 
@@ -186,8 +171,9 @@ class RoommateProfileRepository {
   }) async {
     final currentUser = _auth.currentUser;
     if (currentUser == null) throw Exception('Người dùng chưa đăng nhập');
-    if (currentUser.uid == targetUserId)
+    if (currentUser.uid == targetUserId) {
       throw Exception('Bạn không thể mời chính mình');
+    }
 
     final duplicate = await _firestore
         .collection('roommate_requests')

@@ -104,7 +104,8 @@ class _UserProfileScreenState extends State<UserProfileScreen> {
               );
             }
 
-            if (!snapshot.hasData || !snapshot.data!.exists) {
+            final doc = snapshot.data;
+            if (doc == null || !doc.exists) {
               return Center(
                 child: Text(
                   'Không tìm thấy thông tin người dùng',
@@ -113,7 +114,7 @@ class _UserProfileScreenState extends State<UserProfileScreen> {
               );
             }
 
-            final user = UserModel.fromDocument(snapshot.data!);
+            final user = UserModel.fromDocument(doc);
             if (_viewedUserName != user.fullName ||
                 _viewedUserAvatar != user.avatarUrl) {
               WidgetsBinding.instance.addPostFrameCallback((_) {
@@ -317,7 +318,7 @@ class _UserProfileScreenState extends State<UserProfileScreen> {
         ),
         Expanded(
           child: Text(
-            isCurrentUserProfile ? 'Hồ sơ Cá nhân' : 'Hồ sơ người đăng',
+            isCurrentUserProfile ? 'Hồ sơ Cá nhân' : 'Hồ sơ người dùng',
             textAlign: TextAlign.center,
             style: AppTextStyles.h2,
           ),

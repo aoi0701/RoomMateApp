@@ -6,8 +6,8 @@ import '../../data/repositories/room_group_repository.dart';
 class RoomGroupViewModel extends ChangeNotifier {
   final RoomGroupRepository _repository;
 
-  RoomGroupViewModel({RoomGroupRepository? repository})
-      : _repository = repository ?? RoomGroupRepository();
+  RoomGroupViewModel({required RoomGroupRepository repository})
+      : _repository = repository;
 
   bool _isLoading = false;
   String? _errorMessage;

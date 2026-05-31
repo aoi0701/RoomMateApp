@@ -43,7 +43,7 @@ class ExpenseModel {
       note: data['note'] ?? '',
       splitType: splitTypeStr == 'custom' ? SplitType.custom : SplitType.equal,
       customSplits: rawCustomSplits.map(
-        (k, v) => MapEntry(k, (v as num).toDouble()),
+        (k, v) => MapEntry(k, v is num ? v.toDouble() : 0.0),
       ),
       createdAt: (data['createdAt'] as Timestamp?)?.toDate(),
     );

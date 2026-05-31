@@ -87,12 +87,8 @@ class RoomSearchFilterModel {
 
   PriceRangeOption? get selectedPriceRange {
     if (priceRangeId.isEmpty) return null;
-
-    try {
-      return priceRanges.firstWhere((item) => item.id == priceRangeId);
-    } catch (_) {
-      return null;
-    }
+    final results = priceRanges.where((item) => item.id == priceRangeId);
+    return results.isEmpty ? null : results.first;
   }
 
   bool get hasActiveFilters =>

@@ -10,6 +10,8 @@ class ExpenseShareModel {
   final bool isPaid;
   final DateTime? paidAt;
   final DateTime? createdAt;
+  final bool isArchived;
+  final DateTime? archivedAt;
 
   const ExpenseShareModel({
     required this.id,
@@ -21,6 +23,8 @@ class ExpenseShareModel {
     required this.isPaid,
     this.paidAt,
     this.createdAt,
+    this.isArchived = false,
+    this.archivedAt,
   });
 
   factory ExpenseShareModel.fromDocument(
@@ -37,6 +41,8 @@ class ExpenseShareModel {
       isPaid: data['isPaid'] as bool? ?? false,
       paidAt: (data['paidAt'] as Timestamp?)?.toDate(),
       createdAt: (data['createdAt'] as Timestamp?)?.toDate(),
+      isArchived: data['isArchived'] as bool? ?? false,
+      archivedAt: (data['archivedAt'] as Timestamp?)?.toDate(),
     );
   }
 
@@ -52,6 +58,8 @@ class ExpenseShareModel {
       'createdAt': createdAt != null
           ? Timestamp.fromDate(createdAt!)
           : FieldValue.serverTimestamp(),
+      'isArchived': isArchived,
+      'archivedAt': archivedAt != null ? Timestamp.fromDate(archivedAt!) : null,
     };
   }
 
@@ -65,6 +73,8 @@ class ExpenseShareModel {
     bool? isPaid,
     DateTime? paidAt,
     DateTime? createdAt,
+    bool? isArchived,
+    DateTime? archivedAt,
   }) {
     return ExpenseShareModel(
       id: id ?? this.id,
@@ -76,6 +86,8 @@ class ExpenseShareModel {
       isPaid: isPaid ?? this.isPaid,
       paidAt: paidAt ?? this.paidAt,
       createdAt: createdAt ?? this.createdAt,
+      isArchived: isArchived ?? this.isArchived,
+      archivedAt: archivedAt ?? this.archivedAt,
     );
   }
 }

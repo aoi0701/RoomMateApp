@@ -1,4 +1,3 @@
-import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:provider/provider.dart';
@@ -8,7 +7,7 @@ import '../../../../core/theme/app_text_styles.dart';
 import '../../../../core/utils/format_utils.dart';
 import '../../../../core/widgets/app_button.dart';
 import '../../../../core/widgets/app_state_widgets.dart';
-import '../../../profile/presentation/viewmodels/user_profile_viewmodel.dart';
+import '../../../../core/widgets/user_name_widgets.dart';
 import '../../data/models/expense_share_model.dart';
 import '../viewmodels/expense_viewmodel.dart';
 
@@ -317,7 +316,7 @@ class _NetDebtCard extends StatelessWidget {
                     const SizedBox(height: 4),
                     Row(
                       children: [
-                        _UserNameText(
+                        UserNameText(
                           userId: isDebtor ? entry.toUserId : entry.fromUserId,
                         ),
                         const SizedBox(width: 8),
@@ -389,7 +388,7 @@ class _DebtCard extends StatelessWidget {
                 child: Row(
                   children: [
                     Expanded(
-                      child: _UserNameText(userId: share.fromUserId),
+                      child: UserNameText(userId: share.fromUserId),
                     ),
                     const Padding(
                       padding: EdgeInsets.symmetric(horizontal: 6),
@@ -400,7 +399,7 @@ class _DebtCard extends StatelessWidget {
                       ),
                     ),
                     Expanded(
-                      child: _UserNameText(userId: share.toUserId),
+                      child: UserNameText(userId: share.toUserId),
                     ),
                   ],
                 ),
@@ -435,30 +434,6 @@ class _DebtCard extends StatelessWidget {
           ],
         ],
       ),
-    );
-  }
-}
-
-class _UserNameText extends StatelessWidget {
-  final String userId;
-  const _UserNameText({required this.userId});
-
-  @override
-  Widget build(BuildContext context) {
-    return StreamBuilder<DocumentSnapshot<Map<String, dynamic>>>(
-      stream: context.read<UserProfileViewModel>().getUserProfileStream(userId),
-      builder: (context, snapshot) {
-        String name = 'Người dùng';
-        if (snapshot.hasData && snapshot.data!.exists) {
-          name = snapshot.data!.data()?['fullName'] ?? 'Người dùng';
-        }
-        return Text(
-          name,
-          style: AppTextStyles.label,
-          overflow: TextOverflow.ellipsis,
-          maxLines: 1,
-        );
-      },
     );
   }
 }

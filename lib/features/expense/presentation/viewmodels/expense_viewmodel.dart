@@ -1,5 +1,4 @@
-import 'package:flutter/foundation.dart';
-
+import '../../../../core/viewmodels/view_model_base.dart';
 import '../../data/models/expense_model.dart';
 import '../../data/models/expense_share_model.dart';
 import '../../data/repositories/expense_repository.dart';
@@ -16,22 +15,18 @@ class NetDebtEntry {
   });
 }
 
-class ExpenseViewModel extends ChangeNotifier {
+class ExpenseViewModel extends ViewModelBase {
   final ExpenseRepository _repository;
 
-  ExpenseViewModel({ExpenseRepository? repository})
-      : _repository = repository ?? ExpenseRepository();
+  ExpenseViewModel({required ExpenseRepository repository})
+      : _repository = repository;
 
-  bool _isLoading = false;
-  String? _errorMessage;
   List<ExpenseShareModel> _shares = [];
   List<ExpenseShareModel> _myDebts = [];
   List<ExpenseShareModel> _othersDebts = [];
   List<ExpenseModel> _monthlyExpenses = [];
   List<NetDebtEntry> _netDebts = [];
 
-  bool get isLoading => _isLoading;
-  String? get errorMessage => _errorMessage;
   List<ExpenseShareModel> get shares => _shares;
   List<ExpenseShareModel> get myDebts => _myDebts;
   List<ExpenseShareModel> get othersDebts => _othersDebts;
@@ -61,11 +56,6 @@ class ExpenseViewModel extends ChangeNotifier {
     return _repository.getExpenseById(expenseId);
   }
 
-  void _setLoading(bool value) {
-    _isLoading = value;
-    notifyListeners();
-  }
-
   List<ExpenseShareModel> calculateSplit({
     required String expenseId,
     required String roomGroupId,
@@ -79,6 +69,17 @@ class ExpenseViewModel extends ChangeNotifier {
     if (nonPayers.isEmpty) return [];
 
     if (splitType == SplitType.custom) {
+      final totalCustom = customSplits.values.fold(0.0, (sum, v) => sum + v);
+      final remaining = amount - totalCustom;
+
+      if (remaining.abs() > 0.01) {
+        throw Exception(
+          'Tổng phần chia (${totalCustom.toStringAsFixed(0)}đ) '
+          'không bằng tổng chi phí (${amount.toStringAsFixed(0)}đ). '
+          'Vui lòng điều chỉnh để tổng phần chia đúng bằng ${amount.toStringAsFixed(0)}đ.',
+        );
+      }
+
       return nonPayers
           .where((id) => (customSplits[id] ?? 0) > 0)
           .map(
@@ -122,8 +123,7 @@ class ExpenseViewModel extends ChangeNotifier {
     Map<String, double> customSplits = const {},
   }) async {
     try {
-      _setLoading(true);
-      _errorMessage = null;
+      beginLoad();
 
       final tempExpense = ExpenseModel(
         id: '',
@@ -156,11 +156,10 @@ class ExpenseViewModel extends ChangeNotifier {
 
       return true;
     } catch (e) {
-      _errorMessage = e.toString().replaceFirst('Exception: ', '');
-      notifyListeners();
+      setError(e.toString().replaceFirst('Exception: ', ''));
       return false;
     } finally {
-      _setLoading(false);
+      setLoading(false);
     }
   }
 
@@ -176,8 +175,7 @@ class ExpenseViewModel extends ChangeNotifier {
     Map<String, double> customSplits = const {},
   }) async {
     try {
-      _setLoading(true);
-      _errorMessage = null;
+      beginLoad();
 
       final newShares = calculateSplit(
         expenseId: expenseId,
@@ -203,26 +201,23 @@ class ExpenseViewModel extends ChangeNotifier {
 
       return true;
     } catch (e) {
-      _errorMessage = e.toString().replaceFirst('Exception: ', '');
-      notifyListeners();
+      setError(e.toString().replaceFirst('Exception: ', ''));
       return false;
     } finally {
-      _setLoading(false);
+      setLoading(false);
     }
   }
 
   Future<bool> deleteExpense(String expenseId) async {
     try {
-      _setLoading(true);
-      _errorMessage = null;
+      beginLoad();
       await _repository.deleteExpense(expenseId);
       return true;
     } catch (e) {
-      _errorMessage = e.toString().replaceFirst('Exception: ', '');
-      notifyListeners();
+      setError(e.toString().replaceFirst('Exception: ', ''));
       return false;
     } finally {
-      _setLoading(false);
+      setLoading(false);
     }
   }
 
@@ -231,16 +226,15 @@ class ExpenseViewModel extends ChangeNotifier {
     required String roomGroupId,
   }) async {
     try {
-      _setLoading(true);
-      _errorMessage = null;
+      beginLoad();
       _shares = await _repository.getExpenseSharesByExpense(
         expenseId: expenseId,
         roomGroupId: roomGroupId,
       );
     } catch (e) {
-      _errorMessage = e.toString().replaceFirst('Exception: ', '');
+      setError(e.toString().replaceFirst('Exception: ', ''));
     } finally {
-      _setLoading(false);
+      setLoading(false);
     }
   }
 
@@ -249,8 +243,7 @@ class ExpenseViewModel extends ChangeNotifier {
     required String roomGroupId,
   }) async {
     try {
-      _setLoading(true);
-      _errorMessage = null;
+      beginLoad();
 
       await Future.wait<void>([
         () async {
@@ -306,9 +299,9 @@ class ExpenseViewModel extends ChangeNotifier {
         }(),
       ]);
     } catch (e) {
-      _errorMessage = e.toString().replaceFirst('Exception: ', '');
+      setError(e.toString().replaceFirst('Exception: ', ''));
     } finally {
-      _setLoading(false);
+      setLoading(false);
     }
   }
 
@@ -317,8 +310,7 @@ class ExpenseViewModel extends ChangeNotifier {
     required String roomGroupId,
   }) async {
     try {
-      _setLoading(true);
-      _errorMessage = null;
+      beginLoad();
       final results = await Future.wait([
         _repository.getDebtsOwedByUser(
           userId: userId,
@@ -332,27 +324,25 @@ class ExpenseViewModel extends ChangeNotifier {
       _myDebts = results[0];
       _othersDebts = results[1];
     } catch (e) {
-      _errorMessage = e.toString().replaceFirst('Exception: ', '');
+      setError(e.toString().replaceFirst('Exception: ', ''));
     } finally {
-      _setLoading(false);
+      setLoading(false);
     }
   }
 
   Future<bool> markAsPaid(String shareId) async {
     try {
-      _setLoading(true);
-      _errorMessage = null;
+      beginLoad();
       await _repository.markShareAsPaid(shareId);
       _myDebts = _myDebts.map((s) {
         return s.id == shareId ? s.copyWith(isPaid: true) : s;
       }).toList();
       return true;
     } catch (e) {
-      _errorMessage = e.toString().replaceFirst('Exception: ', '');
-      notifyListeners();
+      setError(e.toString().replaceFirst('Exception: ', ''));
       return false;
     } finally {
-      _setLoading(false);
+      setLoading(false);
     }
   }
 
@@ -362,17 +352,16 @@ class ExpenseViewModel extends ChangeNotifier {
     required int month,
   }) async {
     try {
-      _setLoading(true);
-      _errorMessage = null;
+      beginLoad();
       _monthlyExpenses = await _repository.getExpensesByMonth(
         roomGroupId: roomGroupId,
         year: year,
         month: month,
       );
     } catch (e) {
-      _errorMessage = e.toString().replaceFirst('Exception: ', '');
+      setError(e.toString().replaceFirst('Exception: ', ''));
     } finally {
-      _setLoading(false);
+      setLoading(false);
     }
   }
 
@@ -381,8 +370,7 @@ class ExpenseViewModel extends ChangeNotifier {
     required String currentUserId,
   }) async {
     try {
-      _setLoading(true);
-      _errorMessage = null;
+      beginLoad();
 
       final allShares = await _repository.getAllUnpaidSharesByGroup(roomGroupId);
 
@@ -418,9 +406,9 @@ class ExpenseViewModel extends ChangeNotifier {
 
       _netDebts = entries;
     } catch (e) {
-      _errorMessage = e.toString().replaceFirst('Exception: ', '');
+      setError(e.toString().replaceFirst('Exception: ', ''));
     } finally {
-      _setLoading(false);
+      setLoading(false);
     }
   }
 
@@ -430,8 +418,7 @@ class ExpenseViewModel extends ChangeNotifier {
     required String roomGroupId,
   }) async {
     try {
-      _setLoading(true);
-      _errorMessage = null;
+      beginLoad();
       await _repository.settleAllDebts(
         fromUserId: fromUserId,
         toUserId: toUserId,
@@ -439,11 +426,10 @@ class ExpenseViewModel extends ChangeNotifier {
       );
       return true;
     } catch (e) {
-      _errorMessage = e.toString().replaceFirst('Exception: ', '');
-      notifyListeners();
+      setError(e.toString().replaceFirst('Exception: ', ''));
       return false;
     } finally {
-      _setLoading(false);
+      setLoading(false);
     }
   }
 }

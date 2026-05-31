@@ -87,7 +87,7 @@ class SentInvitesScreen extends StatelessWidget {
             return ListView.separated(
               padding: const EdgeInsets.all(20),
               itemCount: invites.length,
-              separatorBuilder: (_, __) => const SizedBox(height: 14),
+              separatorBuilder: (_, _) => const SizedBox(height: 14),
               itemBuilder: (context, index) {
                 final invite = invites[index];
                 return _SentInviteCard(

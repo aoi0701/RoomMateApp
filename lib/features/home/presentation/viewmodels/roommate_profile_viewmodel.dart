@@ -7,8 +7,8 @@ class RoommateProfileViewModel extends ChangeNotifier {
   final RoommateProfileRepository _repository;
 
   RoommateProfileViewModel({
-    RoommateProfileRepository? repository,
-  }) : _repository = repository ?? RoommateProfileRepository();
+    required RoommateProfileRepository repository,
+  }) : _repository = repository;
 
   bool isInviting = false;
   String? errorMessage;

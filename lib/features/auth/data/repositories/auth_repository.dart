@@ -5,12 +5,15 @@ import 'package:google_sign_in/google_sign_in.dart';
 class AuthRepository {
   final FirebaseAuth _auth;
   final FirebaseFirestore _firestore;
+  final GoogleSignIn _googleSignIn;
 
   AuthRepository({
-    FirebaseAuth? auth,
-    FirebaseFirestore? firestore,
-  })  : _auth = auth ?? FirebaseAuth.instance,
-        _firestore = firestore ?? FirebaseFirestore.instance;
+    required FirebaseAuth auth,
+    required FirebaseFirestore firestore,
+    required GoogleSignIn googleSignIn,
+  })  : _auth = auth,
+        _firestore = firestore,
+        _googleSignIn = googleSignIn;
 
   User? get currentUser => _auth.currentUser;
   CollectionReference<Map<String, dynamic>> get _users =>
@@ -78,8 +81,8 @@ class AuthRepository {
     }
   }
 
-  Future<String> signInWithGoogle() async {
-    final googleUser = await GoogleSignIn().signIn();
+  Future<void> signInWithGoogle() async {
+    final googleUser = await _googleSignIn.signIn();
     if (googleUser == null) {
       throw Exception('Google Sign-In cancelled by user');
     }
@@ -115,9 +118,7 @@ class AuthRepository {
         'createdAt': FieldValue.serverTimestamp(),
       });
     }
-
-    final role = doc.exists ? (doc.data()?['role'] ?? 'user') : 'user';
-    return role as String;
+    // Role is not returned here; callers fetch it separately via getUserRole().
   }
 
   Future<void> resetPassword(String email) {

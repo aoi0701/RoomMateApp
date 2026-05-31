@@ -6,7 +6,17 @@
       "Bash(Sort-Object FullName)",
       "Bash(flutter pub *)",
       "Bash(Get-ChildItem -Path \"e:\\\\RoomMateApp\\\\roommateapp\\\\lib\\\\features\\\\roommate\\\\presentation\\\\views\\\\\" -File | Select-Object Name)",
-      "Bash(dart format *)"
+      "Bash(dart format *)",
+      "Bash(firebase deploy *)",
+      "Bash(Get-ChildItem *)",
+      "Bash(Select-Object -ExpandProperty Name)",
+      "Bash(python -c \"import openpyxl; print\\('openpyxl OK', openpyxl.__version__\\)\")",
+      "Bash(pip install *)",
+      "Bash(python generate_testcases.py)",
+      "Bash(dir \"e:\\\\RoomMateApp\\\\roommateapp\\\\docs\\\\RoomMateApp_TestCases.xlsx\")",
+      "Bash(dir \"e:\\\\RoomMateApp\\\\roommateapp\\\\docs\\\\RoomMateApp_TestCases_v2.xlsx\")",
+      "Bash(dir \"e:\\\\RoomMateApp\\\\roommateapp\\\\docs\\\\\")",
+      "PowerShell(Copy-Item \"e:\\\\RoomMateApp\\\\roommateapp\\\\docs\\\\RoomMateApp_TestCases_v2.xlsx\" \"e:\\\\RoomMateApp\\\\roommateapp\\\\QA_TestCases.xlsx\")"
     ]
   }
 }

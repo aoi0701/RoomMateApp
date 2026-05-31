@@ -11,10 +11,10 @@ class RoommateRequestViewModel extends ChangeNotifier {
   final RoomGroupRepository _roomGroupRepository;
 
   RoommateRequestViewModel({
-    RoommateRequestRepository? repository,
-    RoomGroupRepository? roomGroupRepository,
-  })  : _repository = repository ?? RoommateRequestRepository(),
-        _roomGroupRepository = roomGroupRepository ?? RoomGroupRepository();
+    required RoommateRequestRepository repository,
+    required RoomGroupRepository roomGroupRepository,
+  })  : _repository = repository,
+        _roomGroupRepository = roomGroupRepository;
 
   bool _isLoading = false;
   String? _errorMessage;
@@ -78,7 +78,8 @@ class RoommateRequestViewModel extends ChangeNotifier {
   Future<bool> hasPendingRequest(String postId) async {
     try {
       return await _repository.hasPendingRequest(postId);
-    } catch (_) {
+    } catch (e) {
+      debugPrint('[RoommateRequestViewModel] hasPendingRequest failed for post $postId: $e');
       return false;
     }
   }
@@ -86,7 +87,8 @@ class RoommateRequestViewModel extends ChangeNotifier {
   Future<bool> hasPendingProfileInvite(String targetUserId) async {
     try {
       return await _repository.hasPendingProfileInvite(targetUserId);
-    } catch (_) {
+    } catch (e) {
+      debugPrint('[RoommateRequestViewModel] hasPendingProfileInvite failed for user $targetUserId: $e');
       return false;
     }
   }
@@ -217,7 +219,9 @@ class RoommateRequestViewModel extends ChangeNotifier {
       } catch (groupError) {
         try {
           await _repository.undoAcceptRequest(requestId);
-        } catch (_) {}
+        } catch (undoError) {
+          debugPrint('[RoommateRequestViewModel] undoAcceptRequest also failed for $requestId: $undoError');
+        }
         throw Exception(
           'Không thể tạo nhóm phòng. Yêu cầu đã được hoàn tác. Vui lòng thử lại.',
         );

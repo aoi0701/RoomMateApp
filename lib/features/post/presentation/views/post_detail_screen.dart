@@ -139,8 +139,9 @@ class PostDetailScreen extends StatelessWidget {
             );
           }
 
-          final owner = snapshot.hasData && snapshot.data!.exists
-              ? UserModel.fromDocument(snapshot.data!)
+          final doc = snapshot.data;
+          final owner = doc != null && doc.exists
+              ? UserModel.fromDocument(doc)
               : null;
 
           final ownerName = owner?.fullName.trim().isNotEmpty == true
@@ -359,8 +360,9 @@ class PostDetailScreen extends StatelessWidget {
     return StreamBuilder<DocumentSnapshot<Map<String, dynamic>>>(
       stream: profileVm.getUserProfileStream(post.ownerId),
       builder: (context, snapshot) {
-        final owner = snapshot.hasData && snapshot.data!.exists
-            ? UserModel.fromDocument(snapshot.data!)
+        final doc = snapshot.data;
+        final owner = doc != null && doc.exists
+            ? UserModel.fromDocument(doc)
             : null;
         final habits = _resolveLifestyleHabits(owner);
 
@@ -476,8 +478,9 @@ class PostDetailScreen extends StatelessWidget {
             .read<UserProfileViewModel>()
             .getUserProfileStream(post.ownerId),
         builder: (context, snapshot) {
-          final owner = snapshot.hasData && snapshot.data!.exists
-              ? UserModel.fromDocument(snapshot.data!)
+          final doc = snapshot.data;
+          final owner = doc != null && doc.exists
+              ? UserModel.fromDocument(doc)
               : null;
 
           return Row(
@@ -512,8 +515,6 @@ class PostDetailScreen extends StatelessWidget {
                   onTap: () async {
                     final viewModel = context.read<RoommateRequestViewModel>();
                     final messenger = ScaffoldMessenger.of(context);
-                    final navigator = Navigator.of(context);
-
                     final hasRequested =
                         await viewModel.hasPendingRequest(post.id);
 

@@ -6,8 +6,8 @@ import '../../data/repositories/home_search_filter_repository.dart';
 class HomeSearchFilterViewModel extends ChangeNotifier {
   final HomeSearchFilterRepository _repository;
 
-  HomeSearchFilterViewModel({HomeSearchFilterRepository? repository})
-      : _repository = repository ?? HomeSearchFilterRepository();
+  HomeSearchFilterViewModel({required HomeSearchFilterRepository repository})
+      : _repository = repository;
 
   RoomSearchFilterModel _currentFilter = const RoomSearchFilterModel();
   bool isLoading = false;

@@ -1,3 +1,11 @@
 import 'package:flutter/material.dart';
 
-final GlobalKey<NavigatorState> appNavigatorKey = GlobalKey<NavigatorState>();
+class NavigationService {
+  final GlobalKey<NavigatorState> navigatorKey = GlobalKey<NavigatorState>();
+
+  NavigatorState? get _state => navigatorKey.currentState;
+
+  void pushAndRemoveUntil(Route<dynamic> route, RoutePredicate predicate) {
+    _state?.pushAndRemoveUntil(route, predicate);
+  }
+}

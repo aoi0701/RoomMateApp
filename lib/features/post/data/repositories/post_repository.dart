@@ -6,16 +6,28 @@ import 'package:firebase_auth/firebase_auth.dart';
 import 'package:http/http.dart' as http;
 
 import '../models/post_model.dart';
+import '../../../home/data/models/room_search_filter_model.dart';
+
+class PostsPageResult {
+  final List<PostModel> posts;
+
+  /// Cursor for the next page. `null` when this is the last page.
+  final DocumentSnapshot<Map<String, dynamic>>? nextCursor;
+
+  const PostsPageResult({required this.posts, this.nextCursor});
+
+  bool get hasMore => nextCursor != null;
+}
 
 class PostRepository {
   final FirebaseAuth _auth;
   final FirebaseFirestore _firestore;
 
   PostRepository({
-    FirebaseAuth? auth,
-    FirebaseFirestore? firestore,
-  })  : _auth = auth ?? FirebaseAuth.instance,
-        _firestore = firestore ?? FirebaseFirestore.instance;
+    required FirebaseAuth auth,
+    required FirebaseFirestore firestore,
+  })  : _auth = auth,
+        _firestore = firestore;
 
   User? get currentUser => _auth.currentUser;
 
@@ -188,14 +200,67 @@ class PostRepository {
     await batch.commit();
   }
 
-  Stream<List<PostModel>> getPostsStream() {
-    return _firestore
-        .collection('posts')
-        .orderBy('createdAt', descending: true)
-        .snapshots()
-        .map((snapshot) {
-      return snapshot.docs.map(PostModel.fromDocument).toList();
+  static const int pageSize = 25;
+
+  Query<Map<String, dynamic>> _buildFilteredQuery(RoomSearchFilterModel filter) {
+    Query<Map<String, dynamic>> query = _firestore.collection('posts');
+
+    if (filter.province.isNotEmpty) {
+      query = query.where('province', isEqualTo: filter.province.trim());
+    }
+    if (filter.district.isNotEmpty) {
+      query = query.where('district', isEqualTo: filter.district.trim());
+    }
+    if (filter.roomType.isNotEmpty) {
+      query = query.where('roomType', isEqualTo: filter.roomType.trim());
+    }
+    // arrayContains only supports one value; multi-amenity is handled in-memory by the ViewModel.
+    if (filter.amenities.length == 1) {
+      query = query.where('amenities', arrayContains: filter.amenities.first.trim());
+    }
+
+    final range = filter.selectedPriceRange;
+    if (range != null) {
+      final minPrice = range.minPrice;
+      final maxPrice = range.maxPrice;
+      if (minPrice != null) {
+        query = query.where('price', isGreaterThanOrEqualTo: minPrice);
+      }
+      if (maxPrice != null) {
+        query = query.where('price', isLessThanOrEqualTo: maxPrice);
+      }
+      // Firestore requires orderBy on the range-filtered field before any other orderBy.
+      query = query.orderBy('price');
+    }
+
+    return query.orderBy('createdAt', descending: true);
+  }
+
+  /// First-page live stream.  Emits whenever any of the matching posts change.
+  /// Carries the last [DocumentSnapshot] so the ViewModel can use it as a
+  /// cursor without making an extra Firestore round-trip.
+  Stream<PostsPageResult> getPostsPageStream(RoomSearchFilterModel filter) {
+    return _buildFilteredQuery(filter).limit(pageSize).snapshots().map((snapshot) {
+      final posts = snapshot.docs.map(PostModel.fromDocument).toList();
+      final nextCursor =
+          snapshot.docs.length >= pageSize ? snapshot.docs.last : null;
+      return PostsPageResult(posts: posts, nextCursor: nextCursor);
     });
+  }
+
+  /// Fetches the next page after [lastDoc].  One-shot, not a live stream.
+  Future<PostsPageResult> loadMorePosts(
+    DocumentSnapshot<Map<String, dynamic>> lastDoc,
+    RoomSearchFilterModel filter,
+  ) async {
+    final snapshot = await _buildFilteredQuery(filter)
+        .startAfterDocument(lastDoc)
+        .limit(pageSize)
+        .get();
+    final posts = snapshot.docs.map(PostModel.fromDocument).toList();
+    final nextCursor =
+        snapshot.docs.length >= pageSize ? snapshot.docs.last : null;
+    return PostsPageResult(posts: posts, nextCursor: nextCursor);
   }
 
   Stream<List<PostModel>> getPostsByUser(String uid) {

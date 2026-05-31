@@ -8,7 +8,6 @@ import '../../../../core/widgets/app_button.dart';
 import '../viewmodels/auth_viewmodel.dart';
 import '../widgets/auth_text_field.dart';
 import '../widgets/social_login_button.dart';
-import '../../../../features/home/presentation/views/user_home_screen.dart';
 import 'forgot_password_screen.dart';
 import 'register_screen.dart';
 
@@ -33,33 +32,20 @@ class _LoginScreenState extends State<LoginScreen> {
 
   Future<void> _handleGoogleSignIn() async {
     final vm = context.read<AuthViewModel>();
-    final role = await vm.signInWithGoogle();
+    await vm.signInWithGoogle();
 
     if (!mounted) return;
 
-    if (role == null) {
-      if (vm.errorMessage != null) {
+    if (vm.user == null) {
+      final error = vm.errorMessage;
+      if (error != null) {
         ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text(vm.errorMessage!)),
+          SnackBar(content: Text(error)),
         );
       }
-      return;
+      // No user and no errorMessage means the user cancelled — do nothing.
     }
-
-    if (role == 'banned') {
-      await vm.logout();
-      if (!mounted) return;
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('Tài khoản của bạn đã bị khóa')),
-      );
-      return;
-    }
-
-    Navigator.pushAndRemoveUntil(
-      context,
-      MaterialPageRoute(builder: (_) => const UserHomeScreen()),
-      (route) => false,
-    );
+    // AuthGate handles navigation automatically when user is set.
   }
 
   Future<void> _handleLogin() async {
@@ -91,15 +77,7 @@ class _LoginScreenState extends State<LoginScreen> {
         );
         return;
       }
-
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('Đăng nhập thành công')),
-      );
-      Navigator.pushAndRemoveUntil(
-        context,
-        MaterialPageRoute(builder: (_) => const UserHomeScreen()),
-        (route) => false,
-      );
+      // AuthGate handles navigation automatically when session is valid.
     } else {
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(content: Text(vm.errorMessage ?? 'Đăng nhập thất bại')),

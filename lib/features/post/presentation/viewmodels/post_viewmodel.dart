@@ -7,8 +7,8 @@ import '../../data/repositories/post_repository.dart';
 class PostViewModel extends ChangeNotifier {
   final PostRepository _repository;
 
-  PostViewModel({PostRepository? repository})
-      : _repository = repository ?? PostRepository();
+  PostViewModel({required PostRepository repository})
+      : _repository = repository;
 
   bool isLoading = false;
   String? errorMessage;

@@ -1,4 +1,3 @@
-import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:provider/provider.dart';
@@ -33,6 +32,7 @@ class _ChatDetailScreenState extends State<ChatDetailScreen> {
   String? _currentUserId;
   bool _isAtBottom = true;
   bool _isConversationReady = false;
+  bool _initialized = false;
   String? _screenError;
   // Cached stream - created once so Firebase never opens more than one listener
   // on the same path regardless of how many times the widget rebuilds.
@@ -41,16 +41,19 @@ class _ChatDetailScreenState extends State<ChatDetailScreen> {
   @override
   void initState() {
     super.initState();
-    final user = FirebaseAuth.instance.currentUser;
-    if (user == null) {
+    final chatVm = context.read<ChatViewModel>();
+    final currentUserId = chatVm.currentUserId;
+    if (currentUserId == null) {
       _screenError = 'Phiên đăng nhập đã hết. Vui lòng đăng nhập lại.';
       return;
     }
 
-    _currentUserId = user.uid;
-    final chatVm = context.read<ChatViewModel>();
-    _conversationId = chatVm.getConversationId(user.uid, widget.otherUserId);
-    _initializeConversation();
+    _currentUserId = currentUserId;
+    _conversationId = chatVm.getConversationId(currentUserId, widget.otherUserId);
+    if (!_initialized) {
+      _initialized = true;
+      _initializeConversation();
+    }
     _scrollController.addListener(() {
       if (!_scrollController.hasClients) return;
       final pos = _scrollController.position;
@@ -74,9 +77,7 @@ class _ChatDetailScreenState extends State<ChatDetailScreen> {
       setState(() {
         // Create the stream exactly once. StreamBuilder keeps this subscription
         // alive for the lifetime of the screen and cancels it on dispose.
-        _messagesStream = chatVm
-            .getMessagesStream(conversationId)
-            .asBroadcastStream();
+        _messagesStream = chatVm.getMessagesStream(conversationId);
         _isConversationReady = true;
       });
     } catch (e) {

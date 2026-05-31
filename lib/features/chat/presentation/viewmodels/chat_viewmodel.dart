@@ -15,6 +15,7 @@ class ChatViewModel extends ChangeNotifier {
 
   bool get isSending => _isSending;
   String? get errorMessage => _errorMessage;
+  String? get currentUserId => _repository.currentUserId;
 
   String getConversationId(String uid1, String uid2) =>
       _repository.getConversationId(uid1, uid2);
@@ -65,9 +66,13 @@ class ChatViewModel extends ChangeNotifier {
     }
   }
 
+  void clearSession() => _repository.clearStreamCaches();
+
   Future<void> markAsRead(String conversationId) async {
     try {
       await _repository.markAsRead(conversationId);
-    } catch (_) {}
+    } catch (e) {
+      debugPrint('[ChatViewModel] markAsRead failed for $conversationId: $e');
+    }
   }
 }

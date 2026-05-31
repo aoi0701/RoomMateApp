@@ -9,10 +9,10 @@ class ExpenseRepository {
   final FirebaseFirestore _firestore;
 
   ExpenseRepository({
-    FirebaseAuth? auth,
-    FirebaseFirestore? firestore,
-  })  : _auth = auth ?? FirebaseAuth.instance,
-        _firestore = firestore ?? FirebaseFirestore.instance;
+    required FirebaseAuth auth,
+    required FirebaseFirestore firestore,
+  })  : _auth = auth,
+        _firestore = firestore;
 
   User? get currentUser => _auth.currentUser;
 
@@ -114,7 +114,10 @@ class ExpenseRepository {
           .where('fromUserId', isEqualTo: userId)
           .where('isPaid', isEqualTo: false)
           .get();
-      return snapshot.docs.map(ExpenseShareModel.fromDocument).toList();
+      return snapshot.docs
+          .where((doc) => doc.data()['isArchived'] != true)
+          .map(ExpenseShareModel.fromDocument)
+          .toList();
     } catch (e) {
       throw Exception('Không thể tải công nợ: $e');
     }
@@ -130,7 +133,10 @@ class ExpenseRepository {
           .where('toUserId', isEqualTo: userId)
           .where('isPaid', isEqualTo: false)
           .get();
-      return snapshot.docs.map(ExpenseShareModel.fromDocument).toList();
+      return snapshot.docs
+          .where((doc) => doc.data()['isArchived'] != true)
+          .map(ExpenseShareModel.fromDocument)
+          .toList();
     } catch (e) {
       throw Exception('Không thể tải danh sách người nợ: $e');
     }
@@ -164,9 +170,13 @@ class ExpenseRepository {
       final user = _auth.currentUser;
       if (user == null) throw Exception('Chưa đăng nhập');
 
-      final oldShares = await _shares
+      final oldSharesSnapshot = await _shares
           .where('expenseId', isEqualTo: expenseId)
           .get();
+      // Only archive currently-active shares; already-archived shares are untouched.
+      final oldShares = oldSharesSnapshot.docs
+          .where((doc) => doc.data()['isArchived'] != true)
+          .toList();
 
       final batch = _firestore.batch();
 
@@ -180,8 +190,11 @@ class ExpenseRepository {
         'customSplits': customSplits,
       });
 
-      for (final doc in oldShares.docs) {
-        batch.delete(doc.reference);
+      for (final doc in oldShares) {
+        batch.update(doc.reference, {
+          'isArchived': true,
+          'archivedAt': FieldValue.serverTimestamp(),
+        });
       }
 
       for (final share in newShares) {
@@ -243,7 +256,10 @@ class ExpenseRepository {
           .where('roomGroupId', isEqualTo: roomGroupId)
           .where('isPaid', isEqualTo: false)
           .get();
-      return snapshot.docs.map(ExpenseShareModel.fromDocument).toList();
+      return snapshot.docs
+          .where((doc) => doc.data()['isArchived'] != true)
+          .map(ExpenseShareModel.fromDocument)
+          .toList();
     } catch (e) {
       throw Exception('Không thể tải danh sách công nợ: $e');
     }
@@ -255,16 +271,15 @@ class ExpenseRepository {
     required String roomGroupId,
   }) async {
     try {
-      // Query by 3 fields, filter toUserId client-side to avoid 4-field composite index
       final snapshot = await _shares
           .where('roomGroupId', isEqualTo: roomGroupId)
           .where('fromUserId', isEqualTo: fromUserId)
+          .where('toUserId', isEqualTo: toUserId)
           .where('isPaid', isEqualTo: false)
+          .where('isArchived', isNotEqualTo: true)
           .get();
 
-      final relevant = snapshot.docs
-          .where((doc) => doc.data()['toUserId'] == toUserId)
-          .toList();
+      final relevant = snapshot.docs.toList();
 
       final batch = _firestore.batch();
       for (final doc in relevant) {

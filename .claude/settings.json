@@ -11,7 +11,11 @@
       "Bash(sed -n '9,14p' e:/RoomMateApp/roommateapp/lib/features/home/presentation/viewmodels/roommate_profile_viewmodel.dart)",
       "Bash(Remove-Item \"e:\\\\RoomMateApp\\\\roommateapp\\\\lib\\\\features\\\\home\\\\data\\\\models\\\\roommate_invite_model.dart\")",
       "Bash(flutter --version)",
-      "Bash(flutter build *)"
+      "Bash(flutter build *)",
+      "Bash(Get-ChildItem -Path 'e:\\\\RoomMateApp\\\\roommateapp\\\\lib' -Recurse -Directory)",
+      "Bash(find e:\\\\\\\\RoomMateApp\\\\\\\\roommateapp\\\\\\\\lib -type d -name \"*repositories*\" -o -type d -name \"*viewmodels*\")",
+      "Bash(cd /e/RoomMateApp/roommateapp/lib && find . -type d | grep -E \"\\(repositories|viewmodels\\)\" | sort)",
+      "Read(//e/e/RoomMateApp/roommateapp/**)"
     ]
   }
 }

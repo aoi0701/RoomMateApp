@@ -10,6 +10,7 @@ import '../../../auth/presentation/viewmodels/auth_viewmodel.dart';
 import '../../../room_group/data/models/room_group_model.dart';
 import '../../data/models/expense_model.dart';
 import '../viewmodels/expense_viewmodel.dart';
+import 'expense_form_screen.dart';
 import 'add_expense_screen.dart';
 import 'debt_screen.dart';
 import 'expense_detail_screen.dart';
@@ -84,7 +85,7 @@ class ExpenseListScreen extends StatelessWidget {
         onPressed: () => Navigator.push(
           context,
           MaterialPageRoute(
-            builder: (_) => AddExpenseScreen(roomGroup: roomGroup),
+            builder: (_) => ExpenseFormScreen(roomGroup: roomGroup),
           ),
         ),
         backgroundColor: AppColors.primary,

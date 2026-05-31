@@ -8,10 +8,10 @@ class HomeSearchFilterRepository {
   final FirebaseAuth _auth;
 
   HomeSearchFilterRepository({
-    FirebaseFirestore? firestore,
-    FirebaseAuth? auth,
-  })  : _firestore = firestore ?? FirebaseFirestore.instance,
-        _auth = auth ?? FirebaseAuth.instance;
+    required FirebaseFirestore firestore,
+    required FirebaseAuth auth,
+  })  : _firestore = firestore,
+        _auth = auth;
 
   String? get currentUserId => _auth.currentUser?.uid;
 

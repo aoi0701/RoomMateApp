@@ -4,31 +4,29 @@ import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 
+import '../../../../core/viewmodels/view_model_base.dart';
 import '../../data/repositories/auth_repository.dart';
 
-class AuthViewModel extends ChangeNotifier {
+class AuthViewModel extends ViewModelBase {
   final AuthRepository _repository;
   late final StreamSubscription<User?> _authSubscription;
   bool _isLoggingOut = false;
 
-  AuthViewModel({AuthRepository? repository})
-      : _repository = repository ?? AuthRepository() {
+  AuthViewModel({required AuthRepository repository})
+      : _repository = repository {
     _authSubscription = _repository.authStateChanges().listen((_) {
       notifyListeners();
     });
   }
 
-  bool isLoading = false;
-  String? errorMessage;
   bool get isLoggingOut => _isLoggingOut;
+  bool get hasError => errorMessage != null;
 
   User? get user => _repository.currentUser;
 
   Future<String?> login(String email, String password) async {
     try {
-      isLoading = true;
-      errorMessage = null;
-      notifyListeners();
+      beginLoad();
 
       final credential = await _repository.login(
         email: email,
@@ -37,53 +35,54 @@ class AuthViewModel extends ChangeNotifier {
 
       final user = credential.user;
       if (user == null) {
-        errorMessage = 'Không tìm thấy thông tin người dùng';
+        setError('Không tìm thấy thông tin người dùng');
         return null;
       }
 
       final role = await _repository.getUserRole(user.uid);
       return role;
     } on FirebaseAuthException catch (e) {
-      errorMessage = _mapFirebaseAuthError(e);
+      setError(_mapFirebaseAuthError(e));
       return null;
     } catch (e) {
-      errorMessage = 'Đã có lỗi xảy ra: $e';
+      setError('Đã có lỗi xảy ra: $e');
       return null;
     } finally {
-      isLoading = false;
-      notifyListeners();
+      setLoading(false);
     }
   }
 
-  Future<String?> signInWithGoogle() async {
+  Future<void> signInWithGoogle() async {
     try {
-      isLoading = true;
-      errorMessage = null;
-      notifyListeners();
+      beginLoad();
 
-      final role = await _repository.signInWithGoogle();
-      return role;
+      await _repository.signInWithGoogle();
+
+      final user = _repository.currentUser;
+      if (user == null) return;
+
+      final role = await _repository.getUserRole(user.uid);
+      if (role == 'banned') {
+        await _repository.logout();
+        setError('Tài khoản của bạn đã bị khóa');
+      }
     } on PlatformException catch (e) {
       if (e.code == 'sign_in_canceled' || e.code == 'network_error') {
-        errorMessage = null;
+        setError(null);
       } else {
-        errorMessage = e.message ?? 'Đăng nhập Google thất bại';
+        setError(e.message ?? 'Đăng nhập Google thất bại');
       }
-      return null;
     } on FirebaseAuthException catch (e) {
-      errorMessage = _mapFirebaseAuthError(e);
-      return null;
+      setError(_mapFirebaseAuthError(e));
     } catch (e) {
       final msg = e.toString();
       if (msg.contains('cancelled')) {
-        errorMessage = null;
+        setError(null);
       } else {
-        errorMessage = 'Đăng nhập Google thất bại: $e';
+        setError('Đăng nhập Google thất bại: $e');
       }
-      return null;
     } finally {
-      isLoading = false;
-      notifyListeners();
+      setLoading(false);
     }
   }
 
@@ -96,9 +95,7 @@ class AuthViewModel extends ChangeNotifier {
     required String gender,
   }) async {
     try {
-      isLoading = true;
-      errorMessage = null;
-      notifyListeners();
+      beginLoad();
 
       await _repository.register(
         fullName: fullName,
@@ -111,56 +108,47 @@ class AuthViewModel extends ChangeNotifier {
 
       return true;
     } on FirebaseAuthException catch (e) {
-      errorMessage = _mapFirebaseAuthError(e);
+      setError(_mapFirebaseAuthError(e));
       return false;
     } catch (e) {
-      errorMessage = 'Đã có lỗi xảy ra: $e';
+      setError('Đã có lỗi xảy ra: $e');
       return false;
     } finally {
-      isLoading = false;
-      notifyListeners();
+      setLoading(false);
     }
   }
 
   Future<bool> resetPassword(String email) async {
     try {
-      isLoading = true;
-      errorMessage = null;
-      notifyListeners();
+      beginLoad();
 
       await _repository.resetPassword(email.trim());
       return true;
     } on FirebaseAuthException catch (e) {
-      errorMessage = '[${e.code}] ${e.message ?? _mapFirebaseAuthError(e)}';
+      setError('[${e.code}] ${e.message ?? _mapFirebaseAuthError(e)}');
       return false;
     } catch (e) {
-      errorMessage = 'Đã có lỗi xảy ra: $e';
+      setError('Đã có lỗi xảy ra: $e');
       return false;
     } finally {
-      isLoading = false;
-      notifyListeners();
+      setLoading(false);
     }
   }
-
-  bool get hasError => errorMessage != null;
 
   Future<void> logout() async {
     if (_isLoggingOut) return;
 
     try {
-      isLoading = true;
       _isLoggingOut = true;
-      errorMessage = null;
-      notifyListeners();
+      beginLoad();
 
       await WidgetsBinding.instance.endOfFrame;
       await _repository.logout();
     } catch (e) {
-      errorMessage = 'Đăng xuất thất bại: $e';
+      setError('Đăng xuất thất bại: $e');
     } finally {
-      isLoading = false;
       _isLoggingOut = false;
-      notifyListeners();
+      setLoading(false);
     }
   }
 

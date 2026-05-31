@@ -12,8 +12,8 @@ class UserProfileViewModel extends ChangeNotifier {
   bool isSubmittingProfile = false;
   String? errorMessage;
 
-  UserProfileViewModel({UserProfileRepository? repository})
-      : _repository = repository ?? UserProfileRepository();
+  UserProfileViewModel({required UserProfileRepository repository})
+      : _repository = repository;
 
   Stream<DocumentSnapshot<Map<String, dynamic>>> getUserProfileStream(String uid) {
     return _repository.getUserProfileStream(uid);
