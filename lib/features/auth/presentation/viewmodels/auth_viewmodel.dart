@@ -40,6 +40,16 @@ class AuthViewModel extends ViewModelBase {
       }
 
       final role = await _repository.getUserRole(user.uid);
+      if (role == 'deleted') {
+        await _repository.logout();
+        setError('Tài khoản đã bị vô hiệu hóa. Vui lòng liên hệ hỗ trợ.');
+        return null;
+      }
+      if (role == 'blocked') {
+        await _repository.logout();
+        setError('Tài khoản của bạn đã bị khóa. Vui lòng liên hệ hỗ trợ.');
+        return null;
+      }
       return role;
     } on FirebaseAuthException catch (e) {
       setError(_mapFirebaseAuthError(e));
@@ -62,9 +72,15 @@ class AuthViewModel extends ViewModelBase {
       if (user == null) return;
 
       final role = await _repository.getUserRole(user.uid);
-      if (role == 'banned') {
+      if (role == 'deleted') {
         await _repository.logout();
-        setError('Tài khoản của bạn đã bị khóa');
+        setError('Tài khoản đã bị vô hiệu hóa. Vui lòng liên hệ hỗ trợ.');
+      } else if (role == 'blocked') {
+        await _repository.logout();
+        setError('Tài khoản của bạn đã bị khóa. Vui lòng liên hệ hỗ trợ.');
+      } else if (role == 'banned') {
+        await _repository.logout();
+        setError('Tài khoản của bạn đã bị khóa.');
       }
     } on PlatformException catch (e) {
       if (e.code == 'sign_in_canceled' || e.code == 'network_error') {

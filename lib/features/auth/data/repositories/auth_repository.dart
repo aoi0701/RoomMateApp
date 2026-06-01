@@ -74,8 +74,18 @@ class AuthRepository {
     }
 
     try {
-      final doc = await _users.doc(uid).get();
-      return doc.data()?['role'] ?? 'user';
+      // Force server read so stale Firestore cache never hides isBlocked: true.
+      final doc = await _users.doc(uid).get(const GetOptions(source: Source.server));
+      final data = doc.data();
+      // Soft-deleted user → kick out.
+      if (data?['deleted'] == true || data?['isDeleted'] == true) {
+        return 'deleted';
+      }
+      // Blocked user → kick out on login (real-time stream handles ongoing sessions).
+      if (data?['isBlocked'] == true) {
+        return 'blocked';
+      }
+      return data?['role'] ?? 'user';
     } on FirebaseException {
       return 'user';
     }

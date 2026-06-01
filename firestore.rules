@@ -10,17 +10,42 @@ service cloud.firestore {
       return isAuth() && request.auth.uid == uid;
     }
 
+    function isAdmin() {
+      return isAuth() &&
+        get(/databases/$(database)/documents/users/$(request.auth.uid)).data.get('role', 'user') == 'admin';
+    }
+
+    // Kiểm tra user đang request có bị soft-delete không.
+    // Dùng cho write operations để ngăn user bị xóa ghi dữ liệu mới.
+    function callerIsNotDeleted() {
+      let caller = get(/databases/$(database)/documents/users/$(request.auth.uid)).data;
+      return caller.get('deleted', false) != true
+          && caller.get('isDeleted', false) != true;
+    }
+
     function isMemberOf(groupId) {
       return isAuth() && request.auth.uid in
         get(/databases/$(database)/documents/room_groups/$(groupId)).data.memberIds;
     }
 
     match /users/{userId} {
-      allow read: if isAuth();
+      // Admin đọc được tất cả (kể cả user bị deleted).
+      // User thường chỉ đọc được nếu chính họ chưa bị deleted.
+      allow read: if isAdmin()
+        || (isAuth() && (
+          // Đọc doc của người khác: được phép (cần cho profile discovery)
+          // Đọc doc của chính mình: phải chưa bị deleted
+          userId != request.auth.uid
+          || resource.data.get('deleted', false) != true
+        ));
       allow create: if isAuth() && isOwner(userId);
-      allow update: if isAuth() && isOwner(userId)
-        && !request.resource.data.diff(resource.data).affectedKeys().hasAny(['role']);
-      allow delete: if false;
+      // User không được tự thay đổi role, deleted, isDeleted
+      allow update: if isAdmin()
+        || (isAuth() && isOwner(userId)
+            && callerIsNotDeleted()
+            && !request.resource.data.diff(resource.data)
+                   .affectedKeys().hasAny(['role', 'deleted', 'isDeleted', 'deletedAt']));
+      allow delete: if isAdmin();
     }
 
     // ---------------------------------------------------------------------------
@@ -84,68 +109,85 @@ service cloud.firestore {
     match /posts/{postId} {
       allow read: if isAuth();
 
-      allow create: if isAuth()
-        // ownerId must be the caller's uid
-        && request.resource.data.ownerId == request.auth.uid
-        // all required fields must be present
-        && request.resource.data.keys().hasAll([
-             'title', 'location', 'province', 'district',
-             'roomType', 'amenities', 'lifestyleHabits',
-             'price', 'area', 'capacity', 'description',
-             'imageUrl', 'imageUrls', 'ownerId', 'createdAt', 'updatedAt'
-           ])
-        && isValidPost();
+      allow create: if isAdmin()
+        || (isAuth()
+            && callerIsNotDeleted()
+            && request.resource.data.ownerId == request.auth.uid
+            && request.resource.data.keys().hasAll([
+                 'title', 'location', 'province', 'district',
+                 'roomType', 'amenities', 'lifestyleHabits',
+                 'price', 'area', 'capacity', 'description',
+                 'imageUrl', 'imageUrls', 'ownerId', 'createdAt', 'updatedAt'
+               ])
+            && isValidPost());
 
-      allow update: if isAuth()
-        // caller must be the existing owner
-        && resource.data.ownerId == request.auth.uid
-        // ownerId and createdAt are immutable after creation
-        && !request.resource.data.diff(resource.data)
-               .affectedKeys().hasAny(['ownerId', 'createdAt'])
-        && isValidPost();
+      allow update: if isAdmin()
+        || (isAuth()
+            && callerIsNotDeleted()
+            && resource.data.ownerId == request.auth.uid
+            && !request.resource.data.diff(resource.data)
+                   .affectedKeys().hasAny(['ownerId', 'createdAt'])
+            && isValidPost());
 
-      allow delete: if isAuth() && resource.data.ownerId == request.auth.uid;
+      allow delete: if isAdmin()
+        || (isAuth() && callerIsNotDeleted() && resource.data.ownerId == request.auth.uid);
     }
 
     match /roommate_requests/{requestId} {
-      allow read: if isAuth() && (
-        resource.data.requesterId == request.auth.uid ||
-        resource.data.postOwnerId == request.auth.uid
-      );
-      allow create: if isAuth()
-        && request.resource.data.requesterId == request.auth.uid
-        && request.resource.data.status == 'pending';
-      allow update: if isAuth() && resource.data.postOwnerId == request.auth.uid;
-      allow delete: if isAuth() && (
-        resource.data.requesterId == request.auth.uid ||
-        resource.data.postOwnerId == request.auth.uid
-      );
+      allow read: if isAdmin()
+        || (isAuth() && (
+            resource.data.requesterId == request.auth.uid ||
+            resource.data.postOwnerId == request.auth.uid
+        ));
+      allow create: if isAdmin()
+        || (isAuth()
+            && callerIsNotDeleted()
+            && request.resource.data.requesterId == request.auth.uid
+            && request.resource.data.status == 'pending');
+      allow update: if isAdmin()
+        || (isAuth() && callerIsNotDeleted() && resource.data.postOwnerId == request.auth.uid);
+      allow delete: if isAdmin()
+        || (isAuth() && callerIsNotDeleted() && (
+            resource.data.requesterId == request.auth.uid ||
+            resource.data.postOwnerId == request.auth.uid
+        ));
     }
 
     match /room_groups/{groupId} {
-      allow read: if isAuth() && request.auth.uid in resource.data.memberIds;
-      allow create: if isAuth()
-        && request.resource.data.ownerId == request.auth.uid
-        && request.auth.uid in request.resource.data.memberIds;
-      allow update: if isAuth() && resource.data.ownerId == request.auth.uid;
-      allow delete: if false;
+      allow read: if isAdmin()
+        || (isAuth() && request.auth.uid in resource.data.memberIds);
+      allow create: if isAdmin()
+        || (isAuth()
+            && request.resource.data.ownerId == request.auth.uid
+            && request.auth.uid in request.resource.data.memberIds);
+      allow update: if isAdmin()
+        || (isAuth() && resource.data.ownerId == request.auth.uid);
+      allow delete: if isAdmin();
+    }
+
+    match /reports/{reportId} {
+      allow read: if isAdmin()
+        || (isAuth() && resource.data.reporterId == request.auth.uid);
+      allow create: if isAuth();
+      allow update: if isAdmin();
+      allow delete: if isAdmin();
     }
 
     match /expenses/{expenseId} {
-      allow read: if isAuth() && isMemberOf(resource.data.roomGroupId);
+      allow read: if isAdmin() || (isAuth() && isMemberOf(resource.data.roomGroupId));
       allow create: if isAuth() && isMemberOf(request.resource.data.roomGroupId);
       allow update: if isAuth() && isMemberOf(resource.data.roomGroupId);
-      allow delete: if isAuth() && isMemberOf(resource.data.roomGroupId);
+      allow delete: if isAdmin() || (isAuth() && isMemberOf(resource.data.roomGroupId));
     }
 
     match /expense_shares/{shareId} {
-      allow read: if isAuth() && isMemberOf(resource.data.roomGroupId);
+      allow read: if isAdmin() || (isAuth() && isMemberOf(resource.data.roomGroupId));
       allow create: if isAuth() && isMemberOf(request.resource.data.roomGroupId);
-      allow update: if isAuth() && (
+      allow update: if isAdmin() || (isAuth() && (
         resource.data.fromUserId == request.auth.uid ||
         isMemberOf(resource.data.roomGroupId)
-      );
-      allow delete: if isAuth() && isMemberOf(resource.data.roomGroupId);
+      ));
+      allow delete: if isAdmin() || (isAuth() && isMemberOf(resource.data.roomGroupId));
     }
 
   }

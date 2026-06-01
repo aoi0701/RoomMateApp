@@ -17,6 +17,8 @@ class UserModel {
   final List<String> roommateCriteria;
   final bool profileCompleted;
   final String role;
+  final bool deleted;
+  final bool isBlocked;
   final DateTime? createdAt;
 
   UserModel({
@@ -36,6 +38,8 @@ class UserModel {
     required this.roommateCriteria,
     required this.profileCompleted,
     required this.role,
+    this.deleted = false,
+    this.isBlocked = false,
     this.createdAt,
   });
 
@@ -86,6 +90,8 @@ class UserModel {
               roommateCriteria: roommateCriteria,
             ),
       role: data['role'] ?? 'user',
+      deleted: data['deleted'] == true || data['isDeleted'] == true,
+      isBlocked: data['isBlocked'] == true,
       createdAt: (data['createdAt'] as Timestamp?)?.toDate(),
     );
   }
@@ -122,6 +128,8 @@ class UserModel {
               roommateCriteria: roommateCriteria,
             ),
       role: map['role'] ?? 'user',
+      deleted: map['deleted'] == true || map['isDeleted'] == true,
+      isBlocked: map['isBlocked'] == true,
       createdAt: (map['createdAt'] as Timestamp?)?.toDate(),
     );
   }
@@ -168,6 +176,8 @@ class UserModel {
     List<String>? roommateCriteria,
     bool? profileCompleted,
     String? role,
+    bool? deleted,
+    bool? isBlocked,
     DateTime? createdAt,
   }) {
     return UserModel(
@@ -187,6 +197,8 @@ class UserModel {
       roommateCriteria: roommateCriteria ?? this.roommateCriteria,
       profileCompleted: profileCompleted ?? this.profileCompleted,
       role: role ?? this.role,
+      deleted: deleted ?? this.deleted,
+      isBlocked: isBlocked ?? this.isBlocked,
       createdAt: createdAt ?? this.createdAt,
     );
   }

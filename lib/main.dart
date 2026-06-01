@@ -226,6 +226,21 @@ class AuthGate extends StatefulWidget {
 }
 
 class _AuthGateState extends State<AuthGate> {
+  // Tracks whether we already requested a logout for the current error state
+  // so we don't fire it on every rebuild.
+  bool _logoutScheduled = false;
+
+  void _scheduleLogout() {
+    if (_logoutScheduled) return;
+    _logoutScheduled = true;
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      _logoutScheduled = false;
+      if (!mounted) return;
+      final vm = context.read<AuthViewModel>();
+      if (!vm.isLoggingOut) vm.logout();
+    });
+  }
+
   @override
   Widget build(BuildContext context) {
     final authVm = context.watch<AuthViewModel>();
@@ -233,6 +248,7 @@ class _AuthGateState extends State<AuthGate> {
     return StreamBuilder<UserSession?>(
       stream: context.read<UserSessionRepository>().sessionStream,
       builder: (context, snapshot) {
+        // ── Loading ──────────────────────────────────────────────────────────
         if (authVm.isLoggingOut ||
             snapshot.connectionState == ConnectionState.waiting) {
           return const Scaffold(
@@ -240,29 +256,37 @@ class _AuthGateState extends State<AuthGate> {
           );
         }
 
-        // If session stream errored while Firebase Auth still has a user,
-        // force a sign-out so the user can log in cleanly again.
+        // ── Stream error ─────────────────────────────────────────────────────
+        // Only force sign-out for persistent errors while Firebase Auth still
+        // has a user. Uses _scheduleLogout() to avoid calling logout() from
+        // inside build(), which causes lifecycle assertion failures.
         if (snapshot.hasError && authVm.user != null) {
-          WidgetsBinding.instance.addPostFrameCallback((_) async {
-            await context.read<AuthViewModel>().logout();
-          });
+          _scheduleLogout();
           return const Scaffold(
             body: Center(child: CircularProgressIndicator()),
           );
         }
 
+        // ── No session → login ───────────────────────────────────────────────
+        // UserSessionRepository already called logout() for banned/blocked/deleted
+        // users, so null session is the safe steady state → show LoginScreen.
         final session = snapshot.data;
         if (session == null) {
+          _logoutScheduled = false; // Reset for next login
           return const LoginScreen();
         }
 
-        if (session.role == 'banned') {
-          WidgetsBinding.instance.addPostFrameCallback((_) async {
-            await context.read<AuthViewModel>().logout();
-          });
+        // ── Safety net: if session somehow carries a restricted role ─────────
+        // UserSessionRepository should have already signed the user out,
+        // but as a defence-in-depth guard we return LoginScreen without
+        // calling logout() again (it's already in flight).
+        if (session.role == 'banned' ||
+            session.role == 'deleted' ||
+            session.role == 'blocked') {
           return const LoginScreen();
         }
 
+        // ── Route by profile completeness ────────────────────────────────────
         final profile = session.profile;
         if (profile != null && !profile.profileCompleted) {
           return const CompleteProfileIntroScreen();

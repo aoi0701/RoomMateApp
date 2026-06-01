@@ -18,7 +18,12 @@
       "Bash(dir \"e:\\\\RoomMateApp\\\\roommateapp\\\\docs\\\\\")",
       "PowerShell(Copy-Item \"e:\\\\RoomMateApp\\\\roommateapp\\\\docs\\\\RoomMateApp_TestCases_v2.xlsx\" \"e:\\\\RoomMateApp\\\\roommateapp\\\\QA_TestCases.xlsx\")",
       "Bash(Select-Object -Property Name, PSIsContainer)",
-      "Bash(Get-Content *)"
+      "Bash(Get-Content *)",
+      "Bash(node --input-type=module)",
+      "Bash(node -e \"const fs = require\\('fs'\\); const code = fs.readFileSync\\('admin_dashboard/app.js','utf8'\\).replace\\(/^import.*from.*$/gm,''\\); try { new Function\\(code\\); console.log\\('Syntax OK'\\); } catch\\(e\\) { console.error\\('Syntax error:', e.message\\); }\")",
+      "Bash(node -e ' *)",
+      "Bash(npm --version)",
+      "Bash(npm install *)"
     ]
   }
 }
