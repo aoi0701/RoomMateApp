@@ -189,6 +189,7 @@ class ExpenseViewModel extends ViewModelBase {
 
       await _repository.updateExpense(
         expenseId: expenseId,
+        roomGroupId: roomGroupId,
         title: title,
         amount: amount,
         paidBy: paidBy,
@@ -208,10 +209,16 @@ class ExpenseViewModel extends ViewModelBase {
     }
   }
 
-  Future<bool> deleteExpense(String expenseId) async {
+  Future<bool> deleteExpense({
+    required String expenseId,
+    required String roomGroupId,
+  }) async {
     try {
       beginLoad();
-      await _repository.deleteExpense(expenseId);
+      await _repository.deleteExpense(
+        expenseId: expenseId,
+        roomGroupId: roomGroupId,
+      );
       return true;
     } catch (e) {
       setError(e.toString().replaceFirst('Exception: ', ''));

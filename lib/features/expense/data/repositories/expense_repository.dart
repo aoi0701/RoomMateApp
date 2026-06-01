@@ -157,6 +157,7 @@ class ExpenseRepository {
 
   Future<void> updateExpense({
     required String expenseId,
+    required String roomGroupId,
     required String title,
     required double amount,
     required String paidBy,
@@ -172,6 +173,7 @@ class ExpenseRepository {
 
       final oldSharesSnapshot = await _shares
           .where('expenseId', isEqualTo: expenseId)
+          .where('roomGroupId', isEqualTo: roomGroupId)
           .get();
       // Only archive currently-active shares; already-archived shares are untouched.
       final oldShares = oldSharesSnapshot.docs
@@ -208,13 +210,17 @@ class ExpenseRepository {
     }
   }
 
-  Future<void> deleteExpense(String expenseId) async {
+  Future<void> deleteExpense({
+    required String expenseId,
+    required String roomGroupId,
+  }) async {
     try {
       final user = _auth.currentUser;
       if (user == null) throw Exception('Chưa đăng nhập');
 
       final shares = await _shares
           .where('expenseId', isEqualTo: expenseId)
+          .where('roomGroupId', isEqualTo: roomGroupId)
           .get();
 
       final batch = _firestore.batch();

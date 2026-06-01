@@ -210,11 +210,15 @@ class RoommateRequestViewModel extends ChangeNotifier {
       final request = await _repository.acceptRequest(requestId);
 
       try {
+        final ownerName = request.targetName.isNotEmpty ? request.targetName : 'Chủ phòng';
+        final requesterName = request.requesterName.isNotEmpty ? request.requesterName : 'Người thuê';
+        final groupName = 'Nhóm phòng - $ownerName & $requesterName';
+
         await _roomGroupRepository.createGroupAfterAcceptRequest(
           ownerId: request.postOwnerId,
           requesterId: request.requesterId,
           postId: request.postId,
-          groupName: 'Nhóm phòng',
+          groupName: groupName,
         );
       } catch (groupError) {
         try {

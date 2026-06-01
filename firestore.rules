@@ -141,7 +141,10 @@ service cloud.firestore {
     match /expense_shares/{shareId} {
       allow read: if isAuth() && isMemberOf(resource.data.roomGroupId);
       allow create: if isAuth() && isMemberOf(request.resource.data.roomGroupId);
-      allow update: if isAuth() && resource.data.fromUserId == request.auth.uid;
+      allow update: if isAuth() && (
+        resource.data.fromUserId == request.auth.uid ||
+        isMemberOf(resource.data.roomGroupId)
+      );
       allow delete: if isAuth() && isMemberOf(resource.data.roomGroupId);
     }
 

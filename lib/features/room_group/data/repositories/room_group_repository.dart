@@ -48,9 +48,36 @@ class RoomGroupRepository {
           .where('memberIds', arrayContains: userId)
           .orderBy('createdAt', descending: true)
           .get();
-      return snapshot.docs
+      final groups = snapshot.docs
           .map((doc) => RoomGroupModel.fromDocument(doc))
           .toList();
+
+      // Collect all unique member IDs across all groups
+      final allMemberIds = groups
+          .expand((g) => g.memberIds)
+          .toSet()
+          .toList();
+
+      if (allMemberIds.isEmpty) return groups;
+
+      // Batch fetch user names
+      final userDocs = await Future.wait(
+        allMemberIds.map((uid) => _firestore.collection('users').doc(uid).get()),
+      );
+      final nameById = <String, String>{};
+      for (final doc in userDocs) {
+        if (doc.exists) {
+          nameById[doc.id] = (doc.data()?['fullName'] as String?) ?? '';
+        }
+      }
+
+      return groups.map((group) {
+        final names = group.memberIds
+            .map((id) => nameById[id] ?? '')
+            .where((n) => n.isNotEmpty)
+            .toList();
+        return group.copyWith(memberNames: names);
+      }).toList();
     } catch (e) {
       throw Exception('Không thể tải danh sách nhóm: $e');
     }

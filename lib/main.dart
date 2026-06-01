@@ -240,6 +240,17 @@ class _AuthGateState extends State<AuthGate> {
           );
         }
 
+        // If session stream errored while Firebase Auth still has a user,
+        // force a sign-out so the user can log in cleanly again.
+        if (snapshot.hasError && authVm.user != null) {
+          WidgetsBinding.instance.addPostFrameCallback((_) async {
+            await context.read<AuthViewModel>().logout();
+          });
+          return const Scaffold(
+            body: Center(child: CircularProgressIndicator()),
+          );
+        }
+
         final session = snapshot.data;
         if (session == null) {
           return const LoginScreen();

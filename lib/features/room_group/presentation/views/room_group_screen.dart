@@ -44,7 +44,7 @@ class _RoomGroupScreenState extends State<RoomGroupScreen> {
       builder: (ctx) => AlertDialog(
         title: const Text('Giải tán nhóm'),
         content: Text(
-          'Bạn có chắc muốn giải tán nhóm "${group.name}"?\nHành động này không thể hoàn tác.',
+          'Bạn có chắc muốn giải tán nhóm "${group.displayName}"?\nHành động này không thể hoàn tác.',
         ),
         actions: [
           TextButton(
@@ -195,7 +195,7 @@ class _RoomGroupCard extends StatelessWidget {
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  Text(group.name, style: AppTextStyles.labelLg),
+                  Text(group.displayName, style: AppTextStyles.labelLg),
                   const SizedBox(height: 3),
                   Text(
                     '${group.memberIds.length} thành viên',

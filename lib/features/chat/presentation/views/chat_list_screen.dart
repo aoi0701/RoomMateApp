@@ -21,6 +21,14 @@ class _ChatListScreenState extends State<ChatListScreen> {
   int _retryCount = 0;
   Stream<List<ChatConversationModel>>? _conversationsStream;
 
+  @override
+  void initState() {
+    super.initState();
+    // Clear unread badges for all conversations when the user opens the
+    // chat list so the nav badge disappears immediately.
+    context.read<ChatViewModel>().markAllAsRead();
+  }
+
   String _formatTime(DateTime time) {
     final now = DateTime.now();
     final diff = now.difference(time);

@@ -39,14 +39,16 @@ class _ExpenseDetailScreenState extends State<ExpenseDetailScreen> {
     WidgetsBinding.instance.addPostFrameCallback((_) {
       if (!mounted) return;
       context.read<ExpenseViewModel>().loadExpenseShares(
-            expenseId: _expense.id,
-            roomGroupId: _expense.roomGroupId,
-          );
+        expenseId: _expense.id,
+        roomGroupId: _expense.roomGroupId,
+      );
     });
   }
 
   Future<void> _reloadExpense() async {
-    final updated = await context.read<ExpenseViewModel>().getExpenseById(_expense.id);
+    final updated = await context.read<ExpenseViewModel>().getExpenseById(
+      _expense.id,
+    );
     if (updated != null && mounted) {
       setState(() => _expense = updated);
     }
@@ -77,7 +79,10 @@ class _ExpenseDetailScreenState extends State<ExpenseDetailScreen> {
               final vm = context.read<ExpenseViewModel>();
               final messenger = ScaffoldMessenger.of(context);
               final navigator = Navigator.of(context);
-              final success = await vm.deleteExpense(widget.expense.id);
+              final success = await vm.deleteExpense(
+                expenseId: widget.expense.id,
+                roomGroupId: widget.expense.roomGroupId,
+              );
               if (!mounted) return;
               if (success) {
                 navigator.pop();
@@ -90,10 +95,7 @@ class _ExpenseDetailScreenState extends State<ExpenseDetailScreen> {
                 );
               }
             },
-            child: const Text(
-              'Xóa',
-              style: TextStyle(color: AppColors.danger),
-            ),
+            child: const Text('Xóa', style: TextStyle(color: AppColors.danger)),
           ),
         ],
       ),
@@ -322,7 +324,9 @@ class _ExpenseDetailScreenState extends State<ExpenseDetailScreen> {
             icon: Icons.check_circle_outline_rounded,
           )
         else ...[
-          ...vm.shares.where((s) => !s.isArchived).map(
+          ...vm.shares
+              .where((s) => !s.isArchived)
+              .map(
                 (share) => Padding(
                   padding: const EdgeInsets.only(bottom: 12),
                   child: _ShareCard(share: share),
@@ -332,7 +336,9 @@ class _ExpenseDetailScreenState extends State<ExpenseDetailScreen> {
             const SizedBox(height: 8),
             Text('Lịch sử chỉnh sửa', style: AppTextStyles.label),
             const SizedBox(height: 8),
-            ...vm.shares.where((s) => s.isArchived).map(
+            ...vm.shares
+                .where((s) => s.isArchived)
+                .map(
                   (share) => Padding(
                     padding: const EdgeInsets.only(bottom: 12),
                     child: _ShareCard(share: share, isEdited: true),
@@ -356,7 +362,6 @@ class _ShareCard extends StatelessWidget {
     return Opacity(
       opacity: isEdited ? 0.55 : 1.0,
       child: Container(
-        padding: const EdgeInsets.all(16),
         decoration: BoxDecoration(
           color: AppColors.surface,
           borderRadius: BorderRadius.circular(20),
@@ -369,54 +374,71 @@ class _ShareCard extends StatelessWidget {
             ),
           ],
         ),
-        child: Row(
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            Expanded(
+            Padding(
+              padding: const EdgeInsets.fromLTRB(16, 16, 16, 0),
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  Row(
-                    children: [
-                      UserNameText(userId: share.fromUserId),
-                      const Padding(
-                        padding: EdgeInsets.symmetric(horizontal: 8),
-                        child: Icon(
-                          Icons.arrow_forward_rounded,
-                          size: 14,
-                          color: AppColors.textSecondary,
-                        ),
-                      ),
-                      UserNameText(userId: share.toUserId),
-                    ],
+                  // Creditor
+                  _RoleChip(
+                    label: 'Người nhận',
+                    textColor: AppColors.successText,
+                    bgColor: AppColors.successSurface,
                   ),
-                  const SizedBox(height: 6),
+                  const SizedBox(height: 8),
+                  UserNameTile(userId: share.toUserId, avatarSize: 32),
+                  const SizedBox(height: 12),
+                  // Debtor
+                  _RoleChip(
+                    label: 'Người nợ',
+                    textColor: AppColors.dangerText,
+                    bgColor: AppColors.dangerSurface,
+                  ),
+                  const SizedBox(height: 8),
+                  UserNameTile(userId: share.fromUserId, avatarSize: 32),
+                ],
+              ),
+            ),
+            const Padding(
+              padding: EdgeInsets.symmetric(vertical: 14),
+              child: Divider(height: 1, color: AppColors.divider),
+            ),
+            Padding(
+              padding: const EdgeInsets.fromLTRB(16, 0, 16, 16),
+              child: Row(
+                mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                children: [
                   Text(
                     FormatUtils.formatMoney(share.amountOwed),
                     style: AppTextStyles.h3.copyWith(
                       color: isEdited
                           ? AppColors.textSecondary
                           : AppColors.primary,
-                      decoration:
-                          isEdited ? TextDecoration.lineThrough : null,
+                      decoration: isEdited ? TextDecoration.lineThrough : null,
                     ),
                   ),
+                  if (isEdited)
+                    StatusBadge(
+                      label: 'Đã chỉnh sửa',
+                      type: BadgeType.info,
+                      icon: Icons.edit_outlined,
+                    )
+                  else
+                    StatusBadge(
+                      label: share.isPaid ? 'Đã trả' : 'Chưa trả',
+                      type: share.isPaid
+                          ? BadgeType.success
+                          : BadgeType.warning,
+                      icon: share.isPaid
+                          ? Icons.check_circle_outline_rounded
+                          : Icons.schedule_rounded,
+                    ),
                 ],
               ),
             ),
-            if (isEdited)
-              StatusBadge(
-                label: 'Đã chỉnh sửa',
-                type: BadgeType.info,
-                icon: Icons.edit_outlined,
-              )
-            else
-              StatusBadge(
-                label: share.isPaid ? 'Đã trả' : 'Chưa trả',
-                type: share.isPaid ? BadgeType.success : BadgeType.warning,
-                icon: share.isPaid
-                    ? Icons.check_circle_outline_rounded
-                    : Icons.schedule_rounded,
-              ),
           ],
         ),
       ),
@@ -424,3 +446,33 @@ class _ShareCard extends StatelessWidget {
   }
 }
 
+class _RoleChip extends StatelessWidget {
+  final String label;
+  final Color textColor;
+  final Color bgColor;
+
+  const _RoleChip({
+    required this.label,
+    required this.textColor,
+    required this.bgColor,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
+      decoration: BoxDecoration(
+        color: bgColor,
+        borderRadius: BorderRadius.circular(6),
+      ),
+      child: Text(
+        label,
+        style: GoogleFonts.plusJakartaSans(
+          fontSize: 11,
+          fontWeight: FontWeight.w600,
+          color: textColor,
+        ),
+      ),
+    );
+  }
+}

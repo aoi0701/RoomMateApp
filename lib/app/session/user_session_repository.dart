@@ -67,6 +67,6 @@ class UserSessionRepository {
       },
     );
 
-    return controller.stream;
+    return controller.stream.asBroadcastStream();
   }
 }

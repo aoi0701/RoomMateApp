@@ -8,6 +8,8 @@ class RoomGroupModel {
   final String postId;
   final DateTime? createdAt;
   final String status;
+  // Populated at runtime from users collection, not stored in Firestore
+  final List<String> memberNames;
 
   const RoomGroupModel({
     required this.id,
@@ -17,7 +19,13 @@ class RoomGroupModel {
     required this.postId,
     this.createdAt,
     required this.status,
+    this.memberNames = const [],
   });
+
+  String get displayName {
+    if (memberNames.isEmpty) return name;
+    return 'Nhóm phòng - ${memberNames.join(' & ')}';
+  }
 
   factory RoomGroupModel.fromDocument(
     DocumentSnapshot<Map<String, dynamic>> doc,
@@ -55,6 +63,7 @@ class RoomGroupModel {
     String? postId,
     DateTime? createdAt,
     String? status,
+    List<String>? memberNames,
   }) {
     return RoomGroupModel(
       id: id ?? this.id,
@@ -64,6 +73,7 @@ class RoomGroupModel {
       postId: postId ?? this.postId,
       createdAt: createdAt ?? this.createdAt,
       status: status ?? this.status,
+      memberNames: memberNames ?? this.memberNames,
     );
   }
 }

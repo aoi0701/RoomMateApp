@@ -259,6 +259,44 @@ class ChatRepository {
     _conversationStreams.clear();
   }
 
+  /// Fetches all conversations for the current user and resets every
+  /// non-zero [unreadCount] to zero in a single multi-path update.
+  ///
+  /// This does NOT mark individual messages as [isRead] because the per-
+  /// conversation [markAsRead] (called when the user opens a chat) handles
+  /// that.  Clearing [unreadCount] here is sufficient to remove the badge;
+  /// the next time the user opens a conversation, [markAsRead] will catch
+  /// up on message-level read status.
+  Future<void> markAllAsRead() async {
+    final user = _currentUser;
+    if (user == null) return;
+
+    final snapshot = await _db
+        .ref('user_conversations/${user.uid}')
+        .get()
+        .timeout(const Duration(seconds: 10));
+
+    if (!snapshot.exists || snapshot.value == null) return;
+    final raw = snapshot.value;
+    if (raw is! Map) return;
+
+    final updates = <String, dynamic>{};
+    for (final entry in raw.entries) {
+      final convId = entry.key as String;
+      final convData = entry.value;
+      if (convData is! Map) continue;
+      final unreadCount = convData['unreadCount'];
+      if (unreadCount is num && unreadCount > 0) {
+        updates[
+            'user_conversations/${user.uid}/$convId/unreadCount'] = 0;
+      }
+    }
+
+    if (updates.isNotEmpty) {
+      await _db.ref().update(updates).timeout(const Duration(seconds: 10));
+    }
+  }
+
   Future<void> markAsRead(String conversationId) async {
     final user = _currentUser;
     if (user == null) return;

@@ -16,7 +16,9 @@
       "Bash(dir \"e:\\\\RoomMateApp\\\\roommateapp\\\\docs\\\\RoomMateApp_TestCases.xlsx\")",
       "Bash(dir \"e:\\\\RoomMateApp\\\\roommateapp\\\\docs\\\\RoomMateApp_TestCases_v2.xlsx\")",
       "Bash(dir \"e:\\\\RoomMateApp\\\\roommateapp\\\\docs\\\\\")",
-      "PowerShell(Copy-Item \"e:\\\\RoomMateApp\\\\roommateapp\\\\docs\\\\RoomMateApp_TestCases_v2.xlsx\" \"e:\\\\RoomMateApp\\\\roommateapp\\\\QA_TestCases.xlsx\")"
+      "PowerShell(Copy-Item \"e:\\\\RoomMateApp\\\\roommateapp\\\\docs\\\\RoomMateApp_TestCases_v2.xlsx\" \"e:\\\\RoomMateApp\\\\roommateapp\\\\QA_TestCases.xlsx\")",
+      "Bash(Select-Object -Property Name, PSIsContainer)",
+      "Bash(Get-Content *)"
     ]
   }
 }

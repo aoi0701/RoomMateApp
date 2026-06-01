@@ -68,6 +68,14 @@ class ChatViewModel extends ChangeNotifier {
 
   void clearSession() => _repository.clearStreamCaches();
 
+  Future<void> markAllAsRead() async {
+    try {
+      await _repository.markAllAsRead();
+    } catch (e) {
+      debugPrint('[ChatViewModel] markAllAsRead failed: $e');
+    }
+  }
+
   Future<void> markAsRead(String conversationId) async {
     try {
       await _repository.markAsRead(conversationId);

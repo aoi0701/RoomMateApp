@@ -146,6 +146,7 @@ class RoommateRequestRepository {
       inviteType: data['inviteType'] == 'profile_invite'
           ? RoommateInviteType.profileInvite
           : RoommateInviteType.postRequest,
+      targetName: data['targetName'] ?? '',
       createdAt: (data['createdAt'] as Timestamp?)?.toDate(),
     );
   }
