@@ -326,6 +326,9 @@ class _UserHomeScreenState extends State<UserHomeScreen> {
                       context
                           .read<HomeSearchFilterViewModel>()
                           .resetFilter(clearSaved: false);
+                      context.read<PostListViewModel>().applyFilter(
+                            const RoomSearchFilterModel(),
+                          );
                     } else if (index == 1) {
                       Navigator.push(
                         context,

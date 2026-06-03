@@ -37,12 +37,22 @@ class PostsFeedSectionWidget extends StatelessWidget {
             }
 
             if (vm.errorMessage != null) {
+              final isIndexBuilding = vm.errorMessage!.contains('index') &&
+                  (vm.errorMessage!.contains('being built') ||
+                      vm.errorMessage!.contains('currently') ||
+                      vm.errorMessage!.contains('requires an index'));
               return Padding(
                 padding: const EdgeInsets.symmetric(horizontal: 20),
                 child: _InlineMessage(
-                  icon: Icons.error_outline_rounded,
-                  title: 'Không tải được bài đăng',
-                  subtitle: vm.errorMessage!,
+                  icon: isIndexBuilding
+                      ? Icons.hourglass_top_rounded
+                      : Icons.error_outline_rounded,
+                  title: isIndexBuilding
+                      ? 'Đang chuẩn bị dữ liệu'
+                      : 'Không tải được bài đăng',
+                  subtitle: isIndexBuilding
+                      ? 'Hệ thống đang được thiết lập, vui lòng thử lại sau vài phút.'
+                      : vm.errorMessage!,
                 ),
               );
             }
