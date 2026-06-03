@@ -16,6 +16,7 @@ class PostModel {
   final String imageUrl;
   final List<String> imageUrls;
   final String ownerId;
+  final String status;
   final DateTime? createdAt;
   final DateTime? updatedAt;
 
@@ -35,6 +36,7 @@ class PostModel {
     required this.imageUrl,
     required this.imageUrls,
     required this.ownerId,
+    this.status = 'active',
     this.createdAt,
     this.updatedAt,
   });
@@ -93,6 +95,7 @@ class PostModel {
       imageUrl: fallbackImageUrl,
       imageUrls: parseImageUrls(rawImageUrls, fallbackImageUrl),
       ownerId: data['ownerId'] ?? '',
+      status: data['status'] as String? ?? 'active',
       createdAt: (data['createdAt'] as Timestamp?)?.toDate(),
       updatedAt: (data['updatedAt'] as Timestamp?)?.toDate(),
     );
@@ -137,6 +140,7 @@ class PostModel {
     String? imageUrl,
     List<String>? imageUrls,
     String? ownerId,
+    String? status,
     DateTime? createdAt,
     DateTime? updatedAt,
   }) {
@@ -156,6 +160,7 @@ class PostModel {
       imageUrl: imageUrl ?? this.imageUrl,
       imageUrls: imageUrls ?? this.imageUrls,
       ownerId: ownerId ?? this.ownerId,
+      status: status ?? this.status,
       createdAt: createdAt ?? this.createdAt,
       updatedAt: updatedAt ?? this.updatedAt,
     );

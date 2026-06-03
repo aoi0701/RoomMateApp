@@ -263,6 +263,17 @@ class PostRepository {
     return PostsPageResult(posts: posts, nextCursor: nextCursor);
   }
 
+  Future<Set<String>> fetchHiddenOwnerIds() async {
+    final results = await Future.wait([
+      _firestore.collection('users').where('deleted', isEqualTo: true).get(),
+      _firestore.collection('users').where('isBlocked', isEqualTo: true).get(),
+    ]);
+    return {
+      for (final snap in results)
+        for (final doc in snap.docs) doc.id,
+    };
+  }
+
   Stream<List<PostModel>> getPostsByUser(String uid) {
     return _firestore
         .collection('posts')

@@ -14,6 +14,7 @@ class PostListViewModel extends ViewModelBase {
 
   List<PostModel> _posts = [];
   DocumentSnapshot<Map<String, dynamic>>? _lastCursor;
+  Set<String> _hiddenOwnerIds = {};
 
   bool _isLoadingMore = false;
   bool _hasMore = false;
@@ -24,12 +25,14 @@ class PostListViewModel extends ViewModelBase {
   /// Firestore handles province, district, roomType, price range, and single
   /// amenity. Keyword and multi-amenity AND-logic are applied here in memory
   /// on the already-narrowed result set.
+  /// Posts from deleted or blocked owners are also excluded.
   List<PostModel> get filteredPosts {
     final kw = _activeFilter.keyword.trim().toLowerCase();
     final amenities = _activeFilter.amenities;
-    if (kw.isEmpty && amenities.length <= 1) return _posts;
 
     return _posts.where((post) {
+      if (post.status == 'hidden') return false;
+      if (_hiddenOwnerIds.contains(post.ownerId)) return false;
       if (kw.isNotEmpty) {
         final found = post.title.toLowerCase().contains(kw) ||
             post.location.toLowerCase().contains(kw) ||
@@ -52,7 +55,13 @@ class PostListViewModel extends ViewModelBase {
   PostListViewModel({required PostRepository repository})
       : _repository = repository,
         super(initialLoading: true) {
+    _loadHiddenOwnerIds();
     _subscribeFirstPage();
+  }
+
+  Future<void> _loadHiddenOwnerIds() async {
+    _hiddenOwnerIds = await _repository.fetchHiddenOwnerIds();
+    notifyListeners();
   }
 
   /// Cancels the current stream, resets all pagination state, and restarts
@@ -64,6 +73,7 @@ class PostListViewModel extends ViewModelBase {
     _lastCursor = null;
     _hasMore = false;
     setLoading(true);
+    _loadHiddenOwnerIds();
     _subscribeFirstPage();
   }
 
