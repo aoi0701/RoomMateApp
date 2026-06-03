@@ -66,23 +66,12 @@ class _LoginScreenState extends State<LoginScreen> {
 
     if (!mounted) return;
 
-    if (role != null) {
-      if (role == 'banned') {
-        await vm.logout();
-        if (!mounted) return;
-        ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(
-            content: Text('Tài khoản của bạn đã bị khóa. Vui lòng liên hệ hỗ trợ.'),
-          ),
-        );
-        return;
-      }
-      // AuthGate handles navigation automatically when session is valid.
-    } else {
+    if (role == null) {
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(content: Text(vm.errorMessage ?? 'Đăng nhập thất bại')),
       );
     }
+    // AuthGate handles navigation automatically when session is valid.
   }
 
   @override

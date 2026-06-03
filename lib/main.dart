@@ -27,7 +27,6 @@ import 'features/post/presentation/viewmodels/post_list_viewmodel.dart';
 import 'features/post/presentation/viewmodels/post_viewmodel.dart';
 import 'features/profile/data/repositories/user_profile_repository.dart';
 import 'features/profile/presentation/viewmodels/user_profile_viewmodel.dart';
-import 'features/profile/presentation/views/complete_profile_intro_screen.dart';
 import 'features/room_group/data/repositories/room_group_repository.dart';
 import 'features/room_group/presentation/viewmodels/room_group_viewmodel.dart';
 import 'features/roommate/data/repositories/roommate_request_repository.dart';
@@ -284,12 +283,6 @@ class _AuthGateState extends State<AuthGate> {
             session.role == 'deleted' ||
             session.role == 'blocked') {
           return const LoginScreen();
-        }
-
-        // ── Route by profile completeness ────────────────────────────────────
-        final profile = session.profile;
-        if (profile != null && !profile.profileCompleted) {
-          return const CompleteProfileIntroScreen();
         }
 
         return const UserHomeScreen();

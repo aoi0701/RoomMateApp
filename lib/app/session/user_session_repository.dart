@@ -32,6 +32,12 @@ class UserSessionRepository {
     late StreamController<UserSession?> controller;
     StreamSubscription<User?>? authSub;
     StreamSubscription<dynamic>? innerSub;
+    // Guards against a race where Firebase fires a spurious authStateChanges
+    // event (e.g. a background token-refresh completes) between the moment we
+    // call logout() and the moment Firebase confirms sign-out.  Without this
+    // flag the listener would restart, detect isBlocked again, call logout()
+    // again — creating an infinite sign-out / sign-in loop.
+    bool kickedOut = false;
 
     void cancelInner() {
       innerSub?.cancel();
@@ -42,27 +48,28 @@ class UserSessionRepository {
       onListen: () {
         authSub = _authRepository.authStateChanges().listen(
           (user) {
-            // Cancel any previous real-time listener (switchMap semantics).
             cancelInner();
 
             if (user == null) {
+              kickedOut = false; // Reset so a fresh login works normally.
               controller.add(null);
               return;
             }
 
-            // Ensure Firestore document exists for new users (Google sign-in, etc.),
-            // then subscribe to real-time changes on that document.
-            //
-            // Guard: if logout() was called while ensureUserDocument was in flight
-            // (e.g. getUserRole() in login() detected isBlocked), the authSub above
-            // already ran cancelInner() before innerSub was assigned — creating a
-            // zombie listener. Re-check currentUser before starting the stream.
+            // A spurious re-sign-in arrived while we are waiting for Firebase
+            // to confirm the sign-out we already requested.  Force another
+            // logout and bail — do NOT restart the Firestore listener.
+            if (kickedOut) {
+              _authRepository.logout().ignore();
+              return;
+            }
+
             _authRepository.ensureUserDocument(user).then((_) {
               if (_authRepository.currentUser?.uid != user.uid) return;
+              if (kickedOut) return;
+
               innerSub = _profileRepository
                   .getUserProfileStream(user.uid)
-                  // Silently drop Firestore permission errors that occur
-                  // during/after sign-out (rules deny reads for signed-out users).
                   .handleError((_) {})
                   .listen(
                 (snap) {
@@ -77,11 +84,16 @@ class UserSessionRepository {
                   final isBanned = role == 'banned';
 
                   // ── Block / Delete / Ban detected ────────────────────────
-                  // Stop the listener first so no further events arrive,
-                  // then sign out fire-and-forget — Firebase Auth state
-                  // change will propagate null to this stream automatically.
+                  // 1. Set kickedOut flag first so any spurious auth event
+                  //    that fires during sign-out does not restart the listener.
+                  // 2. Emit null immediately so AuthGate shows LoginScreen
+                  //    right away without waiting for Firebase to confirm
+                  //    sign-out (avoids PERMISSION_DENIED flash on home screen).
+                  // 3. Fire logout() in the background.
                   if (isDeleted || isBlocked || isBanned) {
+                    kickedOut = true;
                     cancelInner();
+                    if (!controller.isClosed) controller.add(null);
                     _authRepository.logout().ignore();
                     return;
                   }
@@ -104,6 +116,7 @@ class UserSessionRepository {
         cancelInner();
         authSub?.cancel();
         authSub = null;
+        kickedOut = false;
       },
     );
 

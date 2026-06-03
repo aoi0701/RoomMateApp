@@ -14,7 +14,11 @@ class AuthViewModel extends ViewModelBase {
 
   AuthViewModel({required AuthRepository repository})
       : _repository = repository {
-    _authSubscription = _repository.authStateChanges().listen((_) {
+    _authSubscription = _repository.authStateChanges().listen((user) {
+      if (user == null && _isLoggingOut) {
+        _isLoggingOut = false;
+        setLoading(false);
+      }
       notifyListeners();
     });
   }
@@ -45,7 +49,7 @@ class AuthViewModel extends ViewModelBase {
         setError('Tài khoản đã bị vô hiệu hóa. Vui lòng liên hệ hỗ trợ.');
         return null;
       }
-      if (role == 'blocked') {
+      if (role == 'blocked' || role == 'banned') {
         await _repository.logout();
         setError('Tài khoản của bạn đã bị khóa. Vui lòng liên hệ hỗ trợ.');
         return null;
@@ -154,17 +158,17 @@ class AuthViewModel extends ViewModelBase {
   Future<void> logout() async {
     if (_isLoggingOut) return;
 
-    try {
-      _isLoggingOut = true;
-      beginLoad();
+    _isLoggingOut = true;
+    notifyListeners();
 
+    try {
       await WidgetsBinding.instance.endOfFrame;
       await _repository.logout();
+      // _isLoggingOut stays true until the auth state listener confirms
+      // user == null, preventing AuthGate from briefly re-rendering UserHomeScreen.
     } catch (e) {
-      setError('Đăng xuất thất bại: $e');
-    } finally {
       _isLoggingOut = false;
-      setLoading(false);
+      setError('Đăng xuất thất bại: $e');
     }
   }
 

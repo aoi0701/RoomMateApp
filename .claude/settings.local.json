@@ -23,7 +23,13 @@
       "Bash(node -e \"const fs = require\\('fs'\\); const code = fs.readFileSync\\('admin_dashboard/app.js','utf8'\\).replace\\(/^import.*from.*$/gm,''\\); try { new Function\\(code\\); console.log\\('Syntax OK'\\); } catch\\(e\\) { console.error\\('Syntax error:', e.message\\); }\")",
       "Bash(node -e ' *)",
       "Bash(npm --version)",
-      "Bash(npm install *)"
+      "Bash(npm install *)",
+      "mcp__ide__getDiagnostics",
+      "Bash(python3 *)",
+      "mcp__ide__executeCode",
+      "Bash(awk -F: '{print $1}')",
+      "Bash(grep -rn \"import.*\\\\.\\\\./\\\\.\\\\./\\\\.\\\\./post\" . --include=\"*.dart\")",
+      "Bash(grep -rn \"import.*\\\\.\\\\./\\\\.\\\\./\\\\.\\\\./profile\" . --include=\"*.dart\")"
     ]
   }
 }

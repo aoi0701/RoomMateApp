@@ -5,7 +5,6 @@ import '../../../../core/theme/app_colors.dart';
 import '../../../../core/theme/app_text_styles.dart';
 import '../../../../core/widgets/app_button.dart';
 import '../../../auth/presentation/viewmodels/auth_viewmodel.dart';
-import '../../../home/presentation/views/user_home_screen.dart';
 import '../../data/mappers/habit_roommate_criteria_mapper.dart';
 import '../../data/models/profile_habit_model.dart';
 import '../viewmodels/user_profile_viewmodel.dart';
@@ -134,11 +133,7 @@ class _CompleteProfileFlowScreenState extends State<CompleteProfileFlowScreen> {
       return;
     }
 
-    Navigator.pushAndRemoveUntil(
-      context,
-      MaterialPageRoute(builder: (_) => const UserHomeScreen()),
-      (route) => false,
-    );
+    Navigator.pop(context);
   }
 
   void _showMessage(String message) {

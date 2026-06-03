@@ -6,20 +6,20 @@
   <title>RoomMate Admin</title>
   <link rel="preconnect" href="https://fonts.googleapis.com" />
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
-  <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700;800&family=DM+Mono:wght@400;500&display=swap" rel="stylesheet" />
+  <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet" />
   <link rel="stylesheet" href="style.css" />
 </head>
 <body>
 
-<!-- LOGIN PAGE -->
+<!-- ===== LOGIN PAGE ===== -->
 <div id="loginPage" class="login-page">
   <div class="login-card">
     <div class="login-header">
       <img src="logo.png" alt="RoomMate" class="login-logo" />
-      <h1>RoomMate</h1>
+      <h1>RoomMate Admin</h1>
       <p>Trang quản trị hệ thống</p>
     </div>
-    <form id="loginForm">
+    <form id="loginForm" autocomplete="off">
       <div class="form-group">
         <label for="loginEmail">Email</label>
         <input type="email" id="loginEmail" placeholder="admin@roommate.com" required autocomplete="email" />
@@ -37,369 +37,589 @@
   </div>
 </div>
 
-<!-- DASHBOARD PAGE -->
+<!-- ===== DASHBOARD PAGE ===== -->
 <div id="dashboardPage" class="dashboard-page" hidden>
 
-  <!-- Sidebar -->
+  <!-- SIDEBAR -->
   <aside class="sidebar" id="sidebar">
     <div class="sidebar-logo">
-      <img src="logo.png" alt="RoomMate" class="sidebar-logo-img" />
-      <span>RoomMate</span>
+      <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2">
+        <path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/>
+        <polyline points="9 22 9 12 15 12 15 22"/>
+      </svg>
+      <span>RoomMate Admin</span>
     </div>
 
     <nav class="sidebar-nav" id="sidebarNav">
       <a href="#" class="nav-item active" data-section="dashboard">
-        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="7" height="7"/><rect x="14" y="3" width="7" height="7"/><rect x="14" y="14" width="7" height="7"/><rect x="3" y="14" width="7" height="7"/></svg>
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+          <rect x="3" y="3" width="7" height="7"/><rect x="14" y="3" width="7" height="7"/>
+          <rect x="14" y="14" width="7" height="7"/><rect x="3" y="14" width="7" height="7"/>
+        </svg>
         Dashboard
       </a>
       <a href="#" class="nav-item" data-section="users">
-        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg>
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+          <path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/>
+          <path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/>
+        </svg>
         Người dùng
         <span class="nav-badge" id="badgeUsers">0</span>
       </a>
       <a href="#" class="nav-item" data-section="posts">
-        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/></svg>
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+          <path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/>
+          <polyline points="9 22 9 12 15 12 15 22"/>
+        </svg>
         Bài đăng
         <span class="nav-badge" id="badgePosts">0</span>
       </a>
       <a href="#" class="nav-item" data-section="requests">
-        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><line x1="23" y1="11" x2="17" y2="11"/><line x1="20" y1="8" x2="20" y2="14"/></svg>
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+          <path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/>
+          <line x1="23" y1="11" x2="17" y2="11"/><line x1="20" y1="8" x2="20" y2="14"/>
+        </svg>
         Yêu cầu ghép phòng
         <span class="nav-badge nav-badge-warn" id="badgeRequests">0</span>
       </a>
       <a href="#" class="nav-item" data-section="groups">
-        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/><circle cx="12" cy="14" r="2"/></svg>
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+          <path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/><circle cx="12" cy="14" r="2"/>
+        </svg>
         Nhóm phòng
         <span class="nav-badge" id="badgeGroups">0</span>
       </a>
-      <a href="#" class="nav-item" data-section="reports">
-        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"/><line x1="12" y1="9" x2="12" y2="13"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg>
-        Báo cáo
-        <span class="nav-badge nav-badge-danger" id="badgeReports">0</span>
+      <a href="#" class="nav-item" data-section="expenses">
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+          <line x1="12" y1="1" x2="12" y2="23"/><path d="M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"/>
+        </svg>
+        Chi tiêu nhóm
+        <span class="nav-badge" id="badgeExpenses">0</span>
+      </a>
+      <a href="#" class="nav-item" data-section="analytics">
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+          <polyline points="22 12 18 12 15 21 9 3 6 12 2 12"/>
+        </svg>
+        Thống kê &amp; phân tích
       </a>
     </nav>
 
     <div class="sidebar-bottom">
       <div class="admin-info">
-        <div class="admin-avatar">
-          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>
-        </div>
         <div>
           <div class="admin-name" id="adminName">Admin</div>
           <div class="admin-role">Quản trị viên</div>
         </div>
       </div>
       <button class="btn-signout" id="btnSignOut">
-        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/><polyline points="16 17 21 12 16 7"/><line x1="21" y1="12" x2="9" y2="12"/></svg>
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+          <path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/>
+          <polyline points="16 17 21 12 16 7"/><line x1="21" y1="12" x2="9" y2="12"/>
+        </svg>
         Đăng xuất
       </button>
     </div>
   </aside>
 
-  <!-- Overlay for mobile sidebar -->
+  <!-- SIDEBAR OVERLAY (mobile) -->
   <div class="sidebar-overlay" id="sidebarOverlay"></div>
 
-  <!-- Main -->
-  <main class="main-content">
+  <!-- MAIN -->
+  <div class="main-content">
 
-    <!-- Header -->
+    <!-- TOPBAR -->
     <header class="top-header">
       <div class="header-left">
         <button class="hamburger" id="hamburger" aria-label="Menu">
-          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="3" y1="6" x2="21" y2="6"/><line x1="3" y1="12" x2="21" y2="12"/><line x1="3" y1="18" x2="21" y2="18"/></svg>
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <line x1="3" y1="6" x2="21" y2="6"/><line x1="3" y1="12" x2="21" y2="12"/><line x1="3" y1="18" x2="21" y2="18"/>
+          </svg>
         </button>
         <span class="header-title" id="headerTitle">Dashboard</span>
       </div>
       <div class="header-right">
         <span class="header-date" id="headerDate"></span>
         <button class="btn-refresh" id="btnRefresh" title="Làm mới dữ liệu">
-          <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="23 4 23 10 17 10"/><path d="M20.49 15a9 9 0 1 1-.06-5.96"/></svg>
+          <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <polyline points="23 4 23 10 17 10"/>
+            <path d="M20.49 15a9 9 0 1 1-.06-5.96"/>
+          </svg>
           Làm mới
         </button>
       </div>
     </header>
 
-    <!-- SECTION: DASHBOARD -->
-    <section id="section-dashboard" class="section active">
-      <div class="stat-grid">
-        <div class="stat-card stat-card--blue">
-          <div class="stat-icon">
-            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg>
+    <!-- MAIN CONTENT AREA -->
+    <main class="content">
+
+      <!-- ===== SECTION: DASHBOARD ===== -->
+      <div id="section-dashboard" class="section active">
+        <div class="section-header">
+          <h2>Tổng quan</h2>
+        </div>
+
+        <div class="stat-grid">
+          <div class="stat-card stat-card--blue">
+            <div class="stat-icon">
+              <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/>
+                <path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/>
+              </svg>
+            </div>
+            <div class="stat-body">
+              <div class="stat-value mono" id="statUsers">—</div>
+              <div class="stat-label">Tổng người dùng</div>
+            </div>
           </div>
-          <div class="stat-body">
-            <div class="stat-value mono" id="statUsers">—</div>
-            <div class="stat-label">Tổng người dùng</div>
+          <div class="stat-card stat-card--green">
+            <div class="stat-icon">
+              <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/>
+                <polyline points="9 22 9 12 15 12 15 22"/>
+              </svg>
+            </div>
+            <div class="stat-body">
+              <div class="stat-value mono" id="statPosts">—</div>
+              <div class="stat-label">Tổng bài đăng</div>
+            </div>
+          </div>
+          <div class="stat-card stat-card--warn">
+            <div class="stat-icon">
+              <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/>
+              </svg>
+            </div>
+            <div class="stat-body">
+              <div class="stat-value mono" id="statPendingReqs">—</div>
+              <div class="stat-label">Yêu cầu đang chờ</div>
+            </div>
+          </div>
+          <div class="stat-card stat-card--purple">
+            <div class="stat-icon">
+              <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/><circle cx="12" cy="14" r="2"/>
+              </svg>
+            </div>
+            <div class="stat-body">
+              <div class="stat-value mono" id="statGroups">—</div>
+              <div class="stat-label">Nhóm phòng hoạt động</div>
+            </div>
+          </div>
+          <div class="stat-card stat-card--teal">
+            <div class="stat-icon">
+              <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <line x1="12" y1="1" x2="12" y2="23"/><path d="M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"/>
+              </svg>
+            </div>
+            <div class="stat-body">
+              <div class="stat-value mono" id="statExpenses">—</div>
+              <div class="stat-label">Số khoản chi</div>
+            </div>
+          </div>
+          <div class="stat-card stat-card--teal">
+            <div class="stat-icon">
+              <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <polyline points="23 6 13.5 15.5 8.5 10.5 1 18"/><polyline points="17 6 23 6 23 12"/>
+              </svg>
+            </div>
+            <div class="stat-body">
+              <div class="stat-value mono" id="statTotalAmount">—</div>
+              <div class="stat-label">Tổng tiền ghi nhận</div>
+            </div>
+          </div>
+          <div class="stat-card stat-card--warn">
+            <div class="stat-icon">
+              <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <path d="M12 1v22"/><path d="M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"/>
+              </svg>
+            </div>
+            <div class="stat-body">
+              <div class="stat-value mono" id="statUnpaidDebts">—</div>
+              <div class="stat-label">Công nợ chưa thanh toán</div>
+            </div>
+          </div>
+          <div class="stat-card stat-card--green">
+            <div class="stat-body" style="display:flex;align-items:center;gap:16px;">
+              <div style="flex-shrink:0;">
+                <div class="stat-value mono" style="font-size:22px;" id="statMatchRate">—</div>
+                <div class="stat-label">Tỉ lệ ghép thành công</div>
+              </div>
+              <div style="flex:1;height:8px;background:var(--border);border-radius:4px;overflow:hidden;">
+                <div id="statMatchRateBar" style="height:100%;width:0%;background:var(--success);border-radius:4px;transition:width .6s ease;"></div>
+              </div>
+            </div>
           </div>
         </div>
-        <div class="stat-card stat-card--green">
-          <div class="stat-icon">
-            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/></svg>
+
+        <div class="chart-grid">
+          <div class="card">
+            <div class="card-header">Người dùng đăng ký (6 tháng gần nhất)</div>
+            <div class="chart-wrap"><canvas id="chartUsersByMonth"></canvas></div>
           </div>
-          <div class="stat-body">
-            <div class="stat-value mono" id="statPosts">—</div>
-            <div class="stat-label">Tổng bài đăng</div>
-          </div>
-        </div>
-        <div class="stat-card stat-card--warn">
-          <div class="stat-icon">
-            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
-          </div>
-          <div class="stat-body">
-            <div class="stat-value mono" id="statPendingReqs">—</div>
-            <div class="stat-label">Yêu cầu đang chờ</div>
+          <div class="card">
+            <div class="card-header">Bài đăng theo trạng thái</div>
+            <div class="chart-wrap"><canvas id="chartPostsByStatus"></canvas></div>
           </div>
         </div>
-        <div class="stat-card stat-card--purple">
-          <div class="stat-icon">
-            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/><circle cx="12" cy="14" r="2"/></svg>
+
+        <div class="two-col-grid">
+          <div class="card">
+            <div class="card-header">Bài đăng gần đây</div>
+            <div class="table-scroll">
+              <table class="data-table">
+                <thead><tr><th>Tiêu đề</th><th>Khu vực</th><th>Giá</th><th>Ngày</th></tr></thead>
+                <tbody id="recentPosts"></tbody>
+              </table>
+            </div>
           </div>
-          <div class="stat-body">
-            <div class="stat-value mono" id="statGroups">—</div>
-            <div class="stat-label">Nhóm phòng hoạt động</div>
-          </div>
-        </div>
-        <div class="stat-card stat-card--danger">
-          <div class="stat-icon">
-            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"/><line x1="12" y1="9" x2="12" y2="13"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg>
-          </div>
-          <div class="stat-body">
-            <div class="stat-value mono" id="statReportsPending">—</div>
-            <div class="stat-label">Báo cáo chưa xử lý</div>
-          </div>
-        </div>
-        <div class="stat-card stat-card--teal">
-          <div class="stat-icon">
-            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="22 12 18 12 15 21 9 3 6 12 2 12"/></svg>
-          </div>
-          <div class="stat-body">
-            <div class="stat-value mono" id="statMatchRate">—</div>
-            <div class="stat-label">Tỷ lệ ghép thành công</div>
+          <div class="card">
+            <div class="card-header">Yêu cầu gần đây</div>
+            <div class="table-scroll">
+              <table class="data-table">
+                <thead><tr><th>Người gửi</th><th>Trạng thái</th><th>Ngày</th></tr></thead>
+                <tbody id="recentRequests"></tbody>
+              </table>
+            </div>
           </div>
         </div>
       </div>
 
-      <div class="chart-grid">
-        <div class="card">
-          <div class="card-header">Người dùng đăng ký (6 tháng gần nhất)</div>
-          <div class="chart-wrap"><canvas id="chartUsersByMonth"></canvas></div>
+      <!-- ===== SECTION: USERS ===== -->
+      <div id="section-users" class="section">
+        <div class="section-header">
+          <h2>Quản lý người dùng</h2>
+          <div class="section-actions">
+            <button class="btn btn-primary" id="btnAddUser">
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
+                <line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/>
+              </svg>
+              Thêm người dùng
+            </button>
+          </div>
         </div>
+
+        <div class="section-toolbar">
+          <input type="text" class="search-input" id="searchUsers" placeholder="Tìm theo tên, email…" />
+          <select class="filter-select" id="filterUserRole">
+            <option value="">Tất cả vai trò</option>
+            <option value="user">User</option>
+            <option value="admin">Admin</option>
+          </select>
+          <select class="filter-select" id="filterUserStatus">
+            <option value="">Tất cả trạng thái</option>
+            <option value="active">Hoạt động</option>
+            <option value="blocked">Đã khóa</option>
+          </select>
+          <button class="btn-clear" id="clearUsersFilter">Xóa bộ lọc</button>
+        </div>
+
         <div class="card">
-          <div class="card-header">Bài đăng theo trạng thái</div>
-          <div class="chart-wrap"><canvas id="chartPostsByStatus"></canvas></div>
+          <div class="table-scroll">
+            <table class="data-table sortable" id="usersTableEl">
+              <thead>
+                <tr>
+                  <th data-col="fullName">Người dùng <span class="sort-icon">↕</span></th>
+                  <th>Email</th>
+                  <th>Vai trò</th>
+                  <th data-col="isBlocked">Trạng thái <span class="sort-icon">↕</span></th>
+                  <th data-col="postCount">Bài đăng <span class="sort-icon">↕</span></th>
+                  <th data-col="createdAt">Ngày tạo <span class="sort-icon">↕</span></th>
+                  <th>Hành động</th>
+                </tr>
+              </thead>
+              <tbody id="usersTable"></tbody>
+            </table>
+          </div>
+          <div id="usersPagination" class="pagination"></div>
         </div>
       </div>
 
-      <div class="two-col-grid">
+      <!-- ===== SECTION: POSTS ===== -->
+      <div id="section-posts" class="section">
+        <div class="section-header">
+          <h2>Quản lý bài đăng</h2>
+        </div>
+
+        <div class="section-toolbar">
+          <input type="text" class="search-input" id="searchPosts" placeholder="Tìm theo tiêu đề, khu vực…" />
+          <select class="filter-select" id="filterPostStatus">
+            <option value="">Tất cả trạng thái</option>
+            <option value="active">Đang hiển thị</option>
+            <option value="pending">Chờ duyệt</option>
+            <option value="hidden">Đã ẩn</option>
+            <option value="sold">Hết phòng</option>
+          </select>
+          <select class="filter-select" id="filterPostProvince">
+            <option value="">Tất cả tỉnh/thành</option>
+          </select>
+          <button class="btn-clear" id="clearPostsFilter">Xóa bộ lọc</button>
+        </div>
+
         <div class="card">
-          <div class="card-header">Bài đăng gần đây</div>
+          <div class="table-scroll">
+            <table class="data-table" id="postsTableEl">
+              <thead>
+                <tr>
+                  <th>Tiêu đề</th>
+                  <th>Người đăng</th>
+                  <th>Khu vực</th>
+                  <th>Giá</th>
+                  <th>Loại phòng</th>
+                  <th>Trạng thái</th>
+                  <th data-col="createdAt">Ngày đăng <span class="sort-icon">↕</span></th>
+                  <th>Hành động</th>
+                </tr>
+              </thead>
+              <tbody id="postsTable"></tbody>
+            </table>
+          </div>
+          <div id="postsPagination" class="pagination"></div>
+        </div>
+      </div>
+
+      <!-- ===== SECTION: REQUESTS ===== -->
+      <div id="section-requests" class="section">
+        <div class="section-header">
+          <h2>Yêu cầu ghép phòng</h2>
+        </div>
+
+        <div class="section-toolbar">
+          <input type="text" class="search-input" id="searchRequests" placeholder="Tìm người gửi, bài đăng…" />
+          <select class="filter-select" id="filterReqStatus">
+            <option value="">Tất cả trạng thái</option>
+            <option value="pending">Đang chờ</option>
+            <option value="accepted">Đã chấp nhận</option>
+            <option value="rejected">Đã từ chối</option>
+          </select>
+          <button class="btn-clear" id="clearRequestsFilter">Xóa bộ lọc</button>
+        </div>
+
+        <div class="card">
           <div class="table-scroll">
             <table class="data-table">
-              <thead><tr><th>Tiêu đề</th><th>Khu vực</th><th>Giá</th><th>Ngày</th></tr></thead>
-              <tbody id="recentPosts"></tbody>
+              <thead>
+                <tr>
+                  <th>Người gửi</th>
+                  <th>Bài đăng</th>
+                  <th>Chủ phòng</th>
+                  <th>Lời nhắn</th>
+                  <th>Trạng thái</th>
+                  <th>Ngày gửi</th>
+                  <th>Hành động</th>
+                </tr>
+              </thead>
+              <tbody id="requestsTable"></tbody>
+            </table>
+          </div>
+          <div id="requestsPagination" class="pagination"></div>
+        </div>
+      </div>
+
+      <!-- ===== SECTION: GROUPS ===== -->
+      <div id="section-groups" class="section">
+        <div class="section-header">
+          <h2>Nhóm phòng</h2>
+        </div>
+
+        <div class="section-toolbar">
+          <input type="text" class="search-input" id="searchGroups" placeholder="Tìm nhóm phòng…" />
+          <select class="filter-select" id="filterGroupStatus">
+            <option value="">Tất cả trạng thái</option>
+            <option value="active">Hoạt động</option>
+            <option value="inactive">Không hoạt động</option>
+          </select>
+          <button class="btn-clear" id="clearGroupsFilter">Xóa bộ lọc</button>
+        </div>
+
+        <div class="card">
+          <div class="table-scroll">
+            <table class="data-table">
+              <thead>
+                <tr>
+                  <th>Tên nhóm</th>
+                  <th>Thành viên</th>
+                  <th>Bài đăng</th>
+                  <th>Trạng thái</th>
+                  <th>Ngày tạo</th>
+                  <th>Hành động</th>
+                </tr>
+              </thead>
+              <tbody id="groupsTable"></tbody>
+            </table>
+          </div>
+          <div id="groupsPagination" class="pagination"></div>
+        </div>
+      </div>
+
+      <!-- ===== SECTION: EXPENSES ===== -->
+      <div id="section-expenses" class="section">
+        <div class="section-header">
+          <h2>Chi tiêu nhóm</h2>
+          <div class="section-actions">
+            <button class="btn btn-primary" id="btnAddExpense">
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
+                <line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/>
+              </svg>
+              Thêm chi tiêu
+            </button>
+          </div>
+        </div>
+
+        <div class="section-toolbar">
+          <input type="text" class="search-input" id="searchExpenses" placeholder="Tìm theo tiêu đề, nhóm…" />
+          <select class="filter-select" id="filterExpenseGroup">
+            <option value="">Tất cả nhóm phòng</option>
+          </select>
+          <button class="btn-clear" id="clearExpensesFilter">Xóa bộ lọc</button>
+        </div>
+
+        <div class="card">
+          <div class="table-scroll">
+            <table class="data-table" id="expensesTableEl">
+              <thead>
+                <tr>
+                  <th>Tiêu đề</th>
+                  <th>Nhóm phòng</th>
+                  <th>Người trả</th>
+                  <th>Số tiền</th>
+                  <th>Loại chia</th>
+                  <th>Số người</th>
+                  <th data-col="createdAt">Ngày tạo <span class="sort-icon">↕</span></th>
+                  <th>Hành động</th>
+                </tr>
+              </thead>
+              <tbody id="expensesTable"></tbody>
+            </table>
+          </div>
+          <div id="expensesPagination" class="pagination"></div>
+        </div>
+
+        <!-- Công nợ chưa thanh toán -->
+        <div id="debtSection" class="card">
+          <div class="card-header">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="margin-right:6px;vertical-align:middle">
+              <path d="M12 1v22"/><path d="M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"/>
+            </svg>
+            Công nợ chưa thanh toán
+          </div>
+          <div class="table-scroll">
+            <table class="data-table" id="debtTable">
+              <thead>
+                <tr>
+                  <th>Người nợ</th>
+                  <th>Chủ nợ</th>
+                  <th>Nhóm phòng</th>
+                  <th>Số tiền</th>
+                  <th>Số khoản</th>
+                  <th>Ngày tạo</th>
+                  <th>Hành động</th>
+                </tr>
+              </thead>
+              <tbody id="debtTableBody"></tbody>
             </table>
           </div>
         </div>
-        <div class="card">
-          <div class="card-header">Yêu cầu gần đây</div>
-          <div class="table-scroll">
-            <table class="data-table">
-              <thead><tr><th>Người gửi</th><th>Trạng thái</th><th>Ngày</th></tr></thead>
-              <tbody id="recentRequests"></tbody>
-            </table>
+      </div>
+
+
+      <!-- ===== SECTION: ANALYTICS ===== -->
+      <div id="section-analytics" class="section">
+        <div class="section-header">
+          <h2>Thống kê &amp; phân tích</h2>
+        </div>
+
+        <!-- Overview cards -->
+        <div class="stat-grid">
+          <div class="stat-card stat-card--blue">
+            <div class="stat-icon">
+              <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <polyline points="22 12 18 12 15 21 9 3 6 12 2 12"/>
+              </svg>
+            </div>
+            <div class="stat-body">
+              <div class="stat-value mono" id="analyticsMatchRate">—</div>
+              <div class="stat-label">Tỉ lệ ghép thành công</div>
+            </div>
+          </div>
+          <div class="stat-card stat-card--green">
+            <div class="stat-icon">
+              <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <line x1="12" y1="1" x2="12" y2="23"/><path d="M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"/>
+              </svg>
+            </div>
+            <div class="stat-body">
+              <div class="stat-value mono" id="analyticsAvgExpense">—</div>
+              <div class="stat-label">Trung bình chi tiêu / nhóm</div>
+            </div>
+          </div>
+          <div class="stat-card stat-card--warn">
+            <div class="stat-icon">
+              <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/>
+                <polyline points="9 22 9 12 15 12 15 22"/>
+              </svg>
+            </div>
+            <div class="stat-body">
+              <div class="stat-value mono" id="analyticsTopProvince">—</div>
+              <div class="stat-label">Tỉnh có nhiều bài đăng nhất</div>
+            </div>
+          </div>
+          <div class="stat-card stat-card--purple">
+            <div class="stat-icon">
+              <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/>
+              </svg>
+            </div>
+            <div class="stat-body">
+              <div class="stat-value mono" id="analyticsTopHabit">—</div>
+              <div class="stat-label">Habit phổ biến nhất</div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Charts -->
+        <div class="chart-grid">
+          <div class="card">
+            <div class="card-header">Đăng ký theo tháng</div>
+            <div class="chart-wrap"><canvas id="chartUserGrowth"></canvas></div>
+          </div>
+          <div class="card">
+            <div class="card-header">Bài đăng theo tỉnh / thành</div>
+            <div class="chart-wrap"><canvas id="chartPostsByProvince"></canvas></div>
+          </div>
+        </div>
+
+        <div class="chart-grid">
+          <div class="card">
+            <div class="card-header">Habits phổ biến</div>
+            <div class="chart-wrap" style="height:260px"><canvas id="chartHabits"></canvas></div>
+          </div>
+          <div class="card">
+            <div class="card-header">Trạng thái yêu cầu</div>
+            <div class="chart-wrap" style="height:260px"><canvas id="chartRequestStatus"></canvas></div>
           </div>
         </div>
       </div>
-    </section>
 
-    <!-- SECTION: USERS -->
-    <section id="section-users" class="section">
-      <div class="section-toolbar">
-        <input type="text" class="search-input" id="searchUsers" placeholder="Tìm theo tên, email…" />
-        <select class="filter-select" id="filterUserRole">
-          <option value="">Tất cả vai trò</option>
-          <option value="user">User</option>
-          <option value="admin">Admin</option>
-        </select>
-        <select class="filter-select" id="filterUserStatus">
-          <option value="">Tất cả trạng thái</option>
-          <option value="active">Hoạt động</option>
-          <option value="blocked">Đã khóa</option>
-        </select>
-        <button class="btn-clear" id="clearUsersFilter">Xóa bộ lọc</button>
-      </div>
-      <div class="card">
-        <div class="table-scroll">
-          <table class="data-table sortable" id="usersTableEl">
-            <thead>
-              <tr>
-                <th data-col="fullName">Người dùng <span class="sort-icon">↕</span></th>
-                <th>Email</th>
-                <th>Vai trò</th>
-                <th data-col="isBlocked">Trạng thái <span class="sort-icon">↕</span></th>
-                <th data-col="postCount">Bài đăng <span class="sort-icon">↕</span></th>
-                <th data-col="reportCount">Báo cáo <span class="sort-icon">↕</span></th>
-                <th data-col="createdAt">Ngày tạo <span class="sort-icon">↕</span></th>
-                <th>Hành động</th>
-              </tr>
-            </thead>
-            <tbody id="usersTable"></tbody>
-          </table>
-        </div>
-        <div id="usersPagination" class="pagination"></div>
-      </div>
-    </section>
-
-    <!-- SECTION: POSTS -->
-    <section id="section-posts" class="section">
-      <div class="section-toolbar">
-        <input type="text" class="search-input" id="searchPosts" placeholder="Tìm theo tiêu đề, khu vực…" />
-        <select class="filter-select" id="filterPostStatus">
-          <option value="">Tất cả trạng thái</option>
-          <option value="active">Đang hiển thị</option>
-          <option value="pending">Chờ duyệt</option>
-          <option value="hidden">Đã ẩn</option>
-          <option value="sold">Hết phòng</option>
-        </select>
-        <select class="filter-select" id="filterPostProvince">
-          <option value="">Tất cả tỉnh/thành</option>
-        </select>
-        <button class="btn-clear" id="clearPostsFilter">Xóa bộ lọc</button>
-      </div>
-      <div class="card">
-        <div class="table-scroll">
-          <table class="data-table" id="postsTableEl">
-            <thead>
-              <tr>
-                <th>Tiêu đề</th>
-                <th>Người đăng</th>
-                <th>Khu vực</th>
-                <th>Giá</th>
-                <th>Trạng thái</th>
-                <th data-col="createdAt">Ngày đăng <span class="sort-icon">↕</span></th>
-                <th>Hành động</th>
-              </tr>
-            </thead>
-            <tbody id="postsTable"></tbody>
-          </table>
-        </div>
-        <div id="postsPagination" class="pagination"></div>
-      </div>
-    </section>
-
-    <!-- SECTION: REQUESTS -->
-    <section id="section-requests" class="section">
-      <div class="section-toolbar">
-        <input type="text" class="search-input" id="searchRequests" placeholder="Tìm người gửi, bài đăng…" />
-        <select class="filter-select" id="filterReqStatus">
-          <option value="">Tất cả trạng thái</option>
-          <option value="pending">Đang chờ</option>
-          <option value="accepted">Đã chấp nhận</option>
-          <option value="rejected">Đã từ chối</option>
-        </select>
-        <button class="btn-clear" id="clearRequestsFilter">Xóa bộ lọc</button>
-      </div>
-      <div class="card">
-        <div class="table-scroll">
-          <table class="data-table">
-            <thead>
-              <tr>
-                <th>Người gửi</th>
-                <th>Bài đăng</th>
-                <th>Chủ bài</th>
-                <th>Tin nhắn</th>
-                <th>Trạng thái</th>
-                <th>Ngày gửi</th>
-                <th>Hành động</th>
-              </tr>
-            </thead>
-            <tbody id="requestsTable"></tbody>
-          </table>
-        </div>
-        <div id="requestsPagination" class="pagination"></div>
-      </div>
-    </section>
-
-    <!-- SECTION: GROUPS -->
-    <section id="section-groups" class="section">
-      <div class="section-toolbar">
-        <input type="text" class="search-input" id="searchGroups" placeholder="Tìm nhóm phòng…" />
-        <select class="filter-select" id="filterGroupStatus">
-          <option value="">Tất cả trạng thái</option>
-          <option value="active">Hoạt động</option>
-          <option value="inactive">Không hoạt động</option>
-        </select>
-        <button class="btn-clear" id="clearGroupsFilter">Xóa bộ lọc</button>
-      </div>
-      <div class="card">
-        <div class="table-scroll">
-          <table class="data-table">
-            <thead>
-              <tr>
-                <th>ID nhóm</th>
-                <th>Thành viên</th>
-                <th>Bài đăng liên quan</th>
-                <th>Trạng thái</th>
-                <th>Tạo bởi</th>
-                <th>Ngày tạo</th>
-                <th>Hành động</th>
-              </tr>
-            </thead>
-            <tbody id="groupsTable"></tbody>
-          </table>
-        </div>
-        <div id="groupsPagination" class="pagination"></div>
-      </div>
-    </section>
-
-    <!-- SECTION: REPORTS -->
-    <section id="section-reports" class="section">
-      <div class="section-toolbar">
-        <input type="text" class="search-input" id="searchReports" placeholder="Tìm theo lý do, người báo cáo…" />
-        <select class="filter-select" id="filterReportStatus">
-          <option value="">Tất cả trạng thái</option>
-          <option value="pending">Chờ xử lý</option>
-          <option value="resolved">Đã xử lý</option>
-          <option value="dismissed">Bỏ qua</option>
-        </select>
-        <button class="btn-clear" id="clearReportsFilter">Xóa bộ lọc</button>
-      </div>
-      <div class="card">
-        <div class="table-scroll">
-          <table class="data-table">
-            <thead>
-              <tr>
-                <th>Người báo cáo</th>
-                <th>Đối tượng bị báo cáo</th>
-                <th>Lý do</th>
-                <th>Trạng thái</th>
-                <th>Ngày gửi</th>
-                <th>Hành động</th>
-              </tr>
-            </thead>
-            <tbody id="reportsTable"></tbody>
-          </table>
-        </div>
-        <div id="reportsPagination" class="pagination"></div>
-      </div>
-    </section>
-
-  </main>
+    </main>
+  </div>
 </div>
 
-<!-- MODAL -->
+<!-- ===== MODAL CHUNG ===== -->
 <div id="modal" class="modal-overlay" hidden>
   <div class="modal-box" role="dialog" aria-modal="true">
     <button class="modal-close" id="modalClose" aria-label="Đóng">
-      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
+        <line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/>
+      </svg>
     </button>
     <div id="modalContent"></div>
   </div>
 </div>
 
-<!-- CONFIRM MODAL -->
+<!-- ===== CONFIRM MODAL ===== -->
 <div id="confirmModal" class="modal-overlay" hidden>
   <div class="modal-box modal-box--sm" role="dialog" aria-modal="true">
-    <div id="confirmIcon" class="confirm-icon"></div>
     <h3 id="confirmTitle" class="confirm-title"></h3>
     <p id="confirmMessage" class="confirm-message"></p>
     <div class="confirm-actions">
@@ -409,10 +629,10 @@
   </div>
 </div>
 
-<!-- TOAST CONTAINER -->
+<!-- ===== TOAST CONTAINER ===== -->
 <div id="toastContainer" class="toast-container" aria-live="polite"></div>
 
-<!-- Chart.js 4.x (must load before app.js) -->
+<!-- Chart.js 4.x -->
 <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
 <script type="module" src="app.js"></script>
 </body>
