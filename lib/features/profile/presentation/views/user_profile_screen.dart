@@ -18,6 +18,7 @@ import '../../../home/presentation/viewmodels/roommate_profile_viewmodel.dart';
 import '../../data/models/profile_habit_model.dart';
 import '../../data/models/user_model.dart';
 import '../viewmodels/user_profile_viewmodel.dart';
+import 'account_settings_screen.dart';
 import 'complete_profile_flow_screen.dart';
 import 'edit_habits_screen.dart';
 
@@ -274,12 +275,6 @@ class _UserProfileScreenState extends State<UserProfileScreen> {
                                   ),
                           ),
                         ),
-                        const SizedBox(height: 12),
-                        _buildDeleteAccountButton(
-                          context,
-                          uid: currentUser.uid,
-                          profileVm: profileVm,
-                        ),
                       ],
                     ],
                   ),
@@ -329,7 +324,38 @@ class _UserProfileScreenState extends State<UserProfileScreen> {
             style: AppTextStyles.h2,
           ),
         ),
-        const SizedBox(width: 44),
+        if (isCurrentUserProfile)
+          Container(
+            width: 44,
+            height: 44,
+            decoration: BoxDecoration(
+              color: AppColors.surface,
+              borderRadius: BorderRadius.circular(14),
+              border: Border.all(color: AppColors.border),
+              boxShadow: const [
+                BoxShadow(
+                  color: Color(0x0A000000),
+                  blurRadius: 12,
+                  offset: Offset(0, 4),
+                ),
+              ],
+            ),
+            child: IconButton(
+              onPressed: () => Navigator.push(
+                context,
+                MaterialPageRoute(
+                  builder: (_) => const AccountSettingsScreen(),
+                ),
+              ),
+              icon: const Icon(
+                Icons.settings_outlined,
+                color: AppColors.textPrimary,
+                size: 20,
+              ),
+            ),
+          )
+        else
+          const SizedBox(width: 44),
       ],
     );
   }
@@ -617,89 +643,6 @@ class _UserProfileScreenState extends State<UserProfileScreen> {
         ],
       ),
     );
-  }
-
-  Widget _buildDeleteAccountButton(
-    BuildContext context, {
-    required String uid,
-    required UserProfileViewModel profileVm,
-  }) {
-    return Consumer<UserProfileViewModel>(
-      builder: (context, vm, _) {
-        return SizedBox(
-          width: double.infinity,
-          height: 48,
-          child: OutlinedButton(
-            onPressed: vm.isDeletingAccount
-                ? null
-                : () => _confirmDeleteAccount(uid, profileVm),
-            style: OutlinedButton.styleFrom(
-              foregroundColor: AppColors.danger,
-              side: BorderSide(
-                color: AppColors.danger.withValues(alpha: 0.4),
-              ),
-              shape: RoundedRectangleBorder(
-                borderRadius: BorderRadius.circular(18),
-              ),
-            ),
-            child: vm.isDeletingAccount
-                ? const SizedBox(
-                    width: 20,
-                    height: 20,
-                    child: CircularProgressIndicator(
-                      strokeWidth: 2,
-                      color: AppColors.danger,
-                    ),
-                  )
-                : Text(
-                    'Xóa tài khoản',
-                    style: AppTextStyles.buttonSm.copyWith(
-                      color: AppColors.danger,
-                    ),
-                  ),
-          ),
-        );
-      },
-    );
-  }
-
-  Future<void> _confirmDeleteAccount(
-    String uid,
-    UserProfileViewModel profileVm,
-  ) async {
-    final confirmed = await showDialog<bool>(
-      context: context,
-      builder: (ctx) => AlertDialog(
-        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
-        title: const Text('Xóa tài khoản'),
-        content: const Text(
-          'Tài khoản của bạn sẽ bị vô hiệu hóa và bạn sẽ bị đăng xuất ngay lập tức.\n\nBạn có chắc chắn muốn xóa tài khoản không?',
-        ),
-        actions: [
-          TextButton(
-            onPressed: () => Navigator.pop(ctx, false),
-            child: const Text('Hủy'),
-          ),
-          TextButton(
-            style: TextButton.styleFrom(foregroundColor: AppColors.danger),
-            onPressed: () => Navigator.pop(ctx, true),
-            child: const Text('Xóa tài khoản'),
-          ),
-        ],
-      ),
-    );
-
-    if (confirmed != true || !mounted) return;
-
-    await profileVm.deleteAccount(uid);
-
-    if (!mounted) return;
-    if (profileVm.errorMessage != null) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text(profileVm.errorMessage!)),
-      );
-    }
-    // UserSessionRepository sẽ tự detect deleted=true và kick user ra login.
   }
 
   Future<void> _openEditHabits() async {

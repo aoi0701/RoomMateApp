@@ -63,6 +63,37 @@ class UserProfileViewModel extends ChangeNotifier {
     }
   }
 
+  bool isUpdatingInfo = false;
+
+  Future<bool> updateBasicInfo({
+    required String uid,
+    required String fullName,
+    required String phone,
+    required String address,
+    required String gender,
+  }) async {
+    try {
+      isUpdatingInfo = true;
+      errorMessage = null;
+      notifyListeners();
+      await _repository.updateBasicInfo(
+        uid: uid,
+        fullName: fullName,
+        phone: phone,
+        address: address,
+        gender: gender,
+      );
+      _profileCache.remove(uid);
+      return true;
+    } catch (e) {
+      errorMessage = 'Không thể cập nhật thông tin: $e';
+      return false;
+    } finally {
+      isUpdatingInfo = false;
+      notifyListeners();
+    }
+  }
+
   bool isDeletingAccount = false;
 
   Future<bool> deleteAccount(String uid) async {

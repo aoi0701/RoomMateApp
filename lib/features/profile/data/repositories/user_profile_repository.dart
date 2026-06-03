@@ -93,6 +93,22 @@ class UserProfileRepository {
     }, SetOptions(merge: true));
   }
 
+  Future<void> updateBasicInfo({
+    required String uid,
+    required String fullName,
+    required String phone,
+    required String address,
+    required String gender,
+  }) async {
+    await _firestore.collection('users').doc(uid).update({
+      'fullName': fullName.trim(),
+      'phone': phone.trim(),
+      'address': address.trim(),
+      'gender': gender.trim(),
+      'updatedAt': FieldValue.serverTimestamp(),
+    });
+  }
+
   Future<void> softDeleteAccount(String uid) async {
     await _firestore.collection('users').doc(uid).update({
       'deleted': true,

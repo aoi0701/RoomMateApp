@@ -928,47 +928,50 @@ function renderUsersSection() {
     const tdActions = document.createElement('td');
     tdActions.className = 'action-cell';
 
-    if (isBlocked) {
-      const btnUnlock = document.createElement('button');
-      btnUnlock.className = 'btn btn-success';
-      btnUnlock.textContent = 'M\u1edf kh\xf3a';
-      btnUnlock.addEventListener('click', () => {
-        showConfirmModal(
-          'M\u1edf kh\xf3a t\xe0i kho\u1ea3n',
-          `M\u1edf kh\xf3a t\xe0i kho\u1ea3n "${u.fullName || u.email}"?`,
-          () => toggleBlockUser(u.uid, false)
-        );
-      });
-      tdActions.append(btnUnlock);
-    } else {
-      const btnView = document.createElement('button');
-      btnView.className = 'btn btn-view';
-      btnView.innerHTML = '<svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></svg> Chi ti\u1ebft';
-      btnView.addEventListener('click', () => viewUser(u.uid));
+    const btnView = document.createElement('button');
+    btnView.className = 'btn btn-view';
+    btnView.innerHTML = '<svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></svg> Chi ti\u1ebft';
+    btnView.addEventListener('click', () => viewUser(u.uid));
+    tdActions.append(btnView);
 
-      const btnLock = document.createElement('button');
-      btnLock.className = 'btn btn-warn';
-      btnLock.textContent = 'Kh\xf3a';
-      btnLock.addEventListener('click', () => {
-        showConfirmModal(
-          'Kh\xf3a t\xe0i kho\u1ea3n',
-          `Kh\xf3a t\xe0i kho\u1ea3n "${u.fullName || u.email}"?`,
-          () => toggleBlockUser(u.uid, true)
-        );
-      });
+    if (!isAdmin) {
+      if (isBlocked) {
+        const btnUnlock = document.createElement('button');
+        btnUnlock.className = 'btn btn-success';
+        btnUnlock.textContent = 'M\u1edf kh\xf3a';
+        btnUnlock.addEventListener('click', () => {
+          showConfirmModal(
+            'M\u1edf kh\xf3a t\xe0i kho\u1ea3n',
+            `M\u1edf kh\xf3a t\xe0i kho\u1ea3n "${u.fullName || u.email}"?`,
+            () => toggleBlockUser(u.uid, false)
+          );
+        });
+        tdActions.append(btnUnlock);
+      } else {
+        const btnLock = document.createElement('button');
+        btnLock.className = 'btn btn-warn';
+        btnLock.textContent = 'Kh\xf3a';
+        btnLock.addEventListener('click', () => {
+          showConfirmModal(
+            'Kh\xf3a t\xe0i kho\u1ea3n',
+            `Kh\xf3a t\xe0i kho\u1ea3n "${u.fullName || u.email}"?`,
+            () => toggleBlockUser(u.uid, true)
+          );
+        });
 
-      const btnDel = document.createElement('button');
-      btnDel.className = 'btn btn-del';
-      btnDel.innerHTML = '<svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="3 6 5 6 21 6"/><path d="M19 6l-1 14H6L5 6"/><path d="M10 11v6M14 11v6"/><path d="M9 6V4h6v2"/></svg>';
-      btnDel.title = 'X\xf3a m\u1ec1m';
-      btnDel.addEventListener('click', () => {
-        showConfirmModal(
-          'V\xf4 hi\u1ec7u h\xf3a t\xe0i kho\u1ea3n',
-          `V\xf4 hi\u1ec7u h\xf3a t\xe0i kho\u1ea3n "${u.fullName || u.email}"? T\xe0i kho\u1ea3n s\u1ebd b\u1ecb \u1ea9n v\xe0 user s\u1ebd b\u1ecb \u0111\u0103ng xu\u1ea5t t\u1ef1 \u0111\u1ed9ng.`,
-          () => softDeleteUser(u.uid)
-        );
-      });
-      tdActions.append(btnView, btnLock, btnDel);
+        const btnDel = document.createElement('button');
+        btnDel.className = 'btn btn-del';
+        btnDel.innerHTML = '<svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="3 6 5 6 21 6"/><path d="M19 6l-1 14H6L5 6"/><path d="M10 11v6M14 11v6"/><path d="M9 6V4h6v2"/></svg>';
+        btnDel.title = 'X\xf3a m\u1ec1m';
+        btnDel.addEventListener('click', () => {
+          showConfirmModal(
+            'V\xf4 hi\u1ec7u h\xf3a t\xe0i kho\u1ea3n',
+            `V\xf4 hi\u1ec7u h\xf3a t\xe0i kho\u1ea3n "${u.fullName || u.email}"? T\xe0i kho\u1ea3n s\u1ebd b\u1ecb \u1ea9n v\xe0 user s\u1ebd b\u1ecb \u0111\u0103ng xu\u1ea5t t\u1ef1 \u0111\u1ed9ng.`,
+            () => softDeleteUser(u.uid)
+          );
+        });
+        tdActions.append(btnLock, btnDel);
+      }
     }
     tr.append(tdUser, tdEmail, tdRole, tdStatus, tdPosts, tdDate, tdActions);
     tbody.appendChild(tr);
