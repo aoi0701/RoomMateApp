@@ -108,7 +108,7 @@ class _RegisterScreenState extends State<RegisterScreen> {
 
     if (success) {
       ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('Đăng ký thành công')),
+        const SnackBar(content: Text('Đăng ký thành công! Vui lòng đăng nhập.')),
       );
       Navigator.pop(context);
     } else {

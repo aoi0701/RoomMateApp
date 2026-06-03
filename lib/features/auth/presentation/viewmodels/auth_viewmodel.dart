@@ -126,6 +126,9 @@ class AuthViewModel extends ViewModelBase {
         gender: gender,
       );
 
+      // Sign out immediately so the user must log in manually.
+      await _repository.logout();
+
       return true;
     } on FirebaseAuthException catch (e) {
       setError(_mapFirebaseAuthError(e));

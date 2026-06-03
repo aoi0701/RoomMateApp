@@ -70,10 +70,24 @@ class UserSessionRepository {
 
               innerSub = _profileRepository
                   .getUserProfileStream(user.uid)
-                  .handleError((_) {})
+                  .handleError((error) {
+                    // PERMISSION_DENIED means the user was blocked/deleted and
+                    // security rules revoked access — treat as a kick-out.
+                    kickedOut = true;
+                    cancelInner();
+                    if (!controller.isClosed) controller.add(null);
+                    _authRepository.logout().ignore();
+                  })
                   .listen(
                 (snap) {
-                  if (!snap.exists) return;
+                  if (!snap.exists) {
+                    // Document was hard-deleted (e.g. from Firebase console).
+                    kickedOut = true;
+                    cancelInner();
+                    if (!controller.isClosed) controller.add(null);
+                    _authRepository.logout().ignore();
+                    return;
+                  }
 
                   final data = snap.data()!;
 

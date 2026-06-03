@@ -93,6 +93,14 @@ class UserProfileRepository {
     }, SetOptions(merge: true));
   }
 
+  Future<void> softDeleteAccount(String uid) async {
+    await _firestore.collection('users').doc(uid).update({
+      'deleted': true,
+      'isBlocked': true,
+      'deletedAt': FieldValue.serverTimestamp(),
+    });
+  }
+
   bool _computeProfileCompleted({
     required String address,
     required String gender,

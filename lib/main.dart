@@ -225,9 +225,9 @@ class AuthGate extends StatefulWidget {
 }
 
 class _AuthGateState extends State<AuthGate> {
-  // Tracks whether we already requested a logout for the current error state
-  // so we don't fire it on every rebuild.
   bool _logoutScheduled = false;
+  // True once the user has a valid session, so we can detect forced kick-outs.
+  bool _sessionWasActive = false;
 
   void _scheduleLogout() {
     if (_logoutScheduled) return;
@@ -237,6 +237,14 @@ class _AuthGateState extends State<AuthGate> {
       if (!mounted) return;
       final vm = context.read<AuthViewModel>();
       if (!vm.isLoggingOut) vm.logout();
+    });
+  }
+
+  // Pop all pushed routes so the user sees LoginScreen immediately.
+  void _schedulePopToRoot() {
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      if (!mounted) return;
+      Navigator.of(context).popUntil((route) => route.isFirst);
     });
   }
 
@@ -256,9 +264,6 @@ class _AuthGateState extends State<AuthGate> {
         }
 
         // ── Stream error ─────────────────────────────────────────────────────
-        // Only force sign-out for persistent errors while Firebase Auth still
-        // has a user. Uses _scheduleLogout() to avoid calling logout() from
-        // inside build(), which causes lifecycle assertion failures.
         if (snapshot.hasError && authVm.user != null) {
           _scheduleLogout();
           return const Scaffold(
@@ -267,24 +272,31 @@ class _AuthGateState extends State<AuthGate> {
         }
 
         // ── No session → login ───────────────────────────────────────────────
-        // UserSessionRepository already called logout() for banned/blocked/deleted
-        // users, so null session is the safe steady state → show LoginScreen.
         final session = snapshot.data;
         if (session == null) {
-          _logoutScheduled = false; // Reset for next login
+          _logoutScheduled = false;
+          // If the user was active and lost their session (forced kick-out from
+          // web admin or Firebase console), pop all pushed routes so they see
+          // LoginScreen immediately instead of whatever screen they were on.
+          if (_sessionWasActive) {
+            _sessionWasActive = false;
+            _schedulePopToRoot();
+          }
           return const LoginScreen();
         }
 
-        // ── Safety net: if session somehow carries a restricted role ─────────
-        // UserSessionRepository should have already signed the user out,
-        // but as a defence-in-depth guard we return LoginScreen without
-        // calling logout() again (it's already in flight).
+        // ── Safety net ───────────────────────────────────────────────────────
         if (session.role == 'banned' ||
             session.role == 'deleted' ||
             session.role == 'blocked') {
+          if (_sessionWasActive) {
+            _sessionWasActive = false;
+            _schedulePopToRoot();
+          }
           return const LoginScreen();
         }
 
+        _sessionWasActive = true;
         return const UserHomeScreen();
       },
     );

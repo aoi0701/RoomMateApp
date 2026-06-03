@@ -63,6 +63,25 @@ class UserProfileViewModel extends ChangeNotifier {
     }
   }
 
+  bool isDeletingAccount = false;
+
+  Future<bool> deleteAccount(String uid) async {
+    try {
+      isDeletingAccount = true;
+      errorMessage = null;
+      notifyListeners();
+
+      await _repository.softDeleteAccount(uid);
+      return true;
+    } catch (e) {
+      errorMessage = 'Không thể xóa tài khoản: $e';
+      return false;
+    } finally {
+      isDeletingAccount = false;
+      notifyListeners();
+    }
+  }
+
   Future<bool> completeProfile({
     required String uid,
     required String phone,
