@@ -17,7 +17,7 @@ import '../viewmodels/expense_viewmodel.dart';
 
 class ExpenseFormScreen extends StatefulWidget {
   final RoomGroupModel roomGroup;
-  /// null → add new expense; non-null → edit existing expense.
+  // null → thêm mới khoản chi; non-null → chỉnh sửa khoản chi đã có
   final ExpenseModel? expense;
 
   const ExpenseFormScreen({

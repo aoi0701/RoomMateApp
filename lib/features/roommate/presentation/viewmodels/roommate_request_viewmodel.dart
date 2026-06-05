@@ -6,6 +6,7 @@ import '../../../room_group/data/repositories/room_group_repository.dart';
 import '../../data/models/roommate_request_model.dart';
 import '../../data/repositories/roommate_request_repository.dart';
 
+// ViewModel quản lý yêu cầu ghép phòng: lắng nghe realtime, chấp nhận/từ chối/xóa, tạo nhóm phòng
 class RoommateRequestViewModel extends ChangeNotifier {
   final RoommateRequestRepository _repository;
   final RoomGroupRepository _roomGroupRepository;
@@ -96,6 +97,7 @@ class RoommateRequestViewModel extends ChangeNotifier {
   Stream<List<RoommateRequestModel>> get sentProfileInvitesStream =>
       _repository.getSentProfileInvitesStream();
 
+  // Hủy tất cả subscription và xóa sạch state khi đăng xuất
   Future<void> resetSession() async {
     await _receivedSubscription?.cancel();
     await _sentSubscription?.cancel();
@@ -112,6 +114,7 @@ class RoommateRequestViewModel extends ChangeNotifier {
     notifyListeners();
   }
 
+  // Đảm bảo đang lắng nghe yêu cầu đã nhận; bỏ qua nếu đã subscribe cho đúng user
   void ensureReceivedRequestsListening() {
     final currentUid = _repository.currentUser?.uid;
 
@@ -137,6 +140,7 @@ class RoommateRequestViewModel extends ChangeNotifier {
     listenToReceivedRequests();
   }
 
+  // Đảm bảo đang lắng nghe yêu cầu đã gửi; bỏ qua nếu đã subscribe cho đúng user
   void ensureSentRequestsListening() {
     final currentUid = _repository.currentUser?.uid;
 
@@ -202,6 +206,7 @@ class RoommateRequestViewModel extends ChangeNotifier {
     );
   }
 
+  // Chấp nhận yêu cầu rồi tạo nhóm phòng; nếu tạo nhóm lỗi sẽ tự hoàn tác acceptRequest
   Future<bool> acceptRequest(String requestId) async {
     try {
       _setLoading(true);

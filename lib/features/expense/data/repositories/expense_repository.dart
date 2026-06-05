@@ -35,6 +35,7 @@ class ExpenseRepository {
     }
   }
 
+  // Thêm khoản chi kèm danh sách chia tiền trong 1 batch transaction (hoặc cùng thất bại)
   Future<ExpenseModel> addExpenseWithShares(
     ExpenseModel expense,
     List<ExpenseShareModel> shares,
@@ -104,6 +105,7 @@ class ExpenseRepository {
     }
   }
 
+  // Lấy danh sách công nợ mà user đang NỢ người khác (chưa thanh toán, chưa archive)
   Future<List<ExpenseShareModel>> getDebtsOwedByUser({
     required String userId,
     required String roomGroupId,
@@ -123,6 +125,7 @@ class ExpenseRepository {
     }
   }
 
+  // Lấy danh sách công nợ mà người khác đang NỢ user này (chưa thanh toán, chưa archive)
   Future<List<ExpenseShareModel>> getDebtsOwedToUser({
     required String userId,
     required String roomGroupId,
@@ -155,6 +158,7 @@ class ExpenseRepository {
 
   // ── new ─────────────────────────────────────────────────────────────────────
 
+  // Cập nhật khoản chi: archive shares cũ (không xóa để giữ lịch sử), tạo shares mới trong 1 batch
   Future<void> updateExpense({
     required String expenseId,
     required String roomGroupId,
@@ -210,6 +214,7 @@ class ExpenseRepository {
     }
   }
 
+  // Xóa khoản chi + xóa tất cả expense_shares liên quan trong 1 batch
   Future<void> deleteExpense({
     required String expenseId,
     required String roomGroupId,
@@ -234,6 +239,7 @@ class ExpenseRepository {
     }
   }
 
+  // Lấy tất cả khoản chi của nhóm trong một tháng cụ thể để hiển thị thống kê
   Future<List<ExpenseModel>> getExpensesByMonth({
     required String roomGroupId,
     required int year,
@@ -271,6 +277,7 @@ class ExpenseRepository {
     }
   }
 
+  // Thanh toán tất cả công nợ giữa 2 người trong nhóm trong 1 batch (đặt isPaid = true)
   Future<void> settleAllDebts({
     required String fromUserId,
     required String toUserId,

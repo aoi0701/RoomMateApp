@@ -7,6 +7,7 @@ import '../../../auth/presentation/viewmodels/auth_viewmodel.dart';
 import '../viewmodels/user_profile_viewmodel.dart';
 import 'edit_basic_info_screen.dart';
 
+// Màn hình cài đặt tài khoản: xem email, sửa thông tin, đổi mật khẩu, xóa tài khoản
 class AccountSettingsScreen extends StatelessWidget {
   const AccountSettingsScreen({super.key});
 

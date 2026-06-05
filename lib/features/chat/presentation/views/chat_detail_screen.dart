@@ -34,8 +34,7 @@ class _ChatDetailScreenState extends State<ChatDetailScreen> {
   bool _isConversationReady = false;
   bool _initialized = false;
   String? _screenError;
-  // Cached stream - created once so Firebase never opens more than one listener
-  // on the same path regardless of how many times the widget rebuilds.
+  // Stream cache — tạo 1 lần để Firebase không mở nhiều listener trên cùng 1 path dù widget rebuild nhiều lần
   Stream<List<ChatMessageModel>>? _messagesStream;
 
   @override

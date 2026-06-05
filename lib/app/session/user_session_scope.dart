@@ -19,6 +19,8 @@ import '../../features/room_group/presentation/viewmodels/room_group_viewmodel.d
 import '../../features/roommate/data/repositories/roommate_request_repository.dart';
 import '../../features/roommate/presentation/viewmodels/roommate_request_viewmodel.dart';
 
+// Tạo lại các ViewModel phụ thuộc session sau khi user đăng nhập thành công,
+// đảm bảo chúng được reset sạch khi user thay đổi (key = uid)
 class UserSessionScope extends StatelessWidget {
   final Widget child;
 

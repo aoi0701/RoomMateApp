@@ -15,6 +15,7 @@ import '../../data/models/expense_share_model.dart';
 import '../viewmodels/expense_viewmodel.dart';
 import 'expense_form_screen.dart';
 
+// Màn hình chi tiết 1 khoản chi: hiển thị ai chia bao nhiêu, trạng thái đã/chưa thanh toán
 class ExpenseDetailScreen extends StatefulWidget {
   final ExpenseModel expense;
   final RoomGroupModel roomGroup;

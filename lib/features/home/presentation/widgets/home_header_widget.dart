@@ -4,6 +4,7 @@ import 'package:google_fonts/google_fonts.dart';
 import '../../../../core/theme/app_colors.dart';
 import '../../data/models/room_search_filter_model.dart';
 
+// Widget header màn hình Home: lời chào theo giờ, tóm tắt bộ lọc đang áp dụng, nút mở filter
 class HomeHeaderWidget extends StatelessWidget {
   final RoomSearchFilterModel filter;
   final VoidCallback onFilterTap;

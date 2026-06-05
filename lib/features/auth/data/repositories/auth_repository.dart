@@ -21,6 +21,7 @@ class AuthRepository {
 
   Stream<User?> authStateChanges() => _auth.authStateChanges();
 
+  // Đăng nhập bằng email và mật khẩu qua Firebase Auth
   Future<UserCredential> login({
     required String email,
     required String password,
@@ -31,6 +32,7 @@ class AuthRepository {
     );
   }
 
+  // Tạo tài khoản mới: đăng ký Firebase Auth rồi lưu thông tin cơ bản vào Firestore collection 'users'
   Future<UserCredential> register({
     required String fullName,
     required String email,
@@ -67,6 +69,7 @@ class AuthRepository {
     return credential;
   }
 
+  // Lấy vai trò user từ server Firestore (bỏ qua cache) để phát hiện blocked/deleted kịp thời
   Future<String> getUserRole(String uid) async {
     final user = currentUser;
     if (user != null && user.uid == uid) {
@@ -91,6 +94,7 @@ class AuthRepository {
     }
   }
 
+  // Đăng nhập bằng Google: xác thực OAuth rồi tạo document Firestore nếu user mới lần đầu
   Future<void> signInWithGoogle() async {
     final googleUser = await _googleSignIn.signIn();
     if (googleUser == null) {
@@ -136,6 +140,8 @@ class AuthRepository {
     return _auth.sendPasswordResetEmail(email: normalizedEmail);
   }
 
+  // Đảm bảo document user tồn tại trên Firestore — dùng cho các luồng auth
+  // không đi qua register() (VD: khôi phục session, Google sign-in)
   Future<void> ensureUserDocument(User user) async {
     final docRef = _users.doc(user.uid);
 

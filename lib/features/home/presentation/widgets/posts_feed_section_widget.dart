@@ -12,6 +12,7 @@ import '../../../post/presentation/viewmodels/post_list_viewmodel.dart';
 import '../../../profile/data/models/user_model.dart';
 import '../../../profile/presentation/viewmodels/user_profile_viewmodel.dart';
 
+// Widget hiển thị feed bài đăng phòng trọ trên màn hình Home, hỗ trợ infinite scroll
 class PostsFeedSectionWidget extends StatelessWidget {
   final void Function(PostModel) onViewPost;
 

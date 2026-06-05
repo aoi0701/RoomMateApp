@@ -9,6 +9,7 @@ import '../../data/mappers/habit_roommate_criteria_mapper.dart';
 import '../../data/models/profile_habit_model.dart';
 import '../viewmodels/user_profile_viewmodel.dart';
 
+// Luồng hoàn thiện hồ sơ lần đầu (stepper): điền thông tin cơ bản → chọn thói quen → lưu
 class CompleteProfileFlowScreen extends StatefulWidget {
   const CompleteProfileFlowScreen({super.key});
 

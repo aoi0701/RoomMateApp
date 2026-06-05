@@ -4,6 +4,7 @@ import 'package:flutter/material.dart';
 import '../../data/models/user_model.dart';
 import '../../data/repositories/user_profile_repository.dart';
 
+// ViewModel hồ sơ user: cache in-memory 5 phút để giảm Firestore reads, tự invalidate khi cập nhật
 class UserProfileViewModel extends ChangeNotifier {
   final UserProfileRepository _repository;
   final Map<String, UserModel> _profileCache = <String, UserModel>{};

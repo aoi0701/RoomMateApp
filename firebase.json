@@ -28,5 +28,13 @@
         }
       }
     }
+  },
+  "hosting": {
+    "public": "admin_dashboard",
+    "ignore": [
+      "firebase.json",
+      "**/.*",
+      "**/node_modules/**"
+    ]
   }
 }

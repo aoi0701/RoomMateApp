@@ -8,6 +8,7 @@ import '../../../../core/widgets/app_state_widgets.dart';
 import '../../../roommate/data/models/roommate_request_model.dart';
 import '../../../roommate/presentation/viewmodels/roommate_request_viewmodel.dart';
 
+// Màn hình danh sách lời mời đã gửi (profile_invite): hiển thị trạng thái pending/accepted/rejected
 class SentInvitesScreen extends StatelessWidget {
   const SentInvitesScreen({super.key});
 

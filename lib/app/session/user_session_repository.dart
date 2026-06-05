@@ -28,6 +28,8 @@ class UserSessionRepository {
     sessionStream = _buildStream();
   }
 
+  // Kết hợp luồng Firebase Auth + Firestore realtime:
+  // tự động kick user ra nếu bị block/xóa/ban ngay cả khi đang dùng app
   Stream<UserSession?> _buildStream() {
     late StreamController<UserSession?> controller;
     StreamSubscription<User?>? authSub;

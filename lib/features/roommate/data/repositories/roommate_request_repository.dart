@@ -21,6 +21,7 @@ class RoommateRequestRepository {
   CollectionReference<Map<String, dynamic>> get _postRef =>
       _firestore.collection('posts');
 
+  // Gửi yêu cầu ghép phòng: kiểm tra bài tồn tại, không tự gửi cho mình, không gửi trùng
   Future<void> sendRequest({
     required String postId,
     required String message,
@@ -113,6 +114,7 @@ class RoommateRequestRepository {
         );
   }
 
+  // Chấp nhận yêu cầu: chỉ chủ bài mới có quyền, yêu cầu phải đang ở trạng thái pending
   Future<RoommateRequestModel> acceptRequest(String requestId) async {
     final user = currentUser;
     if (user == null) throw Exception('Chưa đăng nhập');
@@ -159,6 +161,7 @@ class RoommateRequestRepository {
     });
   }
 
+  // Từ chối yêu cầu: chỉ chủ bài mới có quyền, yêu cầu phải đang ở trạng thái pending
   Future<void> rejectRequest(String requestId) async {
     final user = currentUser;
     if (user == null) throw Exception('Chưa đăng nhập');
@@ -181,6 +184,7 @@ class RoommateRequestRepository {
     });
   }
 
+  // Xóa yêu cầu: chỉ người gửi hoặc chủ bài mới được xóa
   Future<void> deleteRequest(String requestId) async {
     final user = currentUser;
     if (user == null) throw Exception('Chưa đăng nhập');

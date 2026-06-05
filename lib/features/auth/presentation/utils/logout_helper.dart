@@ -7,6 +7,7 @@ import '../../../home/presentation/viewmodels/home_search_filter_viewmodel.dart'
 import '../../../roommate/presentation/viewmodels/roommate_request_viewmodel.dart';
 import '../viewmodels/auth_viewmodel.dart';
 
+// Đăng xuất toàn diện: reset filter, xóa session roommate, xóa cache chat rồi mới logout Firebase
 Future<void> performLogout(BuildContext context) async {
   final authVm = context.read<AuthViewModel>();
   final navigationService = context.read<NavigationService>();
@@ -39,8 +40,7 @@ Future<void> performLogout(BuildContext context) async {
 
   await authVm.logout();
 
-  // Pop all routes back to AuthGate (home route).
-  // AuthGate will automatically render LoginScreen when the session is null.
+  // Pop hết routes về AuthGate — AuthGate sẽ tự hiển thị LoginScreen khi session = null
   navigationService.navigatorKey.currentState
       ?.popUntil((route) => route.isFirst);
 }

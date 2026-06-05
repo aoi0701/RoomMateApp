@@ -1,3 +1,4 @@
+// Lấy 2 từ cuối của họ tên (VD: "Nguyễn Văn An" → "Văn An") để hiển thị gọn trên card
 String formatLastTwoWords(String fullName) {
   final words = fullName
       .trim()
@@ -10,6 +11,7 @@ String formatLastTwoWords(String fullName) {
   return '${words[words.length - 2]} ${words.last}';
 }
 
+// Tạo địa chỉ hiển thị từ nhiều nguồn: ưu tiên fullAddress → preferredLocation → district+province
 String formatReadableAddress({
   String fullAddress = '',
   String preferredLocation = '',

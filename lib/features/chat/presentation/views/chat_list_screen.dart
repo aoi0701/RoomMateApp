@@ -24,11 +24,11 @@ class _ChatListScreenState extends State<ChatListScreen> {
   @override
   void initState() {
     super.initState();
-    // Clear unread badges for all conversations when the user opens the
-    // chat list so the nav badge disappears immediately.
+    // Xóa badge chưa đọc ngay khi mở danh sách chat để badge trên nav biến mất lập tức
     context.read<ChatViewModel>().markAllAsRead();
   }
 
+  // Định dạng thời gian tin nhắn cuối: hôm nay → HH:mm, tuần này → "N ngày", cũ hơn → dd/MM
   String _formatTime(DateTime time) {
     final now = DateTime.now();
     final diff = now.difference(time);

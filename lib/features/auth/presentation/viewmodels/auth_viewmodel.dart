@@ -28,6 +28,7 @@ class AuthViewModel extends ViewModelBase {
 
   User? get user => _repository.currentUser;
 
+  // Đăng nhập: gọi repository, kiểm tra role blocked/deleted, trả về role nếu thành công
   Future<String?> login(String email, String password) async {
     try {
       beginLoad();
@@ -66,6 +67,7 @@ class AuthViewModel extends ViewModelBase {
     }
   }
 
+  // Đăng nhập Google: sau khi xác thực, kiểm tra và kick nếu tài khoản bị khóa/xóa
   Future<void> signInWithGoogle() async {
     try {
       beginLoad();
@@ -106,6 +108,7 @@ class AuthViewModel extends ViewModelBase {
     }
   }
 
+  // Đăng ký tài khoản rồi tự đăng xuất ngay — user phải tự đăng nhập lại thủ công
   Future<bool> register({
     required String fullName,
     required String email,
@@ -158,6 +161,7 @@ class AuthViewModel extends ViewModelBase {
     }
   }
 
+  // Đăng xuất an toàn: set cờ _isLoggingOut trước để AuthGate không re-render UserHomeScreen
   Future<void> logout() async {
     if (_isLoggingOut) return;
 
@@ -175,6 +179,7 @@ class AuthViewModel extends ViewModelBase {
     }
   }
 
+  // Chuyển mã lỗi Firebase Auth sang thông báo tiếng Việt thân thiện với người dùng
   String _mapFirebaseAuthError(FirebaseAuthException e) {
     switch (e.code) {
       case 'user-not-found':

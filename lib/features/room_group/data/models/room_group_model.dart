@@ -8,7 +8,7 @@ class RoomGroupModel {
   final String postId;
   final DateTime? createdAt;
   final String status;
-  // Populated at runtime from users collection, not stored in Firestore
+  // Tên thành viên được load thêm lúc runtime từ collection users, không lưu trong Firestore
   final List<String> memberNames;
 
   const RoomGroupModel({

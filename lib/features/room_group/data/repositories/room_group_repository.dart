@@ -18,6 +18,7 @@ class RoomGroupRepository {
   CollectionReference<Map<String, dynamic>> get _collection =>
       _firestore.collection('room_groups');
 
+  // Tạo nhóm phòng mới khi chủ bài chấp nhận yêu cầu — gồm cả 2 người: chủ và người xin
   Future<RoomGroupModel> createGroupAfterAcceptRequest({
     required String ownerId,
     required String requesterId,
@@ -42,6 +43,7 @@ class RoomGroupRepository {
     }
   }
 
+  // Lấy danh sách nhóm phòng của user, đồng thời batch-fetch tên thành viên từ collection users
   Future<List<RoomGroupModel>> getUserRoomGroups(String userId) async {
     try {
       final snapshot = await _collection
@@ -52,7 +54,7 @@ class RoomGroupRepository {
           .map((doc) => RoomGroupModel.fromDocument(doc))
           .toList();
 
-      // Collect all unique member IDs across all groups
+      // Gom tất cả memberIds duy nhất từ các nhóm để fetch tên 1 lần
       final allMemberIds = groups
           .expand((g) => g.memberIds)
           .toSet()
@@ -60,7 +62,7 @@ class RoomGroupRepository {
 
       if (allMemberIds.isEmpty) return groups;
 
-      // Batch fetch user names
+      // Batch fetch tên user song song
       final userDocs = await Future.wait(
         allMemberIds.map((uid) => _firestore.collection('users').doc(uid).get()),
       );
@@ -93,6 +95,7 @@ class RoomGroupRepository {
     }
   }
 
+  // Giải tán nhóm: chỉ trưởng nhóm mới có quyền, đặt status = 'disbanded'
   Future<void> disbandGroup(String groupId) async {
     final user = currentUser;
     if (user == null) throw Exception('Chưa đăng nhập');

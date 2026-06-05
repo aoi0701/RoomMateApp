@@ -3,6 +3,7 @@ import 'package:firebase_auth/firebase_auth.dart';
 
 import '../models/room_search_filter_model.dart';
 
+// Lưu và lấy bộ lọc tìm phòng của user từ Firestore (lưu trong document user)
 class HomeSearchFilterRepository {
   final FirebaseFirestore _firestore;
   final FirebaseAuth _auth;

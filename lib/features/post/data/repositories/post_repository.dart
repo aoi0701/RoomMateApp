@@ -31,6 +31,7 @@ class PostRepository {
 
   User? get currentUser => _auth.currentUser;
 
+  // Upload ảnh lên Cloudinary qua unsigned preset, trả về URL ảnh đã lưu
   Future<String> uploadImageToCloudinary(File imageFile) async {
     const cloudName = 'dg9nhcbfu';
     const uploadPreset = 'sib1xtoq';
@@ -53,6 +54,7 @@ class PostRepository {
     throw Exception('Upload Cloudinary thất bại: $responseBody');
   }
 
+  // Tạo bài đăng mới: upload tối đa 5 ảnh lên Cloudinary rồi lưu metadata vào Firestore
   Future<void> createPost({
     required String title,
     required String location,
@@ -99,6 +101,7 @@ class PostRepository {
     });
   }
 
+  // Cập nhật bài đăng: xác minh quyền sở hữu, upload ảnh mới nếu có, cập nhật Firestore
   Future<void> updatePost({
     required String postId,
     required String title,
@@ -164,6 +167,7 @@ class PostRepository {
     });
   }
 
+  // Xóa bài đăng + tất cả roommate_requests liên quan trong 1 batch (cascade delete)
   Future<void> deletePost(String postId) async {
     final user = currentUser;
 
@@ -202,6 +206,7 @@ class PostRepository {
 
   static const int pageSize = 25;
 
+  // Xây dựng Firestore query theo bộ lọc (tỉnh, quận, loại phòng, giá, tiện ích)
   Query<Map<String, dynamic>> _buildFilteredQuery(RoomSearchFilterModel filter) {
     Query<Map<String, dynamic>> query = _firestore.collection('posts');
 
@@ -263,6 +268,7 @@ class PostRepository {
     return PostsPageResult(posts: posts, nextCursor: nextCursor);
   }
 
+  // Lấy tập ID của user bị xóa/block để ViewModel lọc ẩn bài đăng của họ khỏi feed
   Future<Set<String>> fetchHiddenOwnerIds() async {
     final results = await Future.wait([
       _firestore.collection('users').where('deleted', isEqualTo: true).get(),

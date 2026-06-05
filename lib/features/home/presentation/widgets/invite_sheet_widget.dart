@@ -8,6 +8,7 @@ import '../../../../core/widgets/app_avatar.dart';
 import '../../data/models/roommate_profile_model.dart';
 import '../viewmodels/roommate_profile_viewmodel.dart';
 
+// Bottom sheet xác nhận gửi lời mời ghép phòng trực tiếp đến 1 người từ hồ sơ
 class InviteSheetWidget extends StatefulWidget {
   final RoommateProfileModel profile;
 

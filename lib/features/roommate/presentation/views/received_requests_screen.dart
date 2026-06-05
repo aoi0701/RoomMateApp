@@ -9,6 +9,7 @@ import '../../../../core/widgets/app_state_widgets.dart';
 import '../../data/models/roommate_request_model.dart';
 import '../viewmodels/roommate_request_viewmodel.dart';
 
+// Màn hình yêu cầu đã nhận: realtime stream, chấp nhận → tạo nhóm phòng, từ chối/xóa
 class ReceivedRequestsScreen extends StatefulWidget {
   const ReceivedRequestsScreen({super.key});
 

@@ -8,6 +8,7 @@ import '../../../../core/widgets/app_avatar.dart';
 import '../../data/models/roommate_profile_model.dart';
 import '../viewmodels/roommate_profile_viewmodel.dart';
 
+// Widget hiển thị danh sách người gợi ý ghép phòng, sắp xếp theo % phù hợp
 class SuggestedProfilesSectionWidget extends StatelessWidget {
   final void Function(RoommateProfileModel) onViewProfile;
   final void Function(RoommateProfileModel) onInviteTap;

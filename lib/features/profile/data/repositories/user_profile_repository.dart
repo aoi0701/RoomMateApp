@@ -40,6 +40,7 @@ class UserProfileRepository {
         .map((snapshot) => snapshot.docs.isNotEmpty);
   }
 
+  // Cập nhật thói quen của user, tự động map sang roommateCriteria và tính lại profileCompleted
   Future<void> updateHabits({
     required String uid,
     required List<String> habits,
@@ -65,6 +66,7 @@ class UserProfileRepository {
     });
   }
 
+  // Hoàn thiện hồ sơ lần đầu: lưu phone/address/gender/habits và đánh dấu profileCompleted
   Future<void> completeProfile({
     required String uid,
     required String phone,
@@ -109,6 +111,7 @@ class UserProfileRepository {
     });
   }
 
+  // Xóa mềm tài khoản: đánh dấu deleted + isBlocked, Cloud Function sẽ xử lý cascade sau
   Future<void> softDeleteAccount(String uid) async {
     await _firestore.collection('users').doc(uid).update({
       'deleted': true,

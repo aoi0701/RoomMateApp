@@ -131,3 +131,5 @@ class RoommateRequestModel {
     return RoommateInviteType.postRequest;
   }
 }
+
+

@@ -55,7 +55,7 @@ class UserModel {
         roommateCriteria.isNotEmpty;
   }
 
-  /// 🔹 from Firestore Document
+  // Tạo UserModel từ Firestore Document snapshot
   factory UserModel.fromDocument(
     DocumentSnapshot<Map<String, dynamic>> doc,
   ) {
@@ -96,7 +96,7 @@ class UserModel {
     );
   }
 
-  /// 🔹 from Map
+  // Tạo UserModel từ Map thông thường (dùng cho các luồng không qua Firestore DocumentSnapshot)
   factory UserModel.fromMap(Map<String, dynamic> map, String uid) {
     final address = map['address'] ?? '';
     final gender = map['gender'] ?? '';
@@ -134,7 +134,7 @@ class UserModel {
     );
   }
 
-  /// 🔹 to Map (ghi lên Firestore)
+  // Chuyển UserModel thành Map để ghi lên Firestore
   Map<String, dynamic> toMap() {
     return {
       'fullName': fullName,
@@ -158,7 +158,7 @@ class UserModel {
     };
   }
 
-  /// 🔹 copyWith
+  // Tạo bản sao UserModel với một số trường được thay thế
   UserModel copyWith({
     String? uid,
     String? fullName,

@@ -17,7 +17,7 @@ import '../widgets/lifestyle_habit_wrap.dart';
 import '../viewmodels/post_viewmodel.dart';
 
 class PostFormScreen extends StatefulWidget {
-  /// null → create new post; non-null → edit existing post.
+  // null → tạo bài đăng mới; non-null → chỉnh sửa bài đã có
   final PostModel? post;
 
   const PostFormScreen({super.key, this.post});

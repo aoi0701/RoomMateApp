@@ -10,6 +10,7 @@ import '../../../expense/presentation/views/expense_list_screen.dart';
 import '../../data/models/room_group_model.dart';
 import '../viewmodels/room_group_viewmodel.dart';
 
+// Màn hình danh sách nhóm phòng của user: hiển thị trạng thái, điều hướng đến chi tiêu nhóm
 class RoomGroupScreen extends StatefulWidget {
   const RoomGroupScreen({super.key});
 

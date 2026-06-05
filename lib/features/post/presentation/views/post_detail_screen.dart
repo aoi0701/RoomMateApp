@@ -17,6 +17,7 @@ import '../../data/models/post_model.dart';
 import '../widgets/amenity_grid.dart';
 import '../widgets/lifestyle_habit_wrap.dart';
 
+// Màn hình chi tiết bài đăng: xem ảnh/thông tin phòng, gửi yêu cầu ghép, chat với chủ nhà
 class PostDetailScreen extends StatelessWidget {
   final PostModel post;
   final String? currentUserId;

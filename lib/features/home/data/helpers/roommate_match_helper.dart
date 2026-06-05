@@ -1,3 +1,5 @@
+// Tính % độ phù hợp giữa 2 người tìm phòng:
+// Tiêu chí 45% + Thói quen 25% + Ngân sách 15% + Địa điểm 15%, trừ thêm điểm phạt nếu có xung đột
 int calculateRoommateMatchPercentage({
   required List<String> currentHabits,
   required List<String> currentCriteria,
@@ -88,6 +90,7 @@ Set<String> _normalizedSet(List<String> values) {
       .toSet();
 }
 
+// Tính điểm tương thích tiêu chí roommate theo 2 chiều: tôi → họ và họ → tôi, lấy trung bình
 int? _calculateCriteriaCompatibilityScore({
   required Set<String> currentCriteria,
   required Set<String> currentSignals,
@@ -123,6 +126,7 @@ int? _calculateSetOverlapScore(Set<String> left, Set<String> right) {
   return ((overlap / union.length) * 100).round();
 }
 
+// Tính điểm tương thích ngân sách: 100 nếu khoảng chồng nhau, giảm dần theo khoảng cách
 int? _calculateBudgetCompatibilityScore(String currentBudgetRange, String targetBudgetRange) {
   final currentRange = _parseBudgetRange(currentBudgetRange);
   final targetRange = _parseBudgetRange(targetBudgetRange);
@@ -187,6 +191,7 @@ _NumericRange? _parseBudgetRange(String value) {
   return _NumericRange(start, end);
 }
 
+// Tính điểm tương thích địa điểm bằng cách so sánh các token địa chỉ (bỏ stop words)
 int? _calculateLocationCompatibilityScore(String currentAddress, String targetAddress) {
   final currentTokens = _extractAddressTokens(currentAddress);
   final targetTokens = _extractAddressTokens(targetAddress);
@@ -226,6 +231,7 @@ Set<String> _extractAddressTokens(String value) {
   return normalized;
 }
 
+// Tính điểm phạt khi có xung đột thói quen/tiêu chí (VD: ngủ sớm vs thức khuya), tối đa -30 điểm
 int _calculateConflictPenalty({
   required Set<String> currentHabits,
   required Set<String> currentCriteria,

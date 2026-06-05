@@ -15,6 +15,7 @@ class PriceRangeOption {
   });
 }
 
+// Model bộ lọc tìm phòng: từ khóa, tỉnh/quận, loại phòng, khoảng giá, tiện ích
 class RoomSearchFilterModel {
   final String keyword;
   final String province;

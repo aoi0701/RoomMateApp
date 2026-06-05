@@ -15,6 +15,7 @@ class NetDebtEntry {
   });
 }
 
+// ViewModel quản lý chi phí: tính chia tiền, load công nợ, thống kê tháng, quyết toán
 class ExpenseViewModel extends ViewModelBase {
   final ExpenseRepository _repository;
 
@@ -56,6 +57,7 @@ class ExpenseViewModel extends ViewModelBase {
     return _repository.getExpenseById(expenseId);
   }
 
+  // Tính danh sách chia tiền: chia đều hoặc chia tùy chỉnh, trả về List<ExpenseShareModel>
   List<ExpenseShareModel> calculateSplit({
     required String expenseId,
     required String roomGroupId,
@@ -245,6 +247,7 @@ class ExpenseViewModel extends ViewModelBase {
     }
   }
 
+  // Load đồng thời: công nợ cá nhân (myDebts/othersDebts) + công nợ ròng toàn nhóm (netDebts)
   Future<void> loadDebtScreenData({
     required String userId,
     required String roomGroupId,
@@ -381,14 +384,14 @@ class ExpenseViewModel extends ViewModelBase {
 
       final allShares = await _repository.getAllUnpaidSharesByGroup(roomGroupId);
 
-      // Accumulate gross balance: balance[from][to] += amount
+      // Tích lũy tổng nợ gộp: gross[from][to] += số tiền
       final Map<String, Map<String, double>> gross = {};
       for (final share in allShares) {
         gross.putIfAbsent(share.fromUserId, () => {})[share.toUserId] =
             (gross[share.fromUserId]?[share.toUserId] ?? 0) + share.amountOwed;
       }
 
-      // Simplify: net[A][B] = gross[A][B] - gross[B][A]
+      // Tính nợ ròng: net[A][B] = gross[A][B] - gross[B][A], bỏ qua cặp đã xử lý
       final Set<String> processed = {};
       final List<NetDebtEntry> entries = [];
 

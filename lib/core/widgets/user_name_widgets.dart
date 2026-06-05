@@ -5,9 +5,7 @@ import '../services/user_name_cache.dart';
 import '../theme/app_text_styles.dart';
 import 'app_avatar.dart';
 
-/// Resolves [userId] to a display name via [UserNameCache] and renders it as
-/// a [Text]. The underlying Firestore listener is shared across all widgets
-/// that request the same [userId] — no duplicate listeners.
+// Widget hiển thị tên user theo userId: dùng UserNameCache nên không tạo thêm Firestore listener
 class UserNameText extends StatelessWidget {
   final String userId;
   final TextStyle? style;
@@ -36,7 +34,7 @@ class UserNameText extends StatelessWidget {
   }
 }
 
-/// Resolves [userId] to an avatar + name row via [UserNameCache].
+// Widget hiển thị hàng avatar + tên user theo userId, cũng dùng UserNameCache
 class UserNameTile extends StatelessWidget {
   final String userId;
   final double avatarSize;

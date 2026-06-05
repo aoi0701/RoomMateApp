@@ -1,5 +1,7 @@
 ﻿import '../models/roommate_criteria_model.dart';
 
+// Chuyển đổi thói quen (habit ID) sang tiêu chí tìm roommate tương ứng.
+// Bảng mapping: habit → RoommateCriteriaModel để tự động điền roommateCriteria khi user chọn thói quen.
 class HabitRoommateCriteriaMapper {
   static const Map<String, RoommateCriteriaModel> _mapping = {
     'no_smoking': RoommateCriteriaModel(

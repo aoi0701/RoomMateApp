@@ -29,6 +29,8 @@ import '../../../profile/presentation/views/complete_profile_flow_screen.dart';
 import '../../../profile/presentation/views/user_profile_screen.dart';
 import '../../../room_group/presentation/views/room_group_screen.dart';
 
+// Màn hình chính sau đăng nhập: BottomNav gồm Home, Chat, Yêu cầu, Hồ sơ.
+// Khởi tạo filter bài đăng và lắng nghe yêu cầu roommate ngay khi mở app.
 class UserHomeScreen extends StatefulWidget {
   const UserHomeScreen({super.key});
 

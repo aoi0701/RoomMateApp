@@ -38,6 +38,7 @@ import 'firebase_options.dart';
 const _dbUrl =
     'https://roommateapp-fbb4f-default-rtdb.asia-southeast1.firebasedatabase.app';
 
+// Khởi động app: khởi tạo Firebase, tạo các service dùng chung rồi chạy MyApp
 Future<void> main() async {
   WidgetsFlutterBinding.ensureInitialized();
 
@@ -83,6 +84,8 @@ class MyApp extends StatelessWidget {
     required this.navigationService,
   });
 
+  // Đăng ký toàn bộ Repository và ViewModel vào Provider tree,
+  // sau đó bọc trong MaterialApp với AuthGate làm màn hình khởi điểm
   @override
   Widget build(BuildContext context) {
     return MultiProvider(
@@ -217,6 +220,8 @@ class MyApp extends StatelessWidget {
   }
 }
 
+// Màn hình cổng xác thực: lắng nghe sessionStream để quyết định
+// hiển thị LoginScreen hay UserHomeScreen, tự động kick user bị ban/xóa
 class AuthGate extends StatefulWidget {
   const AuthGate({super.key});
 
@@ -229,6 +234,7 @@ class _AuthGateState extends State<AuthGate> {
   // True once the user has a valid session, so we can detect forced kick-outs.
   bool _sessionWasActive = false;
 
+  // Đặt lịch đăng xuất sau frame hiện tại để tránh gọi setState trong build
   void _scheduleLogout() {
     if (_logoutScheduled) return;
     _logoutScheduled = true;

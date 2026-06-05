@@ -19,6 +19,8 @@ class RoommateProfileRepository {
   })  : _firestore = firestore,
         _auth = auth;
 
+  // Stream gợi ý người tìm phòng: lấy tất cả user, fetch bài đăng theo chunk,
+  // tính % phù hợp và sắp xếp giảm dần theo matchPercentage
   Stream<List<RoommateProfileModel>> getSuggestedProfilesStream() {
     final currentUserId = _auth.currentUser?.uid;
     if (currentUserId == null) {
@@ -33,11 +35,11 @@ class RoommateProfileRepository {
           .where((user) => user.role != 'admin')
           .toList();
 
-      // Fetch posts for the users currently in the snapshot. Firestore's
-      // built-in offline cache handles repeated reads without a manual layer.
+      // Fetch bài đăng theo chunk 10 (giới hạn whereIn của Firestore)
+      // Firestore offline cache xử lý các lần đọc lặp lại
       final postsByOwner = <String, List<PostModel>>{};
       final userIds = users.map((u) => u.uid).toList();
-      const chunkSize = 10; // Firestore whereIn limit.
+      const chunkSize = 10;
 
       for (var i = 0; i < userIds.length; i += chunkSize) {
         final chunk = userIds.sublist(
@@ -121,6 +123,7 @@ class RoommateProfileRepository {
     });
   }
 
+  // Xác định địa chỉ hiển thị: ưu tiên address/preferredLocation của user, fallback sang bài đăng mới nhất
   String _resolveSuggestedAddress(UserModel user, List<PostModel> posts) {
     if (user.address.trim().isNotEmpty ||
         user.preferredLocation.trim().isNotEmpty) {
@@ -142,6 +145,7 @@ class RoommateProfileRepository {
     );
   }
 
+  // Xác định khoảng ngân sách: ưu tiên budgetRange của user, fallback sang khoảng giá từ bài đăng
   String _resolveBudgetRange(UserModel user, List<PostModel> posts) {
     if (user.budgetRange.trim().isNotEmpty) {
       return user.budgetRange.trim();
@@ -163,6 +167,7 @@ class RoommateProfileRepository {
     return '${FormatUtils.formatMoney(minPrice)} - ${FormatUtils.formatMoney(maxPrice)}/tháng';
   }
 
+  // Gửi lời mời ghép phòng trực tiếp từ hồ sơ (không qua bài đăng), kiểm tra trùng lặp trước
   Future<void> sendInvite({
     required String targetUserId,
     required String targetName,

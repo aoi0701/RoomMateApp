@@ -16,6 +16,7 @@ import 'debt_screen.dart';
 import 'expense_detail_screen.dart';
 import 'monthly_summary_screen.dart';
 
+// Màn hình danh sách chi tiêu nhóm: stream realtime, điều hướng đến thêm/chi tiết/công nợ/thống kê
 class ExpenseListScreen extends StatelessWidget {
   final RoomGroupModel roomGroup;
 

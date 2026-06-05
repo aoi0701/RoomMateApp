@@ -22,10 +22,8 @@ class PostListViewModel extends ViewModelBase {
   bool get isLoadingMore => _isLoadingMore;
   bool get hasMore => _hasMore;
 
-  /// Firestore handles province, district, roomType, price range, and single
-  /// amenity. Keyword and multi-amenity AND-logic are applied here in memory
-  /// on the already-narrowed result set.
-  /// Posts from deleted or blocked owners are also excluded.
+  // Lọc thêm in-memory: từ khóa và nhiều amenity (AND-logic) sau khi Firestore đã lọc
+  // province/district/roomType/price. Ẩn bài của owner bị xóa/block.
   List<PostModel> get filteredPosts {
     final kw = _activeFilter.keyword.trim().toLowerCase();
     final amenities = _activeFilter.amenities;
@@ -64,8 +62,7 @@ class PostListViewModel extends ViewModelBase {
     notifyListeners();
   }
 
-  /// Cancels the current stream, resets all pagination state, and restarts
-  /// with [filter] as the new Firestore query parameters.
+  // Áp dụng bộ lọc mới: hủy stream cũ, reset pagination, subscribe lại với query mới
   void applyFilter(RoomSearchFilterModel filter) {
     _activeFilter = filter;
     _firstPageSub?.cancel();
@@ -80,16 +77,14 @@ class PostListViewModel extends ViewModelBase {
   void _subscribeFirstPage() {
     _firstPageSub = _repository.getPostsPageStream(_activeFilter).listen(
       (result) {
-        // Merge: replace leading first-page docs, keep any extra pages the
-        // user already loaded (deduplicated by id so no duplicates appear at
-        // the page boundary when a new post shifts the cursor).
+        // Merge trang đầu với các trang đã load thêm: thay thế docs trang đầu,
+        // giữ nguyên các docs trang sau (dedup theo id để tránh trùng tại ranh giới)
         final firstIds = result.posts.map((p) => p.id).toSet();
         final extras = _posts.where((p) => !firstIds.contains(p.id)).toList();
         _posts = [...result.posts, ...extras];
 
-        // Only update the cursor when no extra pages have been loaded yet.
-        // After loadMore() has run, _lastCursor points to the most-recently
-        // fetched page and must not be overwritten by the first-page stream.
+        // Chỉ cập nhật cursor khi chưa có trang thêm — sau loadMore() cursor đã
+        // trỏ tới trang mới nhất, không được ghi đè bởi stream trang đầu
         if (extras.isEmpty) {
           _lastCursor = result.nextCursor;
           _hasMore = result.hasMore;
@@ -126,7 +121,7 @@ class PostListViewModel extends ViewModelBase {
     }
   }
 
-  // Kept for my_posts_screen.dart which shows only the current user's posts.
+  // Stream bài đăng của riêng user — dùng cho màn hình "bài đăng của tôi"
   Stream<List<PostModel>> getPostsByUser(String uid) =>
       _repository.getPostsByUser(uid);
 

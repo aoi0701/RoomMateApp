@@ -9,6 +9,7 @@ import '../../../../core/widgets/app_state_widgets.dart';
 import '../../data/models/roommate_request_model.dart';
 import '../viewmodels/roommate_request_viewmodel.dart';
 
+// Màn hình tab yêu cầu ghép phòng: tab "Đã nhận" và tab "Đã gửi"
 class RoommateRequestTabScreen extends StatefulWidget {
   const RoommateRequestTabScreen({super.key});
 

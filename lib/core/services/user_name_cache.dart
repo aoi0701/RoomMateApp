@@ -11,16 +11,9 @@ class UserProfile {
   static const fallback = UserProfile(name: 'Người dùng');
 }
 
-/// Maintains one shared Firestore listener per userId.
-///
-/// [profileStream] returns the same [Stream] instance for every caller with
-/// the same [userId]. [shareValueSeeded] provides ref-counting: the underlying
-/// listener opens when the first subscriber attaches and is cancelled when the
-/// last one detaches, so a screen with 10 debt rows for 3 distinct users
-/// opens exactly 3 listeners — not 10.
-///
-/// On stream error the cached entry is removed so the next subscriber gets a
-/// fresh listener instead of a closed stream.
+// Cache tên và avatar user: mỗi userId chỉ mở 1 Firestore listener duy nhất,
+// dùng chung cho tất cả widget cần dữ liệu của cùng 1 user (tránh mở N listener cho N widget).
+// Tự hủy listener khi subscriber cuối cùng unsubscribe.
 class UserNameCache {
   final UserProfileRepository _repository;
   final _cache = <String, Stream<UserProfile>>{};

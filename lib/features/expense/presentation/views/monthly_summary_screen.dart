@@ -11,6 +11,7 @@ import '../../../room_group/data/models/room_group_model.dart';
 import '../../data/models/expense_model.dart';
 import '../viewmodels/expense_viewmodel.dart';
 
+// Màn hình thống kê chi tiêu theo tháng của nhóm phòng: tổng chi, chi theo người, điều hướng tháng
 class MonthlySummaryScreen extends StatefulWidget {
   final RoomGroupModel roomGroup;
 

@@ -7,6 +7,7 @@ import '../../../../core/widgets/app_button.dart';
 import '../viewmodels/home_search_filter_viewmodel.dart';
 import '../../data/models/room_search_filter_model.dart';
 
+// Màn hình bộ lọc tìm phòng: chỉnh sửa draft filter rồi trả về kết quả khi apply
 class RoomSearchFilterScreen extends StatefulWidget {
   final RoomSearchFilterModel initialFilter;
 

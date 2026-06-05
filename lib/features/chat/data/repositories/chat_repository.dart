@@ -30,6 +30,7 @@ class ChatRepository {
 
   String? get currentUserId => _currentUser?.uid;
 
+  // Tạo ID hội thoại duy nhất từ 2 userId bằng cách sắp xếp để luôn nhất quán
   String getConversationId(String uid1, String uid2) {
     final sorted = [uid1, uid2]..sort();
     return sorted.join('_');
@@ -74,6 +75,8 @@ class ChatRepository {
     );
   }
 
+  // Gửi tin nhắn: đảm bảo hội thoại tồn tại, lưu message vào Realtime DB,
+  // rồi cập nhật metadata (lastMessage, unreadCount) cho cả 2 phía
   Future<void> sendMessage({
     required String conversationId,
     required String receiverId,
@@ -267,6 +270,7 @@ class ChatRepository {
   /// that.  Clearing [unreadCount] here is sufficient to remove the badge;
   /// the next time the user opens a conversation, [markAsRead] will catch
   /// up on message-level read status.
+  // Đặt unreadCount = 0 cho TẤT CẢ hội thoại của user hiện tại (xóa badge tổng)
   Future<void> markAllAsRead() async {
     final user = _currentUser;
     if (user == null) return;
@@ -297,6 +301,7 @@ class ChatRepository {
     }
   }
 
+  // Đánh dấu đã đọc cho 1 hội thoại: reset unreadCount rồi cập nhật isRead từng tin nhắn
   Future<void> markAsRead(String conversationId) async {
     final user = _currentUser;
     if (user == null) return;
